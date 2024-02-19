@@ -24,8 +24,9 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glfw-3.3.9 glfw)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
 
-target_link_libraries(UnifiedParticlePhysicsCuda glfw)
+target_link_libraries(UnifiedParticlePhysicsCuda glfw glad)
 target_link_libraries(UnifiedParticlePhysicsCuda OpenGL::GL)
 
 target_link_libraries(UnifiedParticlePhysicsCuda CUDA::cudart)
