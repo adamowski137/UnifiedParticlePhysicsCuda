@@ -2,9 +2,7 @@
 //
 
 #include "UnifiedParticlePhysicsCuda.h"
-#include "GLFW/glfw3.h"
-
-
+#include "Window.hpp"
 using namespace std;
 
 int main()

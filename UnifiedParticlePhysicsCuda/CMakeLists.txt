@@ -26,8 +26,19 @@ find_package(OpenGL REQUIRED)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glfw-3.3.9 glfw)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
 
-target_link_libraries(UnifiedParticlePhysicsCuda glfw glad)
-target_link_libraries(UnifiedParticlePhysicsCuda OpenGL::GL)
+add_library(
+	window
+	${CMAKE_SOURCE_DIR}/Window/Window.hpp
+	${CMAKE_SOURCE_DIR}/Window/Window.cpp	
+)
 
-target_link_libraries(UnifiedParticlePhysicsCuda CUDA::cudart)
+set(SOURCES UnifiedParticlePhysics/UnifiedParticlePhysics.cpp)
+
+target_include_directories(UnifiedParticlePhysics PUBLIC src)
+target_include_directories(window PUBLIC src)
+
+target_link_libraries(window PUBLIC glfw glad OpenGL::GL)
+
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC window)
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart)
 # TODO: Add tests and install targets if needed.
