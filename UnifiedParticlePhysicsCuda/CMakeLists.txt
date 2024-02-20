@@ -23,8 +23,8 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_library(
 	logic
-	${CMAKE_SOURCE_DIR}/Logic/Particle.hpp
-	${CMAKE_SOURCE_DIR}/Logic/Particle.cpp
+	${CMAKE_SOURCE_DIR}/Logic/Particle.cuh
+	${CMAKE_SOURCE_DIR}/Logic/Particle.cu
 )
 
 
