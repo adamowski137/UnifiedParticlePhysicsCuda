@@ -21,10 +21,18 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+add_library(
+	logic
+	${CMAKE_SOURCE_DIR}/Logic/Particle.hpp
+	${CMAKE_SOURCE_DIR}/Logic/Particle.cpp
+)
+
+
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glfw-3.3.9 glfw)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
+target_link_libraries(logic CUDA::cudart glad)
 
 target_link_libraries(UnifiedParticlePhysicsCuda glfw glad)
 target_link_libraries(UnifiedParticlePhysicsCuda OpenGL::GL)
