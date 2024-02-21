@@ -14,6 +14,6 @@ int main()
 		std::cout << A[i] << "\n";
 	cout << "Hello CMake." << endl;*/
 
-	Window::getInstance(1024, 768).runWindow();
+	Window::getInstance().runWindow();
 	return 0;
 }

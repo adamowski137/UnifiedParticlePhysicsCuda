@@ -1,7 +1,7 @@
 #include "Window.hpp"
 #include <functional>
 
-Window::Window(int width, int height)
+Window::Window()
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -22,9 +22,9 @@ void Window::clear(float r, float g, float b, float a)
 }
 
 
-Window& Window::getInstance(int width, int height)
+Window& Window::getInstance()
 {
-    static Window window(width, height);
+    static Window window;
     return window;
 }
 
