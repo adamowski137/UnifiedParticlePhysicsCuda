@@ -36,6 +36,12 @@ add_library(
 	${CMAKE_SOURCE_DIR}/Logic/Particle.cu
 )
 
+add_library(
+	math
+	${CMAKE_SOURCE_DIR}/Math/LinearSolver.cuh
+	${CMAKE_SOURCE_DIR}/Math/LinearSolver.cu
+)
+
 
 find_package(OpenGL REQUIRED)
 
@@ -44,8 +50,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glm glm)
 
 target_link_libraries(logic CUDA::cudart glad)
+target_link_libraries(math CUDA::cudart)
 
 set(SOURCES UnifiedParticlePhysics/UnifiedParticlePhysics.cpp)
 
-target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart glfw glad OpenGL::GL glm)
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart glfw glad OpenGL::GL glm math)
 # TODO: Add tests and install targets if needed.
