@@ -2,11 +2,11 @@
 //
 
 #include "UnifiedParticlePhysicsCuda.h"
-#include "Window/Window.hpp"
-#include "App/App.hpp"
-#include "./../Math/LinearSolver.cuh"
+#include "../GUI/App/App.hpp"
+#include "../GUI/Window/Window.hpp"
 #include <device_launch_parameters.h>
 #include <chrono>
+#include "Math/LinearSolver.cuh"
 
 using namespace std;
 

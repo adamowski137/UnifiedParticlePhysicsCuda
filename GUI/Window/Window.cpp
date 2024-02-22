@@ -1,9 +1,8 @@
 #include "Window.hpp"
 #include <functional>
-
-#include "../../External/imgui/imgui.h"
-#include "../../External/imgui/Backends/imgui_impl_glfw.h"
-#include "../../External/imgui/backends/imgui_impl_opengl3.h"
+#include "../imgui/imgui.h"
+#include "../imgui/backends/imgui_impl_glfw.h"
+#include "../imgui/backends/imgui_impl_opengl3.h"
 
 Window::Window()
 {

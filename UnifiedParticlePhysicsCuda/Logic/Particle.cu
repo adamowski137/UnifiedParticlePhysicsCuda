@@ -1,4 +1,4 @@
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include "Particle.cuh"
 #include <cuda_runtime.h>
 #include <stdio.h>

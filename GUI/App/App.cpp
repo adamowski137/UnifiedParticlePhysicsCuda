@@ -7,9 +7,9 @@
 #include "../Renderer/MeshGenerator.hpp"
 #include <fstream>
 
-#include "../../External/imgui/imgui.h"
-#include "../../External/imgui/Backends/imgui_impl_glfw.h"
-#include "../../External/imgui/Backends/imgui_impl_opengl3.h"
+#include "../imgui/imgui.h"
+#include "../imgui/Backends/imgui_impl_glfw.h"
+#include "../imgui/Backends/imgui_impl_opengl3.h"
 
 
 
@@ -22,10 +22,10 @@ App::App(int width, int height) : camera(width, height)
 	Call(glCullFace(GL_BACK));
 
 	shaders.insert(std::make_pair("colorShader", std::make_shared<Shader>()));
-	shaders["colorShader"]->createFromFile("./../../../../res/shaders/colorShader/color");
+	shaders["colorShader"]->createFromFile("../../../../GUI/res/shaders/colorShader/color");
 
 	shaders.insert(std::make_pair("phongShader", std::make_shared<Shader>()));
-	shaders["phongShader"]->createFromFile("./../../../../res/shaders/phongShader/phong");
+	shaders["phongShader"]->createFromFile("../../../../GUI/res/shaders/phongShader/phong");
 
 	renderEntities.insert(std::make_pair("sphere", std::make_unique<RenderInfo>(getSphereData())));
 

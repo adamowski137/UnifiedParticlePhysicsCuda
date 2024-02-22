@@ -3,17 +3,11 @@
 #
 
 # Add source to this project's executable.
-file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp" 
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/App/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Window/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Shader/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Error/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Camera/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/External/imgui/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/External/imgui/Backends/*.cpp"
-						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Renderer/*.cpp")
-
-file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu")
+file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp")
+file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Math/*.cu"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Logic/*.cu"
+)
 
 
 add_executable (UnifiedParticlePhysicsCuda ${cpu_source_files} ${gpu_source_files})
@@ -30,29 +24,12 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-add_library(
-	logic
-	${CMAKE_SOURCE_DIR}/Logic/Particle.cuh
-	${CMAKE_SOURCE_DIR}/Logic/Particle.cu
-)
-
-add_library(
-	math
-	${CMAKE_SOURCE_DIR}/Math/LinearSolver.cuh
-	${CMAKE_SOURCE_DIR}/Math/LinearSolver.cu
-)
 
 
 find_package(OpenGL REQUIRED)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/glfw-3.3.9 glfw)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/glm glm)
+add_subdirectory(${CMAKE_SOURCE_DIR}/GUI gui)
 
-target_link_libraries(logic CUDA::cudart glad)
-target_link_libraries(math CUDA::cudart)
-
-set(SOURCES UnifiedParticlePhysics/UnifiedParticlePhysics.cpp)
-
-target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart glfw glad OpenGL::GL glm math)
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart)
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC gui)
 # TODO: Add tests and install targets if needed.

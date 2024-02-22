@@ -1,6 +1,6 @@
 #pragma once
-#include "glm/glm.hpp"
-#include "glm/gtx/transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <GLFW/glfw3.h>
 
 class Camera
