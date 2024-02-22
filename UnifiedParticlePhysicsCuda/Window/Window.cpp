@@ -12,13 +12,28 @@ Window::Window()
     if (glfw_window == NULL)  throw std::bad_function_call();
 
     glfwMakeContextCurrent(glfw_window.get());
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        throw "Failed to initialize GLAD";
+    }
     gladLoadGL();
 }
 
 void Window::clear(float r, float g, float b, float a)
 {
-    glad_glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a);
-    glad_glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+bool Window::isClosed()
+{
+    return glfwWindowShouldClose(glfw_window.get());
+}
+
+void Window::finishRendering()
+{
+    glfwSwapBuffers(glfw_window.get());
+    glfwPollEvents();
 }
 
 
@@ -26,15 +41,4 @@ Window& Window::getInstance()
 {
     static Window window;
     return window;
-}
-
-void Window::runWindow()
-{
-    while (!glfwWindowShouldClose(glfw_window.get()))
-    {
-        clear(255, 255, 255, 1);
-        
-        glfwSwapBuffers(glfw_window.get());
-        glfwPollEvents();
-    }
 }

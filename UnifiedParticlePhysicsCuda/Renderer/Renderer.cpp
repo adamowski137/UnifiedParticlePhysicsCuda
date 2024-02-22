@@ -4,8 +4,6 @@
 Renderer::Renderer(std::shared_ptr<Shader>& _shader)
 {
 	shader = std::shared_ptr<Shader>(_shader);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::draw(const RenderInfo& drawData)

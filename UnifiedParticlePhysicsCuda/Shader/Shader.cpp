@@ -21,8 +21,8 @@ std::string read_from_file(const std::string& filename)
 Shader::Shader(const std::string& name)
 {
     std::vector<unsigned int> shaders;
-    shaders.push_back(CreateShader(GL_VERTEX_SHADER, read_from_file(name + "Vertex.vs")));
-    shaders.push_back(CreateShader(GL_FRAGMENT_SHADER, read_from_file(name + "Fragment.fsh")));
+    shaders.push_back(CreateShader(GL_VERTEX_SHADER, read_from_file(name + "Vertex.glsl")));
+    shaders.push_back(CreateShader(GL_FRAGMENT_SHADER, read_from_file(name + "Fragment.glsl")));
 
     m_RendererID = CompileProgram(shaders);
     std::for_each(shaders.begin(), shaders.end(), glDeleteShader);
@@ -31,8 +31,8 @@ Shader::Shader(const std::string& name)
 void Shader::createFromFile(const std::string& name)
 {
     std::vector<unsigned int> shaders;
-    shaders.push_back(CreateShader(GL_VERTEX_SHADER, read_from_file(name + "Vertex.vs")));
-    shaders.push_back(CreateShader(GL_FRAGMENT_SHADER, read_from_file(name + "Fragment.fsh")));
+    shaders.push_back(CreateShader(GL_VERTEX_SHADER, read_from_file(name + "Vertex.glsl")));
+    shaders.push_back(CreateShader(GL_FRAGMENT_SHADER, read_from_file(name + "Fragment.glsl")));
     
     m_RendererID = CompileProgram(shaders);
     std::for_each(shaders.begin(), shaders.end(), glDeleteShader);

@@ -18,13 +18,14 @@ class Window
 {
 public:
 	static Window& getInstance();
-	void runWindow();
 	Window(const Window& w) = delete;
 	Window& operator=(const Window& other) = delete;
 	const int width = 1024;
 	const int height = 768;
+	void clear(float r, float g, float b, float a);
+	bool isClosed();
+	void finishRendering();
 private:
 	Window();
 	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> glfw_window;
-	void clear(float r, float g, float b, float a);
 };

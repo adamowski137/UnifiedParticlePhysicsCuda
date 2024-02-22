@@ -17,7 +17,6 @@ class App
 public:
 	App(int width, int height);
 	~App();
-	void clear(float r, float g, float b, float a);
 	void update();
 	void draw();
 };
