@@ -1,6 +1,10 @@
 #include "Window.hpp"
 #include <functional>
 
+#include "../../External/imgui/imgui.h"
+#include "../../External/imgui/Backends/imgui_impl_glfw.h"
+#include "../../External/imgui/backends/imgui_impl_opengl3.h"
+
 Window::Window()
 {
     glfwInit();
@@ -17,6 +21,21 @@ Window::Window()
         throw "Failed to initialize GLAD";
     }
     gladLoadGL();
+
+    enableImGui();
+}
+
+void Window::enableImGui()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io{ ImGui::GetIO() }; (void)io;
+    
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    
+    ImGui_ImplGlfw_InitForOpenGL(glfw_window.get(), true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
 void Window::clear(float r, float g, float b, float a)

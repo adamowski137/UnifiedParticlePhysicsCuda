@@ -17,6 +17,7 @@ class App
 public:
 	App(int width, int height);
 	~App();
+	void renderImGui();
 	void update();
 	void draw();
 };

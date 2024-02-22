@@ -9,6 +9,8 @@ file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp
 						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Shader/*.cpp"
 						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Error/*.cpp"
 						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Camera/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/External/imgui/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/External/imgui/Backends/*.cpp"
 						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Renderer/*.cpp")
 
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu")

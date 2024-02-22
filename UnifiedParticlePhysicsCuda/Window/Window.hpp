@@ -27,5 +27,6 @@ public:
 	void finishRendering();
 private:
 	Window();
+	void enableImGui();
 	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> glfw_window;
 };

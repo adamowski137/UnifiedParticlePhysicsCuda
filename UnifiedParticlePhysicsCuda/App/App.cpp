@@ -7,11 +7,17 @@
 #include "../Renderer/MeshGenerator.hpp"
 #include <fstream>
 
+#include "../../External/imgui/imgui.h"
+#include "../../External/imgui/Backends/imgui_impl_glfw.h"
+#include "../../External/imgui/Backends/imgui_impl_opengl3.h"
+
+
+
 App::App(int width, int height) : camera(width, height)
 {
 	Call(glEnable(GL_DEPTH_TEST));
 	Call(glEnable(GL_CULL_FACE));
-	// TODO: naprawic
+	// TODO: naprawic 
 	Call(glFrontFace(GL_CW));
 	Call(glCullFace(GL_BACK));
 
@@ -30,6 +36,22 @@ App::~App()
 {
 }
 
+void App::renderImGui()
+{
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGuiIO& io{ ImGui::GetIO() }; (void)io;
+
+	ImGui::Begin("ImGui");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 void App::update()
 {
 	glm::vec3 cameraPos = { 0.f, 0.f, -10.f };
@@ -42,4 +64,5 @@ void App::update()
 void App::draw()
 {
 	renderer->draw(*renderEntities["sphere"].get(), { 0, 0, 0 }, {1, 1, 0});
+	renderImGui();
 }
