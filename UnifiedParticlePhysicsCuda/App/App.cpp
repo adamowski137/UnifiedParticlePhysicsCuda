@@ -17,9 +17,13 @@ App::App(int width, int height) : camera(width, height)
 
 	shaders.insert(std::make_pair("colorShader", std::make_shared<Shader>()));
 	shaders["colorShader"]->createFromFile("./../../../../res/shaders/colorShader/color");
+
+	shaders.insert(std::make_pair("phongShader", std::make_shared<Shader>()));
+	shaders["phongShader"]->createFromFile("./../../../../res/shaders/phongShader/phong");
+
 	renderEntities.insert(std::make_pair("sphere", std::make_unique<RenderInfo>(getSphereData())));
 
-	renderer = std::make_unique<Renderer>(shaders["colorShader"]);
+	renderer = std::make_unique<Renderer>(shaders["phongShader"]);
 }
 
 App::~App()
@@ -28,11 +32,14 @@ App::~App()
 
 void App::update()
 {
-	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix({ 0, 0, -2.f }));
+	glm::vec3 cameraPos = { 0.f, 0.f, -10.f };
+	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
+	renderer->setCameraPosition(cameraPos);
+	renderer->setLightSourcePosition({ 5 * std::cos(glfwGetTime()), 0, 5 * std::sin(glfwGetTime())});
 	camera.updateVectors({ 0.f, 0.f, 1.f });
 }
 
 void App::draw()
 {
-	renderer->draw(*renderEntities["sphere"].get());
+	renderer->draw(*renderEntities["sphere"].get(), { 0, 0, 0 }, {1, 1, 0});
 }
