@@ -3,7 +3,16 @@
 #
 
 # Add source to this project's executable.
-file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp")
+file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp" 
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/App/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Window/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Shader/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Error/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Camera/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/External/imgui/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/External/imgui/Backends/*.cpp"
+						   "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Renderer/*.cpp")
+
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu")
 
 
@@ -38,13 +47,12 @@ find_package(OpenGL REQUIRED)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glfw-3.3.9 glfw)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/glad glad)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/glm glm)
 
 target_link_libraries(logic CUDA::cudart glad)
 target_link_libraries(math CUDA::cudart)
 
-target_link_libraries(UnifiedParticlePhysicsCuda glfw glad math)
-target_link_libraries(UnifiedParticlePhysicsCuda OpenGL::GL)
+set(SOURCES UnifiedParticlePhysics/UnifiedParticlePhysics.cpp)
 
-target_link_libraries(UnifiedParticlePhysicsCuda CUDA::cudart)
-
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart glfw glad OpenGL::GL glm math)
 # TODO: Add tests and install targets if needed.

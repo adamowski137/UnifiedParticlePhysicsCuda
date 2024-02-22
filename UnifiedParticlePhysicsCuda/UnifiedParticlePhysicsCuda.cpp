@@ -2,6 +2,8 @@
 //
 
 #include "UnifiedParticlePhysicsCuda.h"
+#include "Window/Window.hpp"
+#include "App/App.hpp"
 #include "./../Math/LinearSolver.cuh"
 #include <device_launch_parameters.h>
 #include <chrono>
@@ -31,5 +33,17 @@ int main()
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "duration whole: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
+	// init glfw, glad
+	Window::getInstance();
+
+	App app(1024, 768);
+	while (!Window::getInstance().isClosed())
+	{
+		app.update();
+
+		Window::getInstance().clear(255, 255, 255, 1);
+		app.draw();
+		Window::getInstance().finishRendering();
+	}
 	return 0;
 }
