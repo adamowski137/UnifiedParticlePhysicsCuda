@@ -35,7 +35,7 @@ void Window::enableImGui()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     
     ImGui_ImplGlfw_InitForOpenGL(glfw_window.get(), true);
-    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui_ImplOpenGL3_Init("#version 450 core");
 }
 
 void Window::clear(float r, float g, float b, float a)
