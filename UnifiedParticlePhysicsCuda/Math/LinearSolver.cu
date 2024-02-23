@@ -53,4 +53,3 @@ void jaccobi(int n, float* A, float* b, float* x)
 
 	cudaMemcpy(x, dev_nx, sizeof(float) * n, cudaMemcpyDeviceToHost);
 }
-
