@@ -9,6 +9,7 @@ add_library(gui STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Scene/TestScene/TestScene.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_NaiveDraw/Scene_NaiveDraw.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Instancing/Scene_Instancing.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Camera/Camera.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/Error/ErrorHandling.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/MeshGenerator.cpp

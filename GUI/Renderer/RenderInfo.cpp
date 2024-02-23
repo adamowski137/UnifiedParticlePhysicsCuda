@@ -33,3 +33,19 @@ void RenderInfo::generate(std::vector<float> verticiesData, std::vector<unsigned
     glBindVertexArray(0);
     this->numIndicies = indiciesData.size();
 }
+
+void RenderInfo::addInstancing(std::vector<float> offsetData)
+{
+    glBindVertexArray(this->VAO);
+    unsigned int instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * offsetData.size(), offsetData.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(1, 1);
+
+    glBindVertexArray(0);
+}
