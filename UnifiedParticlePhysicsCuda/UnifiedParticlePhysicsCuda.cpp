@@ -30,7 +30,7 @@ int main()
 	}
 	
 	auto start = std::chrono::high_resolution_clock::now();
-	//jaccobi(n, A, b, x);
+	jaccobi(n, A, b, x);
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "duration whole: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 

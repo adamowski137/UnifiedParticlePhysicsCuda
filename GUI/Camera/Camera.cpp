@@ -9,7 +9,7 @@ void Camera::updateVectors(glm::vec3 direction)
 
 
 Camera::Camera(int width, int height) : 
-    projection(glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.01f, 200.0f))
+    projection(glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.01f, 2000.0f))
 {
     cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
