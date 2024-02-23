@@ -1,0 +1,34 @@
+#include "Scene_NaiveDraw.hpp"
+#include "../../ResourceManager/ResourceManager.hpp"
+
+Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::get().Shaders["phong"])
+{
+
+}
+
+Scene_NaiveDraw::~Scene_NaiveDraw()
+{
+}
+
+void Scene_NaiveDraw::update()
+{
+	glm::vec3 cameraPos = { 0.f, 0.f, -20.f };
+	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
+	renderer->setCameraPosition(cameraPos);
+	renderer->setLightSourcePosition(cameraPos);
+	camera.updateVectors({ 0.f, 0.f, 1.f });
+}
+
+void Scene_NaiveDraw::draw()
+{
+	for (int i = -30; i < 30; i += 3)
+	{
+		for (int j = -30; j < 30; j += 3)
+		{
+			for (int k = 0; k < 30; k += 3)
+			{
+				renderer->draw(*ResourceManager::get().drawData["sphere"], { i, j, k }, { 1, 1, 0 });
+			}
+		}
+	}
+}

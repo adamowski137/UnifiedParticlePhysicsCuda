@@ -10,6 +10,6 @@ if (POLICY CMP0141)
 endif()
 
 project ("UnifiedParticlePhysicsCuda" LANGUAGES CUDA CXX)
-
+set (CMAKE_CXX_STANDARD 17)
 # Include sub-projects.
 add_subdirectory ("UnifiedParticlePhysicsCuda")
