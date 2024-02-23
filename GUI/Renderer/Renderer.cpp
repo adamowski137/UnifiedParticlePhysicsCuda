@@ -16,8 +16,7 @@ void Renderer::draw(const RenderInfo& drawData)
 
 void Renderer::draw(const RenderInfo& drawData, glm::vec3 position, glm::vec3 color)
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(position);
+	glm::mat4 model = glm::translate(position);
 	shader->setUniformMat4fv("model", model);
 
 	shader->setUniform3f("color", color);
