@@ -50,15 +50,22 @@ int main()
 	std::shared_ptr<Scene> currScene = std::shared_ptr<Scene>((*ResourceManager::get().scenes.begin()).second);
 	
 	particles.mapCudaVBO(currScene->getVBO());
+	float dt = 0.001f;
 	while (!Window::getInstance().isClosed())
 	{
-		particles.calculateNewPositions(0.0000001);
+		auto start = std::chrono::high_resolution_clock::now();
+
+		particles.calculateNewPositions(dt);
 		currScene->update();
 		particles.renderData(currScene->getVBO());
 
 		Window::getInstance().clear(255, 255, 255, 1);
 		currScene->draw();
 		Window::getInstance().finishRendering(currScene);
+
+		auto end = std::chrono::high_resolution_clock::now();
+		long long ticks = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		dt = (float)ticks / 1000000.0f;
 	}
 	return 0;
 }

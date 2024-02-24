@@ -178,14 +178,15 @@ void ParticleType::renderData(unsigned int vbo)
 void ParticleType::calculateNewPositions(float dt)
 {
 	// predict new positions and update velocities
-
-	fexty = -0.001;
+	fextx = 0.0f;
+	fexty = -10.0f;
+	fextz = 0.0f;
 
 	float dvx = fextx * dt;
 	float dvy = fexty * dt;
 	float dvz = fextz * dt;
 
-	predictPositionsKern << <THREADS, blocks >> > (
+		predictPositionsKern << <THREADS, blocks >> > (
 		amountOfParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
