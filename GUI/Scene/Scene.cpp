@@ -27,3 +27,8 @@ void Scene::draw()
 {
 
 }
+
+unsigned int Scene::getVBO()
+{
+	return 0;
+}

@@ -18,11 +18,28 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
 		if (abort) exit(code);
 	}
 }
-__global__ void copyKernel(int amount, float* src, float* dst)
+
+__global__ void initializeRandomKern(int amount, curandState* state)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
-	dst[index] = src[index];
+	curand_init(1234, index, 0, &state[index]);
+}
+
+__global__ void fillRandomKern(int amount, float* dst, curandState* state)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= amount) return;
+	dst[index] = 60 * curand_uniform(&state[index]) - 30.0f;
+}
+
+__global__ void copyToVBOKernel(int amount, float* x, float* y, float* z, float* dst)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= amount) return;
+	dst[3 * index + 0] = x[index];
+	dst[3 * index + 1] = y[index];
+	dst[3 * index + 2] = z[index];
 }
 
 __global__ void setDiagonalMatrix(int amount, float* src, float* dst)
@@ -83,11 +100,13 @@ __global__ void applyChangesKern(int amount,
 	if (changeSQ > EPS)
 	{
 		x[index] = new_x[index];
+		y[index] = new_y[index];
+		z[index] = new_z[index];
 	}
 
 }
 
-ParticleType::ParticleType(int amount, float mass) : amountOfParticles{amount}
+ParticleType::ParticleType(int amount) : amountOfParticles{amount}
 {
 	blocks = ceilf((float)amountOfParticles / THREADS);
 
@@ -106,6 +125,7 @@ ParticleType::~ParticleType()
 
 void ParticleType::setupDeviceData()
 {
+	gpuErrchk(cudaMalloc((void**)&dev_curand, amountOfParticles * sizeof(curandState)));
 	gpuErrchk(cudaMalloc((void**)&dev_x, amountOfParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_y, amountOfParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_z, amountOfParticles * sizeof(float)));
@@ -122,65 +142,44 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_invM, amountOfParticles * amountOfParticles * sizeof(float)));
 
 	setDiagonalMatrix << <THREADS, blocks >> > (amountOfParticles, dev_invmass, dev_invM);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
+	initializeRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_curand);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_x, dev_curand);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_y, dev_curand);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+	
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_z, dev_curand);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
 
-void ParticleType::setupShaderData()
+void ParticleType::renderData(unsigned int vbo)
 {
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vboSphere);
-	glGenBuffers(1, &vbox);
-	glGenBuffers(1, &vboy);
-	glGenBuffers(1, &vboz);
-	glBindVertexArray(vao);
+	float* dst;
+	cudaGLMapBufferObject((void**)&dst, vbo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbox);
-	glBufferData(GL_ARRAY_BUFFER, (amountOfParticles) * sizeof(GLfloat), nullptr, GL_STREAM_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer((GLuint)0, 1, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vboy);
-	glBufferData(GL_ARRAY_BUFFER, (amountOfParticles) * sizeof(GLfloat), nullptr, GL_STREAM_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer((GLuint)1, 1, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vboy);
-	glBufferData(GL_ARRAY_BUFFER, (amountOfParticles) * sizeof(GLfloat), nullptr, GL_STREAM_DRAW);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer((GLuint)1, 1, GL_FLOAT, GL_FALSE, 0, 0);
-
-	gpuErrchk(cudaGLRegisterBufferObject(vboSphere));
-	gpuErrchk(cudaGLRegisterBufferObject(vbox));
-	gpuErrchk(cudaGLRegisterBufferObject(vboy));
-	gpuErrchk(cudaGLRegisterBufferObject(vboz));
-}
-
-void ParticleType::renderData()
-{
-	float* x, * y, * z;
-	cudaGLMapBufferObject((void**)&x, vbox);
-	cudaGLMapBufferObject((void**)&y, vboy);
-	cudaGLMapBufferObject((void**)&z, vboz);
-
-	copyKernel<<<blocks, THREADS>>>(amountOfParticles, dev_x, x);
-	copyKernel<<<blocks, THREADS>>>(amountOfParticles, dev_y, y);
-	copyKernel<<<blocks, THREADS>>>(amountOfParticles, dev_z, z);
+	copyToVBOKernel <<<blocks, THREADS>>>(amountOfParticles, dev_x, dev_y, dev_z, dst);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	cudaGLUnmapBufferObject(vbox);
-	cudaGLUnmapBufferObject(vboy);
-	cudaGLUnmapBufferObject(vboz);
-
-	glBindVertexArray(vao);
+	cudaGLUnmapBufferObject(vbo);
 }
 
 void ParticleType::calculateNewPositions(float dt)
 {
 	// predict new positions and update velocities
+
+	fexty = -0.001;
 
 	float dvx = fextx * dt;
 	float dvy = fexty * dt;
@@ -219,4 +218,9 @@ void ParticleType::calculateNewPositions(float dt)
 		);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+}
+
+void ParticleType::mapCudaVBO(unsigned int vbo)
+{
+	cudaGLRegisterBufferObject(vbo);
 }

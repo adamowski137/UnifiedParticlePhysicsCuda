@@ -16,7 +16,9 @@ enable_language("CUDA")
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET UnifiedParticlePhysicsCuda PROPERTY CXX_STANDARD 20)
   set_property(TARGET UnifiedParticlePhysicsCuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-endif()
+  endif()
+
+  set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "-g -G")
 
 find_package(CUDAToolkit)
 

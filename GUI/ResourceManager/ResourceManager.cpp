@@ -6,6 +6,7 @@
 #include "../Scene/TestScene/TestScene.hpp"
 #include "../Scene/Scene_NaiveDraw/Scene_NaiveDraw.hpp"
 #include "../Scene/Scene_Instancing/Scene_Instancing.hpp"
+#include "../Scene/Scene_External/Scene_External.hpp"
 
 ResourceManager::ResourceManager()
 {
@@ -48,7 +49,8 @@ void ResourceManager::loadConfig(std::string configPath)
 
 void ResourceManager::loadScenes()
 {
-	scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene())));
-	scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
-	scenes.insert(std::make_pair("instanced drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_Instancing())));
+	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External())));
+	//scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene())));
+	//scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
+	//scenes.insert(std::make_pair("instanced drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_Instancing())));
 }

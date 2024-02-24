@@ -47,5 +47,5 @@ void RenderInfo::addInstancing(std::vector<float> offsetData)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glVertexAttribDivisor(1, 1);
 
-    glBindVertexArray(0);
+    instancingVBO = instanceVBO;
 }

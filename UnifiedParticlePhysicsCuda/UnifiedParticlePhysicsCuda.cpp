@@ -8,33 +8,36 @@
 #include <device_launch_parameters.h>
 #include <chrono>
 #include "Math/LinearSolver.cuh"
-
+#include "Logic/Particle.cuh"
 using namespace std;
 
 int main()
 {
-	int n = 10000;
-	std::cout << "Matrix size: " << n << std::endl;
-	float* A = new float[n * n];
-	float* b = new float[n];
-	float* x = new float[n];
+	int n = 4000;
+	//std::cout << "Matrix size: " << n << std::endl;
+	//float* A = new float[n * n];
+	//float* b = new float[n];
+	//float* x = new float[n];
 
-	for (int i = 0; i < n * n; i++)
-	{
-		A[i] = rand() % 100;
-	}
-	for (int i = 0; i < n; i++)
-	{
-		b[i] = rand() % 100;
-		x[i] = 0;
-	}
-	
-	auto start = std::chrono::high_resolution_clock::now();
-	jaccobi(n, A, b, x);
-	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << "duration whole: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+	//for (int i = 0; i < n * n; i++)
+	//{
+	//	A[i] = rand() % 100;
+	//}
+	//for (int i = 0; i < n; i++)
+	//{
+	//	b[i] = rand() % 100;
+	//	x[i] = 0;
+	//}
+	//
+	//auto start = std::chrono::high_resolution_clock::now();
+	//jaccobi(n, A, b, x);
+	//auto end = std::chrono::high_resolution_clock::now();
+	//std::cout << "duration whole: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
 	// init glfw, glad
+
+	ParticleType particles{ n };
+
 	Window::getInstance();
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
@@ -44,11 +47,14 @@ int main()
 	ResourceManager::get().loadSphereData(spherePrecision, spherePrecision);
 	ResourceManager::get().loadScenes();
 	
-
 	std::shared_ptr<Scene> currScene = std::shared_ptr<Scene>((*ResourceManager::get().scenes.begin()).second);
+	
+	particles.mapCudaVBO(currScene->getVBO());
 	while (!Window::getInstance().isClosed())
 	{
+		particles.calculateNewPositions(0.0000001);
 		currScene->update();
+		particles.renderData(currScene->getVBO());
 
 		Window::getInstance().clear(255, 255, 255, 1);
 		currScene->draw();

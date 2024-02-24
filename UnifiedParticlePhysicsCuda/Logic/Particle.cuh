@@ -1,13 +1,17 @@
 #pragma once
 #define THREADS 512
+#include <curand.h>
+#include <curand_kernel.h>
 
 class ParticleType
 {
 public:
-	ParticleType(int amount, float mass);
+	ParticleType(int amount);
 	~ParticleType();
 
-	void renderData();
+
+	void mapCudaVBO(unsigned int vbo);
+	void renderData(unsigned int vbo);
 	void calculateNewPositions(float dt);
 private:
 	const int amountOfParticles;
@@ -21,20 +25,14 @@ private:
 	float* dev_vy;
 	float* dev_vz;
 	float* dev_invmass;
+
+	curandState* dev_curand;
 	
 	float* dev_invM;
 
 	float fextx, fexty, fextz;
 
-	unsigned int vao;
-	unsigned int vboSphere;
-	unsigned int vbox;
-	unsigned int vboy;
-	unsigned int vboz;
-
 	int blocks;
 
 	void setupDeviceData();
-	void setupShaderData();
-
 };

@@ -17,4 +17,5 @@ public:
 	virtual ~Scene();
 	virtual void update();
 	virtual void draw();
+	virtual unsigned int getVBO();
 };
