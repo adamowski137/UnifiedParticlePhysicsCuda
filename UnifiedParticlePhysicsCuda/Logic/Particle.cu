@@ -30,7 +30,7 @@ __global__ void fillRandomKern(int amount, float* dst, curandState* state)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
-	dst[index] = 60 * curand_uniform(&state[index]) - 30.0f;
+	dst[index] = 20 * curand_uniform(&state[index]) - 10.0f;
 }
 
 __global__ void copyToVBOKernel(int amount, float* x, float* y, float* z, float* dst)
@@ -186,7 +186,7 @@ void ParticleType::calculateNewPositions(float dt)
 	float dvy = fexty * dt;
 	float dvz = fextz * dt;
 
-		predictPositionsKern << <THREADS, blocks >> > (
+	predictPositionsKern << <THREADS, blocks >> > (
 		amountOfParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
