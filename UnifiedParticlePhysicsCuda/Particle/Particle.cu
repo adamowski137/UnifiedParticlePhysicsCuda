@@ -179,7 +179,7 @@ void ParticleType::calculateNewPositions(float dt)
 {
 	// predict new positions and update velocities
 	fextx = 0.0f;
-	fexty = -10.0f;
+	fexty = -9.81f;
 	fextz = 0.0f;
 
 	float dvx = fextx * dt;

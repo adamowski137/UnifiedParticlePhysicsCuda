@@ -3,14 +3,17 @@
 #
 
 # Add source to this project's executable.
-file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp")
+file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/*.cpp"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/DistanceConstrain/*.cpp"
+)
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Math/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Logic/*.cu"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Particle/*.cu"
 )
 
 
-add_executable (UnifiedParticlePhysicsCuda ${cpu_source_files} ${gpu_source_files})
+add_executable (UnifiedParticlePhysicsCuda ${cpu_source_files} ${gpu_source_files} )
 enable_language("CUDA")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
