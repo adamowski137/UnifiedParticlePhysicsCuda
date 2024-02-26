@@ -10,6 +10,8 @@ file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Math/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Particle/*.cu"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/FloorConstrain/*.cu"
+
 )
 
 

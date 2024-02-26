@@ -1,23 +1,13 @@
 #include <glad/glad.h>
 #include "Particle.cuh"
 #include <cuda_runtime.h>
-#include <stdio.h>
 #include <cstdlib>
 #include <cuda_gl_interop.h>
 #include <device_launch_parameters.h>
+#include "../GpuErrorHandling.hpp"
+#include "../Constrain/FloorConstrain/FloorConstrain.cuh"
 
 #define EPS 0.000001
-
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
-inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort = true)
-{
-	if (code != cudaSuccess)
-	{
-		fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 __global__ void initializeRandomKern(int amount, curandState* state)
 {
@@ -118,9 +108,15 @@ ParticleType::~ParticleType()
 	gpuErrchk(cudaFree(dev_x));
 	gpuErrchk(cudaFree(dev_y));
 	gpuErrchk(cudaFree(dev_z));
+	gpuErrchk(cudaFree(dev_new_x));
+	gpuErrchk(cudaFree(dev_new_y));
+	gpuErrchk(cudaFree(dev_new_z));
 	gpuErrchk(cudaFree(dev_vx));
 	gpuErrchk(cudaFree(dev_vy));
 	gpuErrchk(cudaFree(dev_vz));
+	gpuErrchk(cudaFree(dev_invmass));
+	gpuErrchk(cudaFree(dev_invM));
+
 }
 
 void ParticleType::setupDeviceData()
@@ -140,6 +136,11 @@ void ParticleType::setupDeviceData()
 	
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, amountOfParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_invM, amountOfParticles * amountOfParticles * sizeof(float)));
+
+	int amountOfConstrains = amountOfParticles;
+
+	gpuErrchk(cudaMalloc((void**)&dev_jacobian, sizeof(float) * 3 * amountOfParticles * amountOfConstrains));
+	gpuErrchk(cudaMemset(dev_jacobian, 0, sizeof(float) * 3 * amountOfParticles * amountOfConstrains));
 
 	setDiagonalMatrix << <THREADS, blocks >> > (amountOfParticles, dev_invmass, dev_invM);
 	gpuErrchk(cudaGetLastError());
@@ -202,6 +203,12 @@ void ParticleType::calculateNewPositions(float dt)
 	// todo implement grid (predicted positions)
 
 	// stabilization iterations
+
+
+	int amountOfConstrains = amountOfParticles;
+
+	FloorConstrain constrain;
+	constrain.fillJacobian(amountOfParticles, amountOfConstrains, dev_jacobian);
 
 	// todo solve contact constrains
 	// update predicted position and current positions
