@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cuda_gl_interop.h>
 #include <device_launch_parameters.h>
+#include <memory>
 #include "../GpuErrorHandling.hpp"
 #include "../Constrain/FloorConstrain/FloorConstrain.cuh"
 
@@ -99,8 +100,20 @@ __global__ void applyChangesKern(int amount,
 ParticleType::ParticleType(int amount) : amountOfParticles{amount}
 {
 	blocks = ceilf((float)amountOfParticles / THREADS);
+	for (int i = 0; i < amountOfParticles; i++)
+	{
+		int* tmp = new int[1];
+		tmp[0] = i;
+		constrains.push_back(std::shared_ptr<Constrain>{new FloorConstrain{ tmp }});
+		delete[] tmp;
+	}
 
 	setupDeviceData();
+
+	for (int i = 0; i < constrains.size(); i++)
+	{
+		constrains[i].get()->fillJacobian(&dev_jacobian[i * amountOfParticles * 3]);
+	}
 }
 
 ParticleType::~ParticleType()
@@ -204,11 +217,8 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// stabilization iterations
 
-
-	int amountOfConstrains = amountOfParticles;
-
-	FloorConstrain constrain;
-	constrain.fillJacobian(amountOfParticles, amountOfConstrains, dev_jacobian);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
 	// todo solve contact constrains
 	// update predicted position and current positions

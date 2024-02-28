@@ -2,6 +2,9 @@
 #define THREADS 512
 #include <curand.h>
 #include <curand_kernel.h>
+#include <memory>
+#include "../Constrain/Constrain.cuh"
+#include <vector>
 
 class ParticleType
 {
@@ -33,6 +36,8 @@ private:
 	float* dev_invM;
 
 	float fextx, fexty, fextz;
+
+	std::vector<std::shared_ptr<Constrain>> constrains;
 
 	int blocks;
 

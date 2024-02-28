@@ -5,26 +5,22 @@
 #include "../../GpuErrorHandling.hpp"
 
 
-FloorConstrain::FloorConstrain()
+FloorConstrain::FloorConstrain(int* indexes) : Constrain{ 1, 1.0f, -10000.0f, 10000.0f, indexes }
 {
 }
 
-void FloorConstrain::fillJacobian(int particles, int constrains, float* jacobian)
+void FloorConstrain::fillJacobian(float* jacobianRow)
 {
 	int threads = 512;
-	int blocks = ceilf((float)constrains/threads);
-	fillJacobianKern<<<threads, blocks>>>(particles, 3 * particles * constrains, jacobian);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
+	int blocks = ceilf((float)n / threads);
+	fillJacobianKern<<<threads, blocks>>>(n, jacobianRow, dev_indexes);
 }
 
-__global__ void fillJacobianKern(int particles, int size, float* jacobian)
+__global__ void fillJacobianKern(int n, float* jacobianRow, int* idx)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= size) return;
-	int row = index / particles;
-	jacobian[row * 3 + 1] = 1;
+	if (index >= n) return;
+	jacobianRow[idx[index]] = 1.0f;
 }
 
 
