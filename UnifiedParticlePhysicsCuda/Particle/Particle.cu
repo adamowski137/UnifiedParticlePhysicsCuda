@@ -8,6 +8,49 @@
 #include "../Constrain/FloorConstrain/FloorConstrain.cuh"
 
 #define EPS 0.000001
+#define SHMEM_SIZE 1024
+
+__global__ void matrixMulKern(const float* a, const float* b, float* c, int N, int K) {
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+	__shared__ float s_a[SHMEM_SIZE];
+	__shared__ float s_b[SHMEM_SIZE];
+
+	float tmp = 0;
+
+	for (int i = 0; i < K; i += blockDim.x)
+	{
+
+		s_a[threadIdx.y * blockDim.x + threadIdx.x] = 0;
+		s_b[threadIdx.y * blockDim.x + threadIdx.x] = 0;
+		__syncthreads();
+
+
+		if (row < N && col < N)
+		{
+			if (i + threadIdx.x < K)
+				s_a[threadIdx.y * blockDim.x + threadIdx.x] = a[row * K + i + threadIdx.x];
+			if (i + threadIdx.y < K)
+				s_b[threadIdx.y * blockDim.x + threadIdx.x] = b[i * N + threadIdx.y * N + col];
+		}
+		__syncthreads();
+
+		if (row < N && col < N)
+		{
+			for (int j = 0; j < blockDim.x; j++) {
+				tmp += s_a[threadIdx.y * blockDim.x + j] * s_b[j * blockDim.x + threadIdx.x];
+			}
+		}
+		__syncthreads();
+	}
+
+	if (row < N && col < N)
+		c[row * N + col] = tmp;
+
+
+}
+
 
 __global__ void initializeRandomKern(int amount, curandState* state)
 {
