@@ -17,7 +17,7 @@ public:
 	void loadAllShaders(std::string resPath);
 	void loadSphereData(int sectorCount, int stackCount);
 	void loadConfig(std::string configPath);
-	void loadScenes();
+	void loadScenes(int amountOfPoints);
 
 	ResourceManager(const ResourceManager& other) = delete;
 	ResourceManager& operator=(const ResourceManager& other) = delete;

@@ -1,11 +1,11 @@
 #pragma once
-#include "../Constrain.hpp"
+#include "../Constrain.cuh"
 #include <cuda_runtime.h>
 
-class FloorConstrain
+class FloorConstrain : public Constrain
 {
 public:
-	FloorConstrain();
-	void fillJacobian(int particles, int constrains, float* jacobian);
+	FloorConstrain(int* indexes);
+	virtual void fillJacobian(float* jacobianRow);
 };
-__global__ void fillJacobianKern(int particles, int size, float* jacobian);
+__global__ void fillJacobianKern(int n, float* jacobianRow, int* idx);

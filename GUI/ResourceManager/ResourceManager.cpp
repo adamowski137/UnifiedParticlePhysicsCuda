@@ -47,9 +47,9 @@ void ResourceManager::loadConfig(std::string configPath)
 	file.close();
 }
 
-void ResourceManager::loadScenes()
+void ResourceManager::loadScenes(int amountOfPoints)
 {
-	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External())));
+	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External(amountOfPoints))));
 	//scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene())));
 	//scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
 	//scenes.insert(std::make_pair("instanced drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_Instancing())));

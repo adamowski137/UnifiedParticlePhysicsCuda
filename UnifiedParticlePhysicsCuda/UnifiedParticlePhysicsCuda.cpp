@@ -45,7 +45,7 @@ int main()
 
 	ResourceManager::get().loadAllShaders(shaderResPath);
 	ResourceManager::get().loadSphereData(spherePrecision, spherePrecision);
-	ResourceManager::get().loadScenes();
+	ResourceManager::get().loadScenes(n);
 	
 	std::shared_ptr<Scene> currScene = std::shared_ptr<Scene>((*ResourceManager::get().scenes.begin()).second);
 	
