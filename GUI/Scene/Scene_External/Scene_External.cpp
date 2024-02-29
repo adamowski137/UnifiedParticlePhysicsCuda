@@ -1,22 +1,11 @@
 #include "Scene_External.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_External::Scene_External() : Scene(ResourceManager::get().Shaders["instancedphong"])
+Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::get().Shaders["instancedphong"])
 {
 	std::vector<float> offsets;
-	for (int i = -30; i < 30; i += 3)
-	{
-		for (int j = -30; j < 30; j += 3)
-		{
-			for (int k = 0; k < 30; k += 3)
-			{
-				offsets.push_back(i);
-				offsets.push_back(j);
-				offsets.push_back(k);
-			}
-		}
-	}
-	
+	offsets.resize(amountOfPoints * 3, 0.0f);
+
 	ResourceManager::get().drawData["sphere"]->addInstancing(offsets);
 }
 

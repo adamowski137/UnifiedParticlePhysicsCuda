@@ -5,7 +5,7 @@
 class Scene_External : public Scene
 {
 public:
-	Scene_External();
+	Scene_External(int amountOfPoints);
 	virtual ~Scene_External();
 	virtual void update();
 	virtual void draw();
