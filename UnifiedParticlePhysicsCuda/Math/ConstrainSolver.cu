@@ -32,6 +32,13 @@ ConstrainSolver::ConstrainSolver(int particles, int constrainsNumber, Constrain*
 	gpuErrchk(cudaMemset(dev_velocity_jacobian, 0, 3 * particles * constrainsNumber * sizeof(float)));
 }
 
+ConstrainSolver::~ConstrainSolver()
+{
+	gpuErrchk(cudaFree(dev_constrains));
+	gpuErrchk(cudaFree(dev_jacobian));
+	gpuErrchk(cudaFree(dev_velocity_jacobian));
+}
+
 void ConstrainSolver::fillJacobians(
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz

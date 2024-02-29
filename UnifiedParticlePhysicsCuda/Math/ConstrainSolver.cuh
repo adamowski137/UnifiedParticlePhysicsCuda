@@ -7,6 +7,7 @@
 class ConstrainSolver {
 public:
 	ConstrainSolver(int particles, int constrainsNumber, Constrain** constrains);
+	~ConstrainSolver();
 private:
 	std::vector<Constrain> constrains;
 	float* dev_jacobian;
