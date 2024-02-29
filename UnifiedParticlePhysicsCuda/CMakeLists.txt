@@ -4,13 +4,14 @@
 
 # Add source to this project's executable.
 file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/DistanceConstrain/*.cpp"
 )
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Math/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Particle/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/FloorConstrain/*.cu"
 	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/*.cu"
+	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/DistanceConstrain/*.cu"
+
 )
 
 
