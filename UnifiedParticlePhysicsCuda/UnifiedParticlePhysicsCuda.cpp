@@ -7,8 +7,8 @@
 #include "../GUI/ResourceManager/ResourceManager.hpp"
 #include <device_launch_parameters.h>
 #include <chrono>
-#include "Math/LinearSolver.cuh"
-#include "Particle/Particle.cuh"
+#include "../PhysicsEngine/Math/LinearSolver.cuh"
+#include "../PhysicsEngine/Particle/Particle.cuh"
 using namespace std;
 
 int main()
