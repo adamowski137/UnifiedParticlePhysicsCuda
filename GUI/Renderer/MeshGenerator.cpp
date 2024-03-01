@@ -66,14 +66,6 @@ RenderInfo getSphereData(int stackCount, int sectorCount)
 		indicies.push_back(k2 + (j + 1) % sectorCount);
 	}
 
-//	vertexData = {
-//		-0.5f, -0.5f, 0.f,
-//		0.5f, -0.5f, 0.f,
-//		0.5f, 0.5f, 0.f,
-//		-0.5f, 0.5f, 0.f,
-//	};
-//
-//	indicies = { 0, 1, 2, 2, 3, 0 };
 
 	sphere.generate(vertexData, indicies, { {3, GL_FLOAT} });
 	return sphere;

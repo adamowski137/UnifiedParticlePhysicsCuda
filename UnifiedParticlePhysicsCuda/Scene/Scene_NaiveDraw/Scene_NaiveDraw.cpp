@@ -1,7 +1,7 @@
 #include "Scene_NaiveDraw.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"])
+Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"], 1)
 {
 
 }
@@ -10,7 +10,7 @@ Scene_NaiveDraw::~Scene_NaiveDraw()
 {
 }
 
-void Scene_NaiveDraw::update()
+void Scene_NaiveDraw::update(float dt)
 {
 	glm::vec3 cameraPos = { 0.f, 0.f, -20.f };
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));

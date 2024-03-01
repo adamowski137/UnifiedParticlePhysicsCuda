@@ -1,7 +1,7 @@
 #include "Scene_Instancing.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"])
+Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"], 1)
 {
 	std::vector<float> offsets;
 	for (int i = -30; i < 30; i += 3)
@@ -17,14 +17,14 @@ Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["
 		}
 	}
 
-	ResourceManager::Instance.drawData["sphere"]->addInstancing(offsets);
+	sceneSphere.addInstancing(offsets);
 }
 
 Scene_Instancing::~Scene_Instancing()
 {
 }
 
-void Scene_Instancing::update()
+void Scene_Instancing::update(float dt)
 {
 	glm::vec3 cameraPos = { 0.f, 0.f, -20.f };
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
@@ -35,5 +35,5 @@ void Scene_Instancing::update()
 
 void Scene_Instancing::draw()
 {
-	renderer->drawInstanced(*ResourceManager::Instance.drawData["sphere"], 4000);
+	renderer->drawInstanced(sceneSphere, 4000);
 }

@@ -41,22 +41,17 @@ int main()
 
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
-	const int spherePrecision = 20;
 
 	ResourceManager::Instance.loadAllShaders(shaderResPath);
-	ResourceManager::Instance.loadSphereData(spherePrecision, spherePrecision);
 	ResourceManager::Instance.loadScenes(n);
 	
 	
-	particles.mapCudaVBO(ResourceManager::Instance.getActiveScene()->getVBO());
 	float dt = 0.001f;
 	while (!Window::Instance.isClosed())
 	{
 		auto start = std::chrono::high_resolution_clock::now();
 
-		particles.calculateNewPositions(dt);
-		ResourceManager::Instance.getActiveScene()->update();
-		particles.renderData(ResourceManager::Instance.getActiveScene()->getVBO());
+		ResourceManager::Instance.getActiveScene()->update(dt);
 
 		Window::Instance.clear(255, 255, 255, 1);
 		ResourceManager::Instance.getActiveScene()->draw();

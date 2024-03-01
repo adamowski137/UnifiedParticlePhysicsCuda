@@ -1,7 +1,7 @@
 #include "TestScene.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-TestScene::TestScene() : Scene(ResourceManager::Instance.Shaders["phong"])
+TestScene::TestScene() : Scene(ResourceManager::Instance.Shaders["phong"], 1)
 {
 
 }
@@ -10,7 +10,7 @@ TestScene::~TestScene()
 {
 }
 
-void TestScene::update()
+void TestScene::update(float dt)
 {
 	glm::vec3 cameraPos = { 0.f, 0.f, -10.f };
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
