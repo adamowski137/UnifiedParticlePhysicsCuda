@@ -2,9 +2,9 @@
 //
 
 #include "UnifiedParticlePhysicsCuda.h"
-#include "../GUI/Scene/TestScene/TestScene.hpp"
+#include "Scene/TestScene/TestScene.hpp"
 #include "../GUI/Window/Window.hpp"
-#include "../GUI/ResourceManager/ResourceManager.hpp"
+#include "ResourceManager/ResourceManager.hpp"
 #include <device_launch_parameters.h>
 #include <chrono>
 #include "../PhysicsEngine/Math/LinearSolver.cuh"
@@ -35,33 +35,32 @@ int main()
 	//std::cout << "duration whole: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
 	// init glfw, glad
+	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);
 
 	ParticleType particles{ n };
 
-	Window::getInstance();
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
 	const int spherePrecision = 20;
 
-	ResourceManager::get().loadAllShaders(shaderResPath);
-	ResourceManager::get().loadSphereData(spherePrecision, spherePrecision);
-	ResourceManager::get().loadScenes(n);
+	ResourceManager::Instance.loadAllShaders(shaderResPath);
+	ResourceManager::Instance.loadSphereData(spherePrecision, spherePrecision);
+	ResourceManager::Instance.loadScenes(n);
 	
-	std::shared_ptr<Scene> currScene = std::shared_ptr<Scene>((*ResourceManager::get().scenes.begin()).second);
 	
-	particles.mapCudaVBO(currScene->getVBO());
+	particles.mapCudaVBO(ResourceManager::Instance.getActiveScene()->getVBO());
 	float dt = 0.001f;
-	while (!Window::getInstance().isClosed())
+	while (!Window::Instance.isClosed())
 	{
 		auto start = std::chrono::high_resolution_clock::now();
 
 		particles.calculateNewPositions(dt);
-		currScene->update();
-		particles.renderData(currScene->getVBO());
+		ResourceManager::Instance.getActiveScene()->update();
+		particles.renderData(ResourceManager::Instance.getActiveScene()->getVBO());
 
-		Window::getInstance().clear(255, 255, 255, 1);
-		currScene->draw();
-		Window::getInstance().finishRendering(currScene);
+		Window::Instance.clear(255, 255, 255, 1);
+		ResourceManager::Instance.getActiveScene()->draw();
+		Window::Instance.finishRendering(ResourceManager::Instance.options);
 
 		auto end = std::chrono::high_resolution_clock::now();
 		long long ticks = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

@@ -3,8 +3,8 @@
 #include <map>
 #include <string>
 
-#include "../Renderer/Renderer.hpp"
-#include "../Camera/Camera.hpp"
+#include "../../GUI/Renderer/Renderer.hpp"
+#include "../../GUI/Camera/Camera.hpp"
 
 
 class Scene

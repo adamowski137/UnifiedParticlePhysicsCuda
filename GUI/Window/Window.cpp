@@ -4,9 +4,10 @@
 #include "../imgui/backends/imgui_impl_glfw.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../Error/ErrorHandling.hpp"
-#include "../ResourceManager/ResourceManager.hpp"
 
-Window::Window()
+Window Window::Instance;
+
+void Window::initInstance(int width, int height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -14,8 +15,8 @@ Window::Window()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfw_window = std::unique_ptr<GLFWwindow, GLFWwindowDeleter>(glfwCreateWindow(
-        ResourceManager::get().config.width,
-        ResourceManager::get().config.height,
+        width,
+        height,
         "Unified Particle Physics Cuda", NULL, NULL));
 
     if (glfw_window == NULL)  throw std::bad_function_call();
@@ -60,7 +61,7 @@ bool Window::isClosed()
     return glfwWindowShouldClose(glfw_window.get());
 }
 
-void Window::renderImGui(std::shared_ptr<Scene>& currScene)
+void Window::renderImGui(ImGuiOptions& options)
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -69,11 +70,15 @@ void Window::renderImGui(std::shared_ptr<Scene>& currScene)
     ImGuiIO& io{ ImGui::GetIO() }; (void)io;
 
     ImGui::Begin("Choose scene");
-    for (const auto& it : ResourceManager::get().scenes)
+    for (auto& it : options.sceneData)
     {
-        if (ImGui::RadioButton(it.first.c_str(), currScene.get() == it.second.get()))
+        if (ImGui::RadioButton(it.name.c_str(), it.isActive))
         {
-            currScene = std::shared_ptr<Scene>(it.second);
+            for (int i = 0; i < options.sceneData.size(); i++)
+                options.sceneData[i].isActive = false;
+            it.isActive = true;
+            options.sceneChanged = true;
+            break;
         }
     }
 
@@ -85,16 +90,9 @@ void Window::renderImGui(std::shared_ptr<Scene>& currScene)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Window::finishRendering(std::shared_ptr<Scene>& currScene)
+void Window::finishRendering(ImGuiOptions& options)
 {
-    renderImGui(currScene);
+    renderImGui(options);
     glfwSwapBuffers(glfw_window.get());
     glfwPollEvents();
-}
-
-
-Window& Window::getInstance()
-{
-    static Window window;
-    return window;
 }

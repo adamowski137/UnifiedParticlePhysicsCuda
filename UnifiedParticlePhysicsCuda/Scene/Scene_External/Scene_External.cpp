@@ -1,12 +1,12 @@
 #include "Scene_External.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::get().Shaders["instancedphong"])
+Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::Instance.Shaders["instancedphong"])
 {
 	std::vector<float> offsets;
 	offsets.resize(amountOfPoints * 3, 0.0f);
 
-	ResourceManager::get().drawData["sphere"]->addInstancing(offsets);
+	ResourceManager::Instance.drawData["sphere"]->addInstancing(offsets);
 }
 
 Scene_External::~Scene_External()
@@ -26,10 +26,10 @@ void Scene_External::update()
 
 void Scene_External::draw()
 {
-	renderer->drawInstanced(*ResourceManager::get().drawData["sphere"], 4000);
+	renderer->drawInstanced(*ResourceManager::Instance.drawData["sphere"], 4000);
 }
 
 unsigned int Scene_External::getVBO()
 {
-	return ResourceManager::get().drawData["sphere"].get()->instancingVBO;
+	return ResourceManager::Instance.drawData["sphere"].get()->instancingVBO;
 }

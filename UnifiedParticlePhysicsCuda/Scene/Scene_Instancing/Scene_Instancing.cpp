@@ -1,7 +1,7 @@
 #include "Scene_Instancing.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::get().Shaders["instancedphong"])
+Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"])
 {
 	std::vector<float> offsets;
 	for (int i = -30; i < 30; i += 3)
@@ -17,7 +17,7 @@ Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::get().Shaders["ins
 		}
 	}
 
-	ResourceManager::get().drawData["sphere"]->addInstancing(offsets);
+	ResourceManager::Instance.drawData["sphere"]->addInstancing(offsets);
 }
 
 Scene_Instancing::~Scene_Instancing()
@@ -35,5 +35,5 @@ void Scene_Instancing::update()
 
 void Scene_Instancing::draw()
 {
-	renderer->drawInstanced(*ResourceManager::get().drawData["sphere"], 4000);
+	renderer->drawInstanced(*ResourceManager::Instance.drawData["sphere"], 4000);
 }

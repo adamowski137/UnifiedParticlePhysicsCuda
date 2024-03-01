@@ -1,7 +1,7 @@
 #include "Scene_NaiveDraw.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::get().Shaders["phong"])
+Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"])
 {
 
 }
@@ -27,7 +27,7 @@ void Scene_NaiveDraw::draw()
 		{
 			for (int k = 0; k < 30; k += 3)
 			{
-				renderer->draw(*ResourceManager::get().drawData["sphere"], { i, j, k }, { 1, 1, 0 });
+				renderer->draw(*ResourceManager::Instance.drawData["sphere"], { i, j, k }, { 1, 1, 0 });
 			}
 		}
 	}
