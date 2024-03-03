@@ -5,6 +5,7 @@
 #include <memory>
 #include "../Constrain/Constrain.cuh"
 #include <vector>
+#include "../Math/ConstrainSolver.cuh"
 
 class ParticleType
 {
@@ -29,15 +30,13 @@ private:
 	float* dev_vz;
 	float* dev_invmass;
 
-	float* dev_jacobian;
-
 	curandState* dev_curand;
 	
-	float* dev_invM;
-
 	float fextx, fexty, fextz;
 
-	std::vector<std::shared_ptr<Constrain>> constrains;
+	std::unique_ptr<ConstrainSolver> constrainSolver;
+	std::vector<DistanceConstrain*> constrains;
+
 
 	int blocks;
 

@@ -5,53 +5,13 @@
 #include <cuda_gl_interop.h>
 #include <device_launch_parameters.h>
 #include <memory>
+#include <thrust/fill.h>
+#include <thrust/device_ptr.h>
 #include "../GpuErrorHandling.hpp"
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 
 #define EPS 0.000001
 #define SHMEM_SIZE 1024
-
-__global__ void matrixMulKern(const float* a, const float* b, float* c, int N, int K) {
-	int row = blockIdx.y * blockDim.y + threadIdx.y;
-	int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-	__shared__ float s_a[SHMEM_SIZE];
-	__shared__ float s_b[SHMEM_SIZE];
-
-	float tmp = 0;
-
-	for (int i = 0; i < K; i += blockDim.x)
-	{
-
-		s_a[threadIdx.y * blockDim.x + threadIdx.x] = 0;
-		s_b[threadIdx.y * blockDim.x + threadIdx.x] = 0;
-		__syncthreads();
-
-
-		if (row < N && col < N)
-		{
-			if (i + threadIdx.x < K)
-				s_a[threadIdx.y * blockDim.x + threadIdx.x] = a[row * K + i + threadIdx.x];
-			if (i + threadIdx.y < K)
-				s_b[threadIdx.y * blockDim.x + threadIdx.x] = b[i * N + threadIdx.y * N + col];
-		}
-		__syncthreads();
-
-		if (row < N && col < N)
-		{
-			for (int j = 0; j < blockDim.x; j++) {
-				tmp += s_a[threadIdx.y * blockDim.x + j] * s_b[j * blockDim.x + threadIdx.x];
-			}
-		}
-		__syncthreads();
-	}
-
-	if (row < N && col < N)
-		c[row * N + col] = tmp;
-
-
-}
-
 
 __global__ void initializeRandomKern(int amount, curandState* state)
 {
@@ -143,7 +103,7 @@ __global__ void applyChangesKern(int amount,
 ParticleType::ParticleType(int amount) : amountOfParticles{amount}
 {
 	blocks = ceilf((float)amountOfParticles / THREADS);
-
+	constrainSolver = std::unique_ptr<ConstrainSolver>{ new ConstrainSolver{amount, 1}};
 	setupDeviceData();
 }
 
@@ -159,8 +119,6 @@ ParticleType::~ParticleType()
 	gpuErrchk(cudaFree(dev_vy));
 	gpuErrchk(cudaFree(dev_vz));
 	gpuErrchk(cudaFree(dev_invmass));
-	gpuErrchk(cudaFree(dev_invM));
-
 }
 
 void ParticleType::setupDeviceData()
@@ -179,42 +137,36 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vz, amountOfParticles * sizeof(float)));
 	
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, amountOfParticles * sizeof(float)));
-	gpuErrchk(cudaMalloc((void**)&dev_invM, amountOfParticles * amountOfParticles * sizeof(float)));
+	thrust::device_ptr<float> massptr{ dev_invmass };
+	thrust::fill(massptr, massptr + amountOfParticles, 1);
 
 	int amountOfConstrains = amountOfParticles;
 
-	gpuErrchk(cudaMalloc((void**)&dev_jacobian, sizeof(float) * 3 * amountOfParticles * amountOfConstrains));
-	gpuErrchk(cudaMemset(dev_jacobian, 0, sizeof(float) * 3 * amountOfParticles * amountOfConstrains));
-
-	setDiagonalMatrix << <THREADS, blocks >> > (amountOfParticles, dev_invmass, dev_invM);
+	initializeRandomKern << < blocks, THREADS >> > (amountOfParticles, dev_curand);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	initializeRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_curand);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_x, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_x, dev_curand, -100.f, 100.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_y, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_y, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_z, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_z, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vx, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vy, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vz, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
@@ -243,7 +195,7 @@ void ParticleType::calculateNewPositions(float dt)
 	float dvy = fexty * dt;
 	float dvz = fextz * dt;
 
-	predictPositionsKern << <THREADS, blocks >> > (
+	predictPositionsKern << <blocks, THREADS >> > (
 		amountOfParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
@@ -268,9 +220,11 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 
+	constrainSolver.get()->calculateForces(dev_x, dev_y, dev_z, dev_vx, dev_vy, dev_vz, dev_invmass);
+
 	// todo solve every constraint group 
 	// update predicted position
-	applyChangesKern << <THREADS, blocks >> > (
+	applyChangesKern << <blocks, THREADS >> > (
 		amountOfParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,

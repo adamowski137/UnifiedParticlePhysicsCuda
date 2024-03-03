@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	int n = 4000;
+	int n = 2;
 	//std::cout << "Matrix size: " << n << std::endl;
 	//float* A = new float[n * n];
 	//float* b = new float[n];
@@ -36,9 +36,6 @@ int main()
 
 	// init glfw, glad
 	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);
-
-	ParticleType particles{ n };
-
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
 

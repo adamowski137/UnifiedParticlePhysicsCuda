@@ -5,14 +5,14 @@ class DistanceConstrain : public Constrain
 {
 public:
 	DistanceConstrain(float d, int* indexes);
-	__host__ __device__ virtual float operator()(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz) override;
-	__host__ __device__ virtual float timeDerivative(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz) override;
-	__host__ __device__ virtual float positionDerivative(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz, int index) override;
-	__host__ __device__ virtual float timePositionDerivative(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz, int index) override;
+	__host__ __device__ float operator()(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz);
+	__host__ __device__  float timeDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz);
+	__host__ __device__ void positionDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz, int index, float* output);
+	__host__ __device__  void timePositionDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz, int index, float* output);
 private:
 	float d;
 };

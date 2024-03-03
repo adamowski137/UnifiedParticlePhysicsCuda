@@ -2,22 +2,25 @@
 #include <cuda_runtime.h>
 #include <vector>
 #include <memory>
-#include "../Constrain/Constrain.cuh"
-
+#include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 class ConstrainSolver {
 public:
-	ConstrainSolver(int particles, int constrainsNumber, Constrain** constrains);
+	ConstrainSolver(int particles, int constrainsNumber);
 	~ConstrainSolver();
+	void calculateForces(
+		float* x, float* y, float* z,
+		float* vx, float* vy, float* vz,
+		float* invmass
+	);
 private:
-	std::vector<Constrain> constrains;
 	float* dev_jacobian;
+	float* dev_jacobian_transposed;
 	float* dev_velocity_jacobian;
+	float* dev_A;
+	float* dev_b;
+	float* dev_lambda;
+	float* dev_new_lambda;
 	int particles;
 	int constrainsNumber;
-	Constrain** dev_constrains;
-
-	void fillJacobians(
-		float* x, float* y, float* z,
-		float* vx, float* vy, float* vz
-	);
+	DistanceConstrain* dev_constrains;
 };
