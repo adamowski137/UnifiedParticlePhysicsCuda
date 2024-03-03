@@ -89,7 +89,7 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	if (index >= constrainsNumber) return;
 	for (int i = 0; i < constrainsNumber; i++)
 	{
-		b[i] = -constrains[i](x, y, z, vx, vy, vz);
+		b[i] = -constrains[i](x, y, z, vx, vy, vz) + constrains->timeDerivative(x, y, z, vx, vy, vz);
 	}
 }
 
