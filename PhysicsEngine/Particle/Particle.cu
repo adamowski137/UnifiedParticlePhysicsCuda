@@ -60,11 +60,11 @@ __global__ void initializeRandomKern(int amount, curandState* state)
 	curand_init(1234, index, 0, &state[index]);
 }
 
-__global__ void fillRandomKern(int amount, float* dst, curandState* state)
+__global__ void fillRandomKern(int amount, float* dst, curandState* state, float min, float max)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
-	dst[index] = 20 * curand_uniform(&state[index]) - 10.0f;
+	dst[index] = (max - min) * curand_uniform(&state[index]) + min;
 }
 
 __global__ void copyToVBOKernel(int amount, float* x, float* y, float* z, float* dst)
@@ -194,15 +194,27 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_x, dev_curand);
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_x, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_y, dev_curand);
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_y, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_z, dev_curand);
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_z, dev_curand, -100.f, 100.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vx, dev_curand, -100.f, 100.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vy, dev_curand, -100.f, 100.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <THREADS, blocks >> > (amountOfParticles, dev_vz, dev_curand, -100.f, 100.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

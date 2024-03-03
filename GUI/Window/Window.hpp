@@ -4,8 +4,9 @@
 #include "GLFW/glfw3.h"
 #include <memory>
 
-#include "../Scene/Scene.hpp"
+#include "ImGuiOptions.hpp"
 
+class Scene;
 
 class GLFWwindowDeleter
 {
@@ -19,17 +20,18 @@ public:
 class Window
 {
 public:
-	static Window& getInstance();
+	static Window Instance;
+	void initInstance(int width, int height);
 	Window(const Window& w) = delete;
 	Window& operator=(const Window& other) = delete;
 	const int width = 1024;
 	const int height = 768;
 	void clear(float r, float g, float b, float a);
 	bool isClosed();
-	void finishRendering(std::shared_ptr<Scene>& currScene);
+	void finishRendering(ImGuiOptions& options);
 private:
-	Window();
+	Window() {};
 	void enableImGui();
-	void renderImGui(std::shared_ptr<Scene>& currScene);
+	void renderImGui(ImGuiOptions& options);
 	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> glfw_window;
 };

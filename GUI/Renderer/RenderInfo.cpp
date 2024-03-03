@@ -5,10 +5,17 @@
 
 #include <glad/glad.h>
 
+void RenderInfo::dispose()
+{
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &instancingVBO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &IBO);
+}
+
 void RenderInfo::generate(std::vector<float> verticiesData, std::vector<unsigned int> indiciesData, std::vector<std::pair<unsigned, unsigned>> structure)
 {
     glGenVertexArrays(1, &this->VAO);
-    unsigned VBO;
     glGenBuffers(1, &VBO);
     glBindVertexArray(this->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

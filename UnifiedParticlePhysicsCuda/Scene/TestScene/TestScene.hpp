@@ -7,6 +7,6 @@ class TestScene : public Scene
 public:
 	TestScene();
 	virtual ~TestScene();
-	virtual void update();
+	virtual void update(float dt);
 	virtual void draw();
 };

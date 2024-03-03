@@ -7,7 +7,6 @@ class Scene_External : public Scene
 public:
 	Scene_External(int amountOfPoints);
 	virtual ~Scene_External();
-	virtual void update();
+	virtual void update(float dt);
 	virtual void draw();
-	virtual unsigned int getVBO();
 };

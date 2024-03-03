@@ -1,21 +1,14 @@
-﻿# CMakeList.txt : CMake project for UnifiedParticlePhysicsCuda, include source and define
-# project specific logic here.
-#
+﻿cmake_minimum_required(VERSION 3.8)
 
-# Add source to this project's executable.
-file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cpp"
+add_executable (UnifiedParticlePhysicsCuda 
+		${CMAKE_CURRENT_SOURCE_DIR}/UnifiedParticlePhysicsCuda.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/TestScene/TestScene.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_NaiveDraw/Scene_NaiveDraw.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Instancing/Scene_Instancing.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_External/Scene_External.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/ResourceManager/ResourceManager.cpp
 )
-file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Math/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Particle/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/FloorConstrain/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/*.cu"
-	"${CMAKE_SOURCE_DIR}/UnifiedParticlePhysicsCuda/Constrain/DistanceConstrain/*.cu"
-
-)
-
-
-add_executable (UnifiedParticlePhysicsCuda ${cpu_source_files} ${gpu_source_files} )
 enable_language("CUDA")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
@@ -23,20 +16,7 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET UnifiedParticlePhysicsCuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
   endif()
 
-  set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "-g -G")
-
-find_package(CUDAToolkit)
-
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-
-
-find_package(OpenGL REQUIRED)
-
 add_subdirectory(${CMAKE_SOURCE_DIR}/GUI gui)
+add_subdirectory(${CMAKE_SOURCE_DIR}/PhysicsEngine PhysicsEngine)
 
-target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC CUDA::cudart)
-target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC gui)
-# TODO: Add tests and install targets if needed.
+target_link_libraries(UnifiedParticlePhysicsCuda PUBLIC gui PhysicsEngine)
