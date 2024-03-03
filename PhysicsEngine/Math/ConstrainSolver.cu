@@ -2,7 +2,7 @@
 #include "../GpuErrorHandling.hpp"
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include <thrust/for_each.h>
+#include <thrust/transform.h>
 #include <thrust/device_ptr.h>
 #include "LinearSolver.cuh"
 
@@ -80,6 +80,21 @@ __global__ void transposeKern(int columns, int rows, float* A, float* AT)
 	AT[column * rows + row] = A[row * columns + column];
 }
 
+__global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b, 
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz, 
+	DistanceConstrain* constrains)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= particles) return;
+	for (int i = 0; i < constrainsNumber; i++)
+	{
+		b[3 * index] = -constrains[i](x, y, z, vx, vy, vz);
+		b[3 * index + 1] = -constrains[i](x, y, z, vx, vy, vz);
+		b[3 * index + 2] = -constrains[i](x, y, z, vx, vy, vz);
+	}
+}
+
 ConstrainSolver::ConstrainSolver(int particles, int constrainsNumber) : particles{ particles }, constrainsNumber{constrainsNumber}
 {
 	int* indexes = new int[2];
@@ -142,6 +157,14 @@ void ConstrainSolver::calculateForces(
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+	
+	fillResultVectorKern<<<1, particles>>>(particles, constrainsNumber, dev_b,
+		x, y, z,
+		vx, vy, vz,
+		dev_constrains);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
 	transposeKern << <blocks, threads>> > (
 		3 * particles,
@@ -174,7 +197,6 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
 	jaccobiKern << <blocks, threads >> > (3 * particles, dev_A, dev_b, dev_lambda, dev_new_lambda);
 
 	gpuErrchk(cudaGetLastError());
@@ -182,27 +204,12 @@ void ConstrainSolver::calculateForces(
 
 	//std::swap(dev_lambda, dev_new_lambda);
 
-	int N = particles * 3 * particles * 3;
+	int N = particles * 3;
 	float* tmp = new float[N];
-	cudaMemcpy(tmp, dev_A, N * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(tmp, dev_new_lambda, N * sizeof(float), cudaMemcpyDeviceToHost);
 
 	for (int i = 0; i < 3 * particles; i++)
 	{
-		for (int j = 0; j < 3 * particles; j++)
-		{
-			std::cout << tmp[i * 3 * particles + j] << " ";
-		}
-		std::cout << std::endl;
+		std::cout << tmp[i] << " ";
 	}
-	/*float* tmp = new float[3 * particles * constrainsNumber];
-	gpuErrchk(cudaMemcpy(tmp, dev_jacobian, 3 * particles * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost));
-	for (int j = 0; j < constrainsNumber; j++)
-	{
-		for (int i = 0; i < particles; i++)
-		{
-			std::cout << " x: " << tmp[3 * i + j * constrainsNumber] << " y: " << tmp[3 * i + 1 + j * constrainsNumber] << " z: " << tmp[3 * i + 2 + j * constrainsNumber];
-		}
-		std::cout << "\n";
-	}*/
-
 }
