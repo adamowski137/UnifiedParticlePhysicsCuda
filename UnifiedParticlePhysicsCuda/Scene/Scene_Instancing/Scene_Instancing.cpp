@@ -18,6 +18,8 @@ Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["
 	}
 
 	sceneSphere.addInstancing(offsets);
+
+	renderer->setSphereColor({ 1.f, 1.f, 0.f });
 }
 
 Scene_Instancing::~Scene_Instancing()

@@ -11,7 +11,7 @@ out vec3 FragPos;
 
 void main()
 {
-	gl_Position = VP * model * vec4(0.1 * position + offset, 1.0f);
 	normal = position;
-	FragPos = vec3(model * vec4(0.1 * position + offset, 1.0f));
+	FragPos = vec3(model * vec4(position + offset, 1.0f));
+	gl_Position = VP * vec4(FragPos, 1.0f);
 }

@@ -6,6 +6,8 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::Inst
 	std::vector<float> offsets;
 	offsets.resize(amountOfPoints * 3, 0.0f);
 
+	renderer->setSphereScale(0.1f);
+
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 }
