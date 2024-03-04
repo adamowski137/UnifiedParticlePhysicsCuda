@@ -10,7 +10,7 @@
 #include "../GpuErrorHandling.hpp"
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 
-#define EPS 0.000001
+#define EPS 0.000005
 #define SHMEM_SIZE 1024
 
 __global__ void initializeRandomKern(int amount, curandState* state)
@@ -148,27 +148,27 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_x, dev_curand, -10.f, 10.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_x, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_y, dev_curand, -10.f, 10.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_y, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_z, dev_curand, -10.f, 10.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_z, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -100.f, 100.f);
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -5.f, 5.f);
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
 	//
-	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -100.f, 100.f);
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -5.f, 5.f);
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
-	//
-	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -100.f, 100.f);
+	
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -10.f, 10.f);
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
 }
@@ -224,7 +224,7 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 
-	constrainSolver.get()->calculateForces(dev_x, dev_y, dev_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc);
+	constrainSolver.get()->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
