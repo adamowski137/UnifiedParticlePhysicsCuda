@@ -29,6 +29,8 @@ private:
 	float* dev_vy;
 	float* dev_vz;
 	float* dev_invmass;
+	float* dev_fc;
+	
 
 	curandState* dev_curand;
 	

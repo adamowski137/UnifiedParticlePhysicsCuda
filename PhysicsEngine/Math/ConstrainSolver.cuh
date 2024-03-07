@@ -10,7 +10,7 @@ public:
 	void calculateForces(
 		float* x, float* y, float* z,
 		float* vx, float* vy, float* vz,
-		float* invmass
+		float* invmass, float* fc, float dt
 	);
 private:
 	float* dev_jacobian;

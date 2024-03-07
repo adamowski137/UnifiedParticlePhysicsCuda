@@ -10,7 +10,7 @@
 #include "../GpuErrorHandling.hpp"
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 
-#define EPS 0.000001
+#define EPS 0.000005
 #define SHMEM_SIZE 1024
 
 __global__ void initializeRandomKern(int amount, curandState* state)
@@ -70,7 +70,7 @@ __global__ void predictPositionsKern(int amount,
 __global__ void applyChangesKern(int amount,
 	float* x, float* y, float* z,
 	float* new_x, float* new_y, float* new_z,
-	float* vx, float* vy, float* vz, float invdt)
+	float* vx, float* vy, float* vz, float* fc, float invdt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
@@ -80,9 +80,9 @@ __global__ void applyChangesKern(int amount,
 	float changeZ = (new_z[index] - z[index]);
 
 	// update velocity
-	vx[index] = invdt * (changeX);
-	vy[index] = invdt * (changeY);
-	vz[index] = invdt * (changeZ);
+	vx[index] = invdt * (changeX) + fc[3 * index];
+	vy[index] = invdt * (changeY) + fc[3 * index + 1];
+	vz[index] = invdt * (changeZ) + fc[3 * index + 2];
 
 	// advect diffuse particles ??
 	
@@ -136,6 +136,8 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, amountOfParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, amountOfParticles * sizeof(float)));
 	
+	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * amountOfParticles * sizeof(float)));
+
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, amountOfParticles * sizeof(float)));
 	thrust::device_ptr<float> massptr{ dev_invmass };
 	thrust::fill(massptr, massptr + amountOfParticles, 1);
@@ -146,29 +148,29 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_x, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_x, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_y, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_y, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_z, dev_curand, -100.f, 100.f);
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_z, dev_curand, -30.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -100.f, 100.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -100.f, 100.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -100.f, 100.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -5.f, 5.f);
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
+	//
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -5.f, 5.f);
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
+	
+	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -10.f, 10.f);
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
 }
 
 void ParticleType::renderData(unsigned int vbo)
@@ -186,9 +188,11 @@ void ParticleType::renderData(unsigned int vbo)
 
 void ParticleType::calculateNewPositions(float dt)
 {
+	cudaMemset(dev_fc, 0, 3 * amountOfParticles * sizeof(float));
 	// predict new positions and update velocities
 	fextx = 0.0f;
-	fexty = -9.81f;
+	//fexty = -9.81f;
+	fexty = 0.0f;
 	fextz = 0.0f;
 
 	float dvx = fextx * dt;
@@ -220,7 +224,7 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 
-	constrainSolver.get()->calculateForces(dev_x, dev_y, dev_z, dev_vx, dev_vy, dev_vz, dev_invmass);
+	constrainSolver.get()->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -228,7 +232,7 @@ void ParticleType::calculateNewPositions(float dt)
 		amountOfParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
-		dev_vx, dev_vy, dev_vz,
+		dev_vx, dev_vy, dev_vz, dev_fc,
 		1/dt
 		);
 	gpuErrchk(cudaGetLastError());

@@ -20,7 +20,7 @@ void Scene_External::update(float dt)
 {
 	particles.calculateNewPositions(dt);
 
-	glm::vec3 cameraPos = { 0.f, 0.f, -20.f };
+	glm::vec3 cameraPos = { 0.f, 0.f, -10.f };
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
 	renderer->setCameraPosition(cameraPos);
 	renderer->setLightSourcePosition(cameraPos);
@@ -32,5 +32,5 @@ void Scene_External::update(float dt)
 void Scene_External::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
-	renderer->drawInstanced(sceneSphere, 4000);
+	renderer->drawInstanced(sceneSphere, 2);
 }

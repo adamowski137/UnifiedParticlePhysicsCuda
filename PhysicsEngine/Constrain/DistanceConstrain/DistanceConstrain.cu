@@ -23,11 +23,16 @@ float DistanceConstrain::timeDerivative(float* x, float* y, float* z,
 {
 	int p1 = dev_indexes[0];
 	int p2 = dev_indexes[1];
-	float distX = (vx[p1] - vx[p2]) * (vx[p1] - vx[p2]);
-	float distY = (vy[p1] - vy[p2]) * (vy[p1] - vy[p2]);
-	float distZ = (vz[p1] - vz[p2]) * (vz[p1] - vz[p2]);
+	float distX = (x[p1] - x[p2]) * (x[p1] - x[p2]);
+	float distY = (y[p1] - y[p2]) * (y[p1] - y[p2]);
+	float distZ = (z[p1] - z[p2]) * (z[p1] - z[p2]);
 
-	return sqrtf(distX + distY + distZ);
+	float diffvX = (vx[p1] - vx[p2]);
+	float diffvY = (vy[p1] - vy[p2]);
+	float diffvZ = (vz[p1] - vz[p2]);
+
+	//return sqrt(diffvX * diffvX + diffvY * diffvY + diffvZ * diffvZ);
+	return 1 / sqrtf(distX + distY + distZ) * (diffvX + diffvY + diffvZ);
 }
 
 void DistanceConstrain::positionDerivative(float* x, float* y, float* z,
@@ -35,6 +40,7 @@ void DistanceConstrain::positionDerivative(float* x, float* y, float* z,
 {
 	int p1 = dev_indexes[0];
 	int p2 = dev_indexes[1];
+	//float len = sqrtf((x[p1] - x[p2]) * (x[p1] - x[p2]) + (y[p1] - y[p2]) * (y[p1] - y[p2]) + (z[p1] - z[p2]) * (z[p1] - z[p2]));
 	if (index == 0)
 	{
 		output[0] = x[p1] - x[p2];
