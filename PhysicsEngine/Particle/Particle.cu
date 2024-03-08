@@ -80,9 +80,9 @@ __global__ void applyChangesKern(int amount,
 	float changeZ = (new_z[index] - z[index]);
 
 	// update velocity
-	vx[index] = invdt * (changeX) + fc[3 * index];
-	vy[index] = invdt * (changeY) + fc[3 * index + 1];
-	vz[index] = invdt * (changeZ) + fc[3 * index + 2];
+	vx[index] = invdt * (changeX);
+	vy[index] = invdt * (changeY);
+	vz[index] = invdt * (changeZ);
 
 	// advect diffuse particles ??
 	
@@ -168,9 +168,9 @@ void ParticleType::setupDeviceData()
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
 	
-	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -10.f, 10.f);
-	//gpuErrchk(cudaGetLastError());
-	//gpuErrchk(cudaDeviceSynchronize());
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vz, dev_curand, -1.f, 1.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());*/
 }
 
 void ParticleType::renderData(unsigned int vbo)
@@ -224,7 +224,11 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 
-	constrainSolver.get()->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
+	constrainSolver.get()->calculateForces(
+		dev_x, dev_y, dev_z,
+		dev_new_x, dev_new_y, dev_new_z,
+		dev_vx, dev_vy, dev_vz,
+		dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position

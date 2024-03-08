@@ -97,16 +97,25 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	}
 }
 
-__global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)
+__global__ void calculateForceKern(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index < 3 * nParticles)
 	{
 		for (int i = 0; i < nConstraints; i++)
 		{
-			fc[index] += new_lambda[i] * jacobi_transposed[index * nConstraints + i];
+			fc[index] = new_lambda[i] * jacobi_transposed[index * nConstraints + i];
 		}
 	}
+}
+
+__global__ void applyForceKern(float* x, float* y, float* z, float* fc, float* invmass, float dt, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	x[index] += fc[3 * index + 0] * dt * dt;
+	y[index] += fc[3 * index + 1] * dt * dt;
+	z[index] += fc[3 * index + 2] * dt * dt;
 }
 
 ConstrainSolver::ConstrainSolver(int particles, int constrainsNumber) : particles{ particles }, constrainsNumber{constrainsNumber}
@@ -156,6 +165,7 @@ ConstrainSolver::~ConstrainSolver()
 
 void ConstrainSolver::calculateForces(
 	float* x, float* y, float* z,
+	float* new_x, float* new_y, float* new_z,
 	float* vx, float* vy, float* vz,
 	float* invmass, float* fc, float dt
 )
@@ -241,10 +251,20 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaDeviceSynchronize());
 
 	//std::swap(dev_lambda, dev_new_lambda);
-	applyForce << <blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * particles, constrainsNumber);
-
+	calculateForceKern << <blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * particles, constrainsNumber);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+	
+	applyForceKern<<<blocks, threads>>>(new_x, new_y, new_z, fc, invmass, dt, particles);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	/*applyForceKern << <blocks, threads >> > (x, y, z, fc, invmass, dt, particles);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());*/
+
+
+
 
 
 	//cudaMemcpy(tmp, fc, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
