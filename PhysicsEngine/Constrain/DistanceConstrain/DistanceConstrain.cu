@@ -23,16 +23,31 @@ float DistanceConstrain::timeDerivative(float* x, float* y, float* z,
 {
 	int p1 = dev_indexes[0];
 	int p2 = dev_indexes[1];
+
 	float distX = (x[p1] - x[p2]) * (x[p1] - x[p2]);
 	float distY = (y[p1] - y[p2]) * (y[p1] - y[p2]);
 	float distZ = (z[p1] - z[p2]) * (z[p1] - z[p2]);
+
+	float nx = (x[p1] - x[p2]);
+	float ny = (y[p1] - y[p2]);
+	float nz = (z[p1] - z[p2]);
+
+	float len = sqrt(nx * nx + ny * ny + nz * nz);
+
+	nx /= len;
+	ny /= len;
+	nz /= len;
 
 	float diffvX = (vx[p1] - vx[p2]);
 	float diffvY = (vy[p1] - vy[p2]);
 	float diffvZ = (vz[p1] - vz[p2]);
 
+	//return diffvX + diffvY + diffvZ;
+
 	//return sqrt(diffvX * diffvX + diffvY * diffvY + diffvZ * diffvZ);
-	return 1 / sqrtf(distX + distY + distZ) * (diffvX + diffvY + diffvZ);
+	float coeff = 1 / sqrtf(distX + distY + distZ);
+	//return coeff > 1.f ? 1.f : coeff * (diffvX + diffvY + diffvZ);
+	return coeff * (nx * vx[p1] + ny * vy[p1] + nz * vz[p1] - nx * vx[p2] - ny * vy[p2] - nz * vz[p2]);
 }
 
 void DistanceConstrain::positionDerivative(float* x, float* y, float* z,

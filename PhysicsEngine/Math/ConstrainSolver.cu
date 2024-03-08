@@ -40,13 +40,10 @@ __global__ void matrixMulKern(const float* a, const float* b, float* c, int N, i
 		__syncthreads();
 
 
-		if (row < N && col < N)
-		{
-			if (i + threadIdx.x < K)
-				s_a[threadIdx.y * blockDim.x + threadIdx.x] = a[row * K + i + threadIdx.x];
-			if (i + threadIdx.y < K)
-				s_b[threadIdx.y * blockDim.x + threadIdx.x] = b[i * N + threadIdx.y * N + col];
-		}
+		if (row < N && i + threadIdx.x < K)
+			s_a[threadIdx.y * blockDim.x + threadIdx.x] = a[row * K + i + threadIdx.x];
+		if (col < N && i + threadIdx.y < K)
+			s_b[threadIdx.y * blockDim.x + threadIdx.x] = b[i * N + threadIdx.y * N + col];
 		__syncthreads();
 
 		if (row < N && col < N)
@@ -90,7 +87,7 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	if (index >= constrainsNumber) return;
 	for (int i = 0; i < constrainsNumber; i++)
 	{
-		b[i] = -constrains[i](x, y, z, vx, vy, vz) + constrains->timeDerivative(x, y, z, vx, vy, vz);
+		b[i] = -constrains[i](x, y, z, vx, vy, vz) - constrains->timeDerivative(x, y, z, vx, vy, vz);
 		//for (int j = 0; j < particles; j++)
 		//{
 		//	b[i] -= jacobian[i * 3 * particles + 3 * j] * vx[j] / dt;
@@ -117,7 +114,7 @@ ConstrainSolver::ConstrainSolver(int particles, int constrainsNumber) : particle
 	int* indexes = new int[2];
 	indexes[0] = 0;
 	indexes[1] = 1;
-	DistanceConstrain* constrains = new DistanceConstrain{ 10.f, indexes };
+	DistanceConstrain* constrains = new DistanceConstrain{ 4.f, indexes };
 	gpuErrchk(cudaMalloc((void**)&dev_constrains, constrainsNumber * sizeof(DistanceConstrain)));
 	gpuErrchk(cudaMemcpy(dev_constrains, constrains, constrainsNumber * sizeof(DistanceConstrain), cudaMemcpyHostToDevice));
 	delete[] indexes;
@@ -217,10 +214,10 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	//cudaMemcpy(tmp, dev_jacobian, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//for (int i = 0; i < N; i++)
-	//	std::cout << tmp[i] << " ";
-	//std::cout << "\n\n";
+	cudaMemcpy(tmp, dev_jacobian, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
+	for (int i = 0; i < N; i++)
+		std::cout << tmp[i] << " ";
+	std::cout << "\n";
 
 	unsigned int BLOCKS_X = (constrainsNumber + threads - 1) / threads;
 	unsigned int BLOCKS_Y = (constrainsNumber + threads - 1) / threads;
@@ -230,10 +227,10 @@ void ConstrainSolver::calculateForces(
 
 	matrixMulKern<<<b, t>>>(dev_jacobian, dev_jacobian_transposed, dev_A, constrainsNumber, 3 * particles);
 
-	//cudaMemcpy(tmp, dev_A, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//cudaMemcpy(tmp + 1, dev_b, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//	std::cout << tmp[0] << "*X = " << tmp[1];
-	//std::cout << "\n";
+	cudaMemcpy(tmp, dev_A, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(tmp + 1, dev_b, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
+		std::cout << tmp[0] << "*X = " << tmp[1];
+	std::cout << "\n\n";
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());

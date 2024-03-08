@@ -160,10 +160,10 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -5.f, 5.f);
-	//gpuErrchk(cudaGetLastError());
-	//gpuErrchk(cudaDeviceSynchronize());
-	//
+	fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vx, dev_curand, -5.f, 5.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+	
 	//fillRandomKern << <blocks, THREADS >> > (amountOfParticles, dev_vy, dev_curand, -5.f, 5.f);
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
