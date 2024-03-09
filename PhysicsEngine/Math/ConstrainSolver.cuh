@@ -5,13 +5,15 @@
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 class ConstrainSolver {
 public:
-	ConstrainSolver(int particles, int constrainsNumber);
+	ConstrainSolver(int particles);
 	~ConstrainSolver();
 	void calculateForces(
 		float* x, float* y, float* z,
 		float* vx, float* vy, float* vz,
 		float* invmass, float* fc, float dt
 	);
+	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
+
 private:
 	float* dev_jacobian;
 	float* dev_jacobian_transposed;
@@ -20,7 +22,8 @@ private:
 	float* dev_b;
 	float* dev_lambda;
 	float* dev_new_lambda;
-	int particles;
-	int constrainsNumber;
+	int nParticles;
+	int nConstraints;
 	DistanceConstrain* dev_constrains;
+	std::vector<DistanceConstrain> cpu_constraints;
 };

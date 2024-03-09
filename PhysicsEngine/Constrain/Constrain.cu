@@ -7,11 +7,12 @@ Constrain::Constrain(int n, float k, float cMin, float cMax, int* indexes) : n{n
 {
 	gpuErrchk(cudaMalloc((void**)&dev_indexes, n * sizeof(int)));
 	gpuErrchk(cudaMemcpy(dev_indexes, indexes, n * sizeof(int), cudaMemcpyHostToDevice));
-	int tmp[2];
-	gpuErrchk(cudaMemcpy(tmp, dev_indexes, n * sizeof(int), cudaMemcpyDeviceToHost));
+	//int tmp[2];
+	//gpuErrchk(cudaMemcpy(tmp, dev_indexes, n * sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 Constrain::~Constrain()
 {
-	gpuErrchk(cudaFree(dev_indexes));
+	// MEMORY LEAK!!! 
+	//gpuErrchk(cudaFree(dev_indexes));
 }

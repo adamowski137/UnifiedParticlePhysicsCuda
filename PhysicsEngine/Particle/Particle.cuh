@@ -17,8 +17,10 @@ public:
 	void mapCudaVBO(unsigned int vbo);
 	void renderData(unsigned int vbo);
 	void calculateNewPositions(float dt);
+	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
+	inline int particleCount() { return nParticles; }
 private:
-	const int amountOfParticles;
+	const int nParticles;
 	float* dev_x;
 	float* dev_y;
 	float* dev_z;

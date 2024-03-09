@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	int n = 2;
+	int n = 6;
 	//std::cout << "Matrix size: " << n << std::endl;
 	//float* A = new float[n * n];
 	//float* b = new float[n];

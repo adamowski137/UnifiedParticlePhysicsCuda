@@ -1,11 +1,18 @@
-//#pragma once
-//#include "../Constrain.cuh"
-//#include <cuda_runtime.h>
-//
-//class FloorConstrain : public Constrain
-//{
-//public:
-//	FloorConstrain(int* indexes);
-//	virtual void fillJacobian(float* jacobianRow);
-//};
-//__global__ void fillJacobianKern(int n, float* jacobianRow, int* idx);
+#pragma once
+#include "../Constrain.cuh"
+
+class FloorConstrain : public Constrain
+{
+public:
+	FloorConstrain(float d, int* indexes);
+	__host__ __device__ float operator()(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz);
+	__host__ __device__  float timeDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz);
+	__host__ __device__ void positionDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz, int index, float* output);
+	__host__ __device__  void timePositionDerivative(float* x, float* y, float* z,
+		float* vx, float* vy, float* vz, int index, float* output);
+private:
+	float d;
+};
