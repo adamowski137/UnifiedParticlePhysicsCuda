@@ -12,6 +12,7 @@
 
 #define AxisIndex(x) (x - MINDIMENSION) / PARTICLERADIUS
 #define PositionToGrid(x, y, z)  AxisIndex(x) + CUBESPERDIMENSION * (AxisIndex(y) + CUBESPERDIMENSION * AxisIndex(z))
+#define DistanceSquared(x1, y1, z1, x2, y2, z2) (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2)
 
 __global__ void fillJacobiansKern(
 	int constrainsAmount, int particles,
@@ -82,6 +83,54 @@ __global__ void transposeKern(int columns, int rows, float* A, float* AT)
 	AT[column * rows + row] = A[row * columns + column];
 }
 
+__global__ void findCollisions(
+	float* x, float* y, float* z,
+	unsigned int* mapping, unsigned int* grid,
+	int* gridCubeStart, int* gridCubeEnd, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+
+	unsigned int xIdx = AxisIndex(x[index]);
+	unsigned int yIdx = AxisIndex(y[index]);
+	unsigned int zIdx = AxisIndex(z[index]);
+
+	unsigned int minX = min(xIdx - 1, 0);
+	unsigned int minY = min(yIdx - 1, 0);
+	unsigned int minZ = min(zIdx - 1, 0);
+	unsigned int maxX = max(xIdx + 1, (int)(CUBESPERDIMENSION - 1));
+	unsigned int maxY = max(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
+	unsigned int maxZ = max(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
+
+	for (int i = minX; i < maxX; i++)
+	{
+		for (int j = minY; j < maxY; j++)
+		{
+			for (int k = minZ; k < maxZ; k++)
+			{
+				int currentCube = i + CUBESPERDIMENSION * (j + CUBESPERDIMENSION * k);	
+				int first = gridCubeStart[currentCube];
+				int last = gridCubeEnd[currentCube];
+
+				if (first == -1) continue;
+				for (int it = first; it <= last; it++)
+				{
+					int particle = mapping[it];
+					float px = x[particle];
+					float py = y[particle];
+					float pz = z[particle];
+
+					float distanceSq = DistanceSquared(x[index], y[index], z[index], px, py, pz);
+					if (distanceSq < PARTICLERADIUS)
+					{
+						// tutaj dodaj co siê ma wydarzyæ w wypadku gdy siê zderzy³y
+					}
+				}
+			}
+		}
+	}
+}
+
 __global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b, 
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
@@ -143,7 +192,7 @@ __global__ void identifyGridCubeStartEndKern(unsigned int* grid, int* grid_cube_
 		{
 			grid_cube_end[gridIndex] = index;
 		}
-	}
+	}	
 }
 
 ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
@@ -161,6 +210,11 @@ ConstrainSolver::~ConstrainSolver()
 	gpuErrchk(cudaFree(dev_b));
 	gpuErrchk(cudaFree(dev_lambda));
 	gpuErrchk(cudaFree(dev_new_lambda));
+	gpuErrchk(cudaFree(dev_grid_cube_start));
+	gpuErrchk(cudaFree(dev_grid_cube_end));
+	gpuErrchk(cudaFree(dev_grid_index));
+	gpuErrchk(cudaFree(dev_mapping));
+
 }
 
 void ConstrainSolver::calculateForces(
@@ -343,8 +397,13 @@ void ConstrainSolver::setConstraints(std::vector<std::pair<int, int>> pairs, flo
 
 	gpuErrchk(cudaMalloc((void**)&dev_grid_index, nParticles * sizeof(unsigned int)));
 	
-	gpuErrchk(cudaMalloc((void**) &dev_mapping, nParticles * sizeof(unsigned int)));
+	gpuErrchk(cudaMalloc((void**)&dev_mapping, nParticles * sizeof(unsigned int)));
+
+	gpuErrchk(cudaMalloc((void**)&dev_grid_cube_start, TOTALCUBES * sizeof(unsigned int)));
+	gpuErrchk(cudaMalloc((void**)&dev_grid_cube_end, TOTALCUBES * sizeof(unsigned int)));
 
 	thrust_grid = thrust::device_pointer_cast<unsigned int>(dev_grid_index);
 	thrust_mapping = thrust::device_pointer_cast<unsigned int>(dev_mapping);
+	thrust_grid_cube_start = thrust::device_pointer_cast<int>(dev_grid_cube_start);
+	thrust_grid_cube_end = thrust::device_pointer_cast<int>(dev_grid_cube_end);
 }

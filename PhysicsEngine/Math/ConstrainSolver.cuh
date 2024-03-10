@@ -29,8 +29,8 @@ private:
 	int* dev_grid_cube_end;
 	thrust::device_ptr<unsigned int> thrust_grid;
 	thrust::device_ptr<unsigned int> thrust_mapping;
-	thrust::device_ptr<unsigned int> thrust_grid_cube_start;
-	thrust::device_ptr<unsigned int> thrust_grid_cube_end;
+	thrust::device_ptr<int> thrust_grid_cube_start;
+	thrust::device_ptr<int> thrust_grid_cube_end;
 
 	int nParticles;
 	int nConstraints;
