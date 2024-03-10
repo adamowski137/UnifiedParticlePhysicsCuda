@@ -1,6 +1,6 @@
 // world constants
-#define MAXDIMENSION 100.0f
-#define MINDIMENSION -100.0f
+#define MAXDIMENSION 30.0f
+#define MINDIMENSION -30.0f
 
 // particle constants
 #define PARTICLERADIUS 2.0f

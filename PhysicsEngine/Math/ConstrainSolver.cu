@@ -239,9 +239,9 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	thrust::sort_by_key(thrust_grid, thrust_grid + nParticles, thrust_mapping);
+	//thrust::sort_by_key(thrust_grid, thrust_grid + nParticles, thrust_mapping);
 	thrust::fill(thrust_grid_cube_start, thrust_grid_cube_start + TOTALCUBES, -1);
-	thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
+	//thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
 
 	fillJacobiansKern << < constraint_bound_blocks, threads >> > (nConstraints, nParticles,
 		x, y, z,
