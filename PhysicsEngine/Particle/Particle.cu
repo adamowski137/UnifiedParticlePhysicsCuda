@@ -11,7 +11,6 @@
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
 
 #define EPS 0.000001
-#define SHMEM_SIZE 1024
 
 __global__ void initializeRandomKern(int amount, curandState* state)
 {

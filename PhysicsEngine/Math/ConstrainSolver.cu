@@ -3,10 +3,15 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <thrust/transform.h>
+#include <thrust/sort.h>
 #include <thrust/device_ptr.h>
 #include "LinearSolver.cuh"
+#include "../Constants.hpp"
 
 #define SHMEM_SIZE 1024
+
+#define AxisIndex(x) (x - MINDIMENSION) / PARTICLERADIUS
+#define PositionToGrid(x, y, z)  AxisIndex(x) + CUBESPERDIMENSION * (AxisIndex(y) + CUBESPERDIMENSION * AxisIndex(z))
 
 __global__ void fillJacobiansKern(
 	int constrainsAmount, int particles,
@@ -106,6 +111,41 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* f
 	}
 }
 
+__global__ void generateGridIndiciesKern(float* x, float* y, float* z, unsigned int* indicies, unsigned int* mapping, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	indicies[index] = PositionToGrid(x[index], y[index], z[index]);
+	mapping[index] = index;
+}
+
+__global__ void identifyGridCubeStartEndKern(unsigned int* grid, int* grid_cube_start, int* grid_cube_end, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+
+	int gridIndex = grid[index];
+	if (index == 0) {
+		grid_cube_start[gridIndex] = 0;
+		return;
+	}
+	if (index == nParticles - 1)
+	{
+		grid_cube_end[gridIndex] = nParticles - 1;
+	}
+
+	const unsigned int prevGridIndex = grid[index - 1];
+	if (gridIndex != prevGridIndex)
+	{
+		grid_cube_end[prevGridIndex] = index - 1;
+		grid_cube_start[prevGridIndex] = index;
+		if (index == nParticles - 1)
+		{
+			grid_cube_end[gridIndex] = index;
+		}
+	}
+}
+
 ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
 {
 
@@ -132,15 +172,22 @@ void ConstrainSolver::calculateForces(
 	int N = nParticles * 3;
 	float* tmp = new float[N * N];
 
-
 	unsigned int threads = 32;
-
 
 	// kernels bound by number of constraints
 	int constraint_bound_blocks = (nConstraints + threads - 1) / threads;
 
 	// kernels bound by the size of Jacobian
 	int particle_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
+
+	generateGridIndiciesKern << <particle_bound_blocks, threads >> > (x, y, z, dev_grid_index, dev_mapping, nParticles);
+	
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	thrust::sort_by_key(thrust_grid, thrust_grid + nParticles, thrust_mapping);
+	thrust::fill(thrust_grid_cube_start, thrust_grid_cube_start + TOTALCUBES, -1);
+	thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
 
 	fillJacobiansKern << < constraint_bound_blocks, threads >> > (nConstraints, nParticles,
 		x, y, z,
@@ -294,4 +341,10 @@ void ConstrainSolver::setConstraints(std::vector<std::pair<int, int>> pairs, flo
 	gpuErrchk(cudaMalloc((void**)&dev_new_lambda, nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
 
+	gpuErrchk(cudaMalloc((void**)&dev_grid_index, nParticles * sizeof(unsigned int)));
+	
+	gpuErrchk(cudaMalloc((void**) &dev_mapping, nParticles * sizeof(unsigned int)));
+
+	thrust_grid = thrust::device_pointer_cast<unsigned int>(dev_grid_index);
+	thrust_mapping = thrust::device_pointer_cast<unsigned int>(dev_mapping);
 }
