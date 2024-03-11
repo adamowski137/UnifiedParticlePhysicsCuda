@@ -10,7 +10,7 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::Inst
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setConstraints({ {0, 1}, {1, 2}, {0, 2}, {0,3}, {1,3}, {2,3} }, 4.f);
+	particles.setConstraints({ {0, 1}, {1, 2}, {0, 2}, {0,3}, {1,3}, {2,3} }, 2.f);
 }
 
 Scene_External::~Scene_External()

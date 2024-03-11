@@ -140,12 +140,6 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
 	b[index] = -constrains[index](x, y, z, vx, vy, vz) - constrains[index].timeDerivative(x, y, z, vx, vy, vz);
-		//for (int j = 0; j < particles; j++)
-		//{
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j] * vx[j] / dt;
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j + 1] * vy[j] / dt;
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j + 2] * vz[j] / dt;
-		//}
 }
 
 __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)

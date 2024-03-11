@@ -39,8 +39,6 @@ private:
 	float fextx, fexty, fextz;
 
 	std::unique_ptr<ConstrainSolver> constrainSolver;
-	std::vector<DistanceConstrain*> constrains;
-
 
 	int blocks;
 
