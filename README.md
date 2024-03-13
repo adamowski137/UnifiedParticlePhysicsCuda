@@ -3,7 +3,7 @@
 Project under development :))
 
 ## Overview ##
-A project thats main goal is to simulate behavior of various bodies with the help of constrained based physics. The project is written such that the most operations are executed on GPU using CUDA technology.
+A project thats main goal is to simulate behavior of various bodies with the help of constrained based physics. The project is written such that most operations are executed on GPU using CUDA technology.
 
 Each body is divided into small particles that behavior is modeled by placing on them various constrains. If a constrain is broken by a particle it generates a force to negate it.
 
