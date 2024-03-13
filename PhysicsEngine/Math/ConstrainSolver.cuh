@@ -4,6 +4,7 @@
 #include <memory>
 #include <thrust/device_ptr.h>
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
+
 class ConstrainSolver {
 public:
 	ConstrainSolver(int particles);
@@ -13,20 +14,31 @@ public:
 		float* vx, float* vy, float* vz,
 		float* invmass, float* fc, float dt
 	);
-	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
+
+	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
+	void addDynamicConstraint(int idx1, int idx2, float d, ConstraintLimitType type);
 
 private:
+	// J matrix, dynamically created in every iteration
 	float* dev_jacobian;
 	float* dev_jacobian_transposed;
+
+	// J dot matrix
 	float* dev_velocity_jacobian;
+
+	// as in Ax = b matrix equation
 	float* dev_A;
 	float* dev_b;
+
+	// coefficients, results of matrix equation, multiplied by J give force that has to be applied to particles
 	float* dev_lambda;
 	float* dev_new_lambda;
+
 	unsigned int* dev_grid_index;
 	unsigned int* dev_mapping;
 	int* dev_grid_cube_start;
 	int* dev_grid_cube_end;
+
 	thrust::device_ptr<unsigned int> thrust_grid;
 	thrust::device_ptr<unsigned int> thrust_mapping;
 	thrust::device_ptr<int> thrust_grid_cube_start;
@@ -34,7 +46,17 @@ private:
 
 	int nParticles;
 	int nConstraints;
-	DistanceConstrain* dev_constrains;
-	std::vector<DistanceConstrain> cpu_constraints;
+	int nStaticConstraints;
+	int nDynamicConstraints;
 
+	// if number of constraints decreased between simulation steps we do not want to reallocate arrays
+	int nConstraintsMaxAllocated;
+
+	// mainly collision constraints
+	DistanceConstrain* dev_constraints;
+	DistanceConstrain* dev_staticConstraints;
+	std::vector<DistanceConstrain> dynamicConstraints;
+
+	void allocateArrays();
+	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz);
 };

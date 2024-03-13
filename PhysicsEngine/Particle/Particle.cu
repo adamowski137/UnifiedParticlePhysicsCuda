@@ -222,8 +222,8 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-
-	constrainSolver.get()->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
+	constrainSolver->addDynamicConstraint(4, 5, 4.0f, ConstraintLimitType::EQ);
+	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -240,7 +240,7 @@ void ParticleType::calculateNewPositions(float dt)
 
 void ParticleType::setConstraints(std::vector<std::pair<int, int>> pairs, float d)
 {
-	this->constrainSolver->setConstraints(pairs, d);
+	this->constrainSolver->setStaticConstraints(pairs, d);
 }
 
 void ParticleType::mapCudaVBO(unsigned int vbo)
