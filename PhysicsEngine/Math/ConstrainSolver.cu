@@ -10,9 +10,17 @@
 
 #define SHMEM_SIZE 1024
 
-#define AxisIndex(x) (x - MINDIMENSION) / PARTICLERADIUS
+#define AxisIndex(x) (x - MINDIMENSION) / (2 * PARTICLERADIUS)
 #define PositionToGrid(x, y, z)  AxisIndex(x) + CUBESPERDIMENSION * (AxisIndex(y) + CUBESPERDIMENSION * AxisIndex(z))
 #define DistanceSquared(x1, y1, z1, x2, y2, z2) (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2)
+
+__global__ void fillArrayKern(int* dst, int amount, int value)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= amount) return;
+
+	dst[index] = value;
+}
 
 __global__ void fillJacobiansKern(
 	int constrainsAmount, int particles,
@@ -97,9 +105,9 @@ __global__ void findCollisions(
 	unsigned int yIdx = AxisIndex(y[index]);
 	unsigned int zIdx = AxisIndex(z[index]);
 
-	unsigned int minX = min(xIdx - 1, 0);
-	unsigned int minY = min(yIdx - 1, 0);
-	unsigned int minZ = min(zIdx - 1, 0);
+	unsigned int minX = xIdx;
+	unsigned int minY = yIdx;
+	unsigned int minZ = zIdx;
 	unsigned int maxX = max(xIdx + 1, (int)(CUBESPERDIMENSION - 1));
 	unsigned int maxY = max(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
 	unsigned int maxZ = max(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
@@ -257,16 +265,31 @@ void ConstrainSolver::calculateForces(
 	int constraint_bound_blocks = (nConstraints + threads - 1) / threads;
 
 	// kernels bound by the size of Jacobian
-	int particle_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
+	int particlex3_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
+	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	generateGridIndiciesKern << <particle_bound_blocks, threads >> > (x, y, z, dev_grid_index, dev_mapping, nParticles);
-	
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	int grid_bound_blocks = (TOTALCUBES + threads - 1) / threads;
+
+
+	//generateGridIndiciesKern << <particle_bound_blocks, threads >> > (x, y, z, dev_grid_index, dev_mapping, nParticles);
+	//
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
 
 	//thrust::sort_by_key(thrust_grid, thrust_grid + nParticles, thrust_mapping);
-	thrust::fill(thrust_grid_cube_start, thrust_grid_cube_start + TOTALCUBES, -1);
-	//thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
+	////thrust::fill(thrust_grid_cube_start, thrust_grid_cube_start + TOTALCUBES, -1);
+	////thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
+	//fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_start, TOTALCUBES, -1);
+	//fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_end, TOTALCUBES, -1);
+
+
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
+	//
+	//findCollisions<<<particle_bound_blocks, threads>>>(x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
+
+	//gpuErrchk(cudaGetLastError());
+	//gpuErrchk(cudaDeviceSynchronize());
 
 
 	this->allocateArrays();
@@ -296,7 +319,7 @@ void ConstrainSolver::calculateForces(
 			std::cout << tmp[i] << " ";
 		std::cout << "\n";*/
 
-	transposeKern << <particle_bound_blocks, threads>> > (
+	transposeKern << <particlex3_bound_blocks, threads>> > (
 		3 * nParticles,
 		nConstraints,
 		dev_jacobian,
@@ -316,14 +339,14 @@ void ConstrainSolver::calculateForces(
 	//std::cout << "\n\n";
 
 		
-	massVectorMultpilyKern << <particle_bound_blocks, threads >> > (
+	massVectorMultpilyKern << <particlex3_bound_blocks, threads >> > (
 		3 * nParticles,
 		nConstraints,
 		invmass,
 		dev_jacobian);
 
-	//gpuErrchk(cudaGetLastError());
-	//gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
 	/*cudaMemcpy(tmp, dev_jacobian, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
 	for (int i = 0; i < N; i++)
@@ -359,7 +382,7 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaDeviceSynchronize());
 
 	//std::swap(dev_lambda, dev_new_lambda);
-	applyForce << <particle_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * nParticles, nConstraints);
+	applyForce << <particlex3_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * nParticles, nConstraints);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
