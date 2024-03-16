@@ -4,6 +4,7 @@
 #include <memory>
 #include <thrust/device_ptr.h>
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
+#include "../List/List.cuh"
 
 class ConstrainSolver {
 public:
@@ -33,6 +34,8 @@ private:
 	// coefficients, results of matrix equation, multiplied by J give force that has to be applied to particles
 	float* dev_lambda;
 	float* dev_new_lambda;
+
+	List* dev_collision_lists;
 
 	unsigned int* dev_grid_index;
 	unsigned int* dev_mapping;
