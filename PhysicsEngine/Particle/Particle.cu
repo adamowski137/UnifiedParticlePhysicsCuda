@@ -136,6 +136,11 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
 	
+	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
+	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
+
+
+	
 	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));
 
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, nParticles * sizeof(float)));
@@ -212,7 +217,7 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// find neighboring particles and solid contacts ??
 
-	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles);
+	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
 
 	// todo implement grid (predicted positions)
 
@@ -225,7 +230,7 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-	constrainSolver->addDynamicConstraint(4, 5, 4.0f, ConstraintLimitType::EQ);
+	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, 2.0f, ConstraintLimitType::EQ);
 	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
