@@ -4,6 +4,7 @@
 #include "../Constants.hpp"
 #include "../GpuErrorHandling.hpp"
 #include <thrust/sort.h>
+#include <thrust/device_vector.h>
 
 #define AxisIndex(x) (x - MINDIMENSION) / (2 * PARTICLERADIUS)
 #define PositionToGrid(x, y, z)  AxisIndex(x) + CUBESPERDIMENSION * (AxisIndex(y) + CUBESPERDIMENSION * AxisIndex(z))
@@ -21,11 +22,13 @@ __global__ void findCollisionsKern(
 	List* collisionList,
 	float* x, float* y, float* z,
 	unsigned int* mapping, unsigned int* grid,
-	int* gridCubeStart, int* gridCubeEnd, int nParticles)
+	int* gridCubeStart, int* gridCubeEnd, int nParticles, int* collisionCount)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
 
+	// tak testowalem czy sumy prefiksowe dzialaja
+	//collisionCount[index] = 1;
 	unsigned int xIdx = AxisIndex(x[index]);
 	unsigned int yIdx = AxisIndex(y[index]);
 	unsigned int zIdx = AxisIndex(z[index]);
@@ -60,6 +63,7 @@ __global__ void findCollisionsKern(
 					{
 						if (i == xIdx && j == yIdx && k == zIdx && particle >= index) continue;
 						collisionList[index].addNode(particle);
+						collisionCount[index]++;
 					}
 				}
 			}
@@ -112,6 +116,8 @@ __global__ void clearCollisionsKern(List* collisions, int nParticles)
 
 CollisionGrid::CollisionGrid(int nParticles)
 {
+	gpuErrchk(cudaMalloc((void**)&dev_collision_count, nParticles * sizeof(unsigned int)));
+
 	gpuErrchk(cudaMalloc((void**)&dev_grid_index, nParticles * sizeof(unsigned int)));
 	gpuErrchk(cudaMalloc((void**)&dev_mapping, nParticles * sizeof(unsigned int)));
 
@@ -154,14 +160,21 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles)
 	fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_start, TOTALCUBES, -1);
 	fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_end, TOTALCUBES, -1);
 
+	gpuErrchk(cudaMemset(dev_collision_count, 0, sizeof(int) * nParticles));
+
 	clearCollisionsKern << <particle_bound_blocks, threads >> > (dev_collision_lists, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	findCollisionsKern<<<particle_bound_blocks, threads>>>(dev_collision_lists, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
+	findCollisionsKern<<<particle_bound_blocks, threads>>>(dev_collision_lists, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_collision_count);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	thrust::device_vector<int> prefixSum(nParticles, 0);
+	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(dev_collision_count);
+	thrust::inclusive_scan(p, p + nParticles, prefixSum.begin());
+
+	std::cout << prefixSum[nParticles - 1] << "\n";
 }
 
 

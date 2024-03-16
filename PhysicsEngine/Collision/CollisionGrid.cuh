@@ -4,6 +4,8 @@
 
 class CollisionGrid 
 {
+	int* dev_collision_count;
+
 	unsigned int* dev_grid_index;
 	unsigned int* dev_mapping;
 	int* dev_grid_cube_start;
