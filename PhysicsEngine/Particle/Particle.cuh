@@ -6,6 +6,7 @@
 #include "../Constrain/Constrain.cuh"
 #include <vector>
 #include "../Math/ConstrainSolver.cuh"
+#include "../Collision/CollisionGrid.cuh"
 
 class ParticleType
 {
@@ -39,6 +40,7 @@ private:
 	float fextx, fexty, fextz;
 
 	std::unique_ptr<ConstrainSolver> constrainSolver;
+	std::unique_ptr<CollisionGrid> collisionGrid;
 
 	int blocks;
 

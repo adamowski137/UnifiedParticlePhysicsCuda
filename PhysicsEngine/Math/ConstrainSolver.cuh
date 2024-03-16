@@ -35,18 +35,6 @@ private:
 	float* dev_lambda;
 	float* dev_new_lambda;
 
-	List* dev_collision_lists;
-
-	unsigned int* dev_grid_index;
-	unsigned int* dev_mapping;
-	int* dev_grid_cube_start;
-	int* dev_grid_cube_end;
-
-	thrust::device_ptr<unsigned int> thrust_grid;
-	thrust::device_ptr<unsigned int> thrust_mapping;
-	thrust::device_ptr<int> thrust_grid_cube_start;
-	thrust::device_ptr<int> thrust_grid_cube_end;
-
 	int nParticles;
 	int nConstraints;
 	int nStaticConstraints;

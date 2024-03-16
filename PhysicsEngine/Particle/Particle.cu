@@ -103,6 +103,7 @@ ParticleType::ParticleType(int amount) : nParticles{amount}
 {
 	blocks = ceilf((float)nParticles / THREADS);
 	constrainSolver = std::unique_ptr<ConstrainSolver>{ new ConstrainSolver{amount}};
+	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount}};
 	setupDeviceData();
 }
 
@@ -210,6 +211,8 @@ void ParticleType::calculateNewPositions(float dt)
 	gpuErrchk(cudaDeviceSynchronize());
 
 	// find neighboring particles and solid contacts ??
+
+	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles);
 
 	// todo implement grid (predicted positions)
 
