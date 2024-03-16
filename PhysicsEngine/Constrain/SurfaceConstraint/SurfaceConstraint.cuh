@@ -4,9 +4,7 @@
 class SurfaceConstraint	: public Constrain
 {
 public:
-	int p;
-
-	SurfaceConstrain(float d, int p1, int p2, ConstraintLimitType type);
+	SurfaceConstraint(float d, int particle);
 	__host__ __device__ float operator()(float* x, float* y, float* z,
 		float* vx, float* vy, float* vz);
 	__host__ __device__  float timeDerivative(float* x, float* y, float* z,
@@ -15,6 +13,11 @@ public:
 		float* vx, float* vy, float* vz, int index, float* output);
 	__host__ __device__  void timePositionDerivative(float* x, float* y, float* z,
 		float* vx, float* vy, float* vz, int index, float* output);
+	
+	void 
+
 private:
-	float d;
+	float r;
+	float a, b, c, d;
+	int* dev_hit;
 };
