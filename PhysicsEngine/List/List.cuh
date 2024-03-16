@@ -20,5 +20,4 @@ public:
 	__host__ __device__ void clearList();
 
 private:
-	int count;
 };

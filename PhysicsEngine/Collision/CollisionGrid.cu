@@ -5,6 +5,7 @@
 #include "../GpuErrorHandling.hpp"
 #include <thrust/sort.h>
 #include <thrust/device_vector.h>
+#include <stdio.h>
 
 #define AxisIndex(x) (x - MINDIMENSION) / (2 * PARTICLERADIUS)
 #define PositionToGrid(x, y, z)  AxisIndex(x) + CUBESPERDIMENSION * (AxisIndex(y) + CUBESPERDIMENSION * AxisIndex(z))
@@ -59,7 +60,7 @@ __global__ void findCollisionsKern(
 					float pz = z[particle];
 
 					float distanceSq = DistanceSquared(x[index], y[index], z[index], px, py, pz);
-					if (distanceSq < PARTICLERADIUS)
+					if (distanceSq < PARTICLERADIUS * PARTICLERADIUS)
 					{
 						if (i == xIdx && j == yIdx && k == zIdx && particle >= index) continue;
 						collisionList[index].addNode(particle);
@@ -82,29 +83,28 @@ __global__ void generateGridIndiciesKern(float* x, float* y, float* z, unsigned 
 
 __global__ void identifyGridCubeStartEndKern(unsigned int* grid, int* grid_cube_start, int* grid_cube_end, int nParticles)
 {
-	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	const auto index = (blockIdx.x * blockDim.x) + threadIdx.x;
+
 	if (index >= nParticles) return;
 
-	int gridIndex = grid[index];
+	const unsigned int current_grid_index = grid[index];
+
 	if (index == 0) {
-		grid_cube_start[gridIndex] = 0;
+		grid_cube_start[current_grid_index] = 0;
 		return;
 	}
 	if (index == nParticles - 1)
 	{
-		grid_cube_end[gridIndex] = nParticles - 1;
+		grid_cube_end[current_grid_index] = nParticles - 1;
 	}
 
-	const unsigned int prevGridIndex = grid[index - 1];
-	if (gridIndex != prevGridIndex)
-	{
-		grid_cube_end[prevGridIndex] = index - 1;
-		grid_cube_start[prevGridIndex] = index;
-		if (index == nParticles - 1)
-		{
-			grid_cube_end[gridIndex] = index;
-		}
-	}	
+	const unsigned int prev_grid_index = grid[index - 1];
+	if (current_grid_index != prev_grid_index) {
+		grid_cube_end[prev_grid_index] = static_cast<int>(index - 1);
+		grid_cube_start[current_grid_index] = index;
+
+		if (index == nParticles - 1) { grid_cube_end[current_grid_index] = index; }
+	}
 }
 
 __global__ void clearCollisionsKern(List* collisions, int nParticles)
@@ -149,22 +149,29 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles)
 	int grid_bound_blocks = (TOTALCUBES + threads - 1) / threads;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
+
 	generateGridIndiciesKern << <particle_bound_blocks, threads >> > (x, y, z, dev_grid_index, dev_mapping, nParticles);
-	
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+
 	thrust::sort_by_key(thrust_grid, thrust_grid + nParticles, thrust_mapping);
-	//thrust::fill(thrust_grid_cube_start, thrust_grid_cube_start + TOTALCUBES, -1);
-	//thrust::fill(thrust_grid_cube_end, thrust_grid_cube_end + TOTALCUBES, -1);
+
 	fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_start, TOTALCUBES, -1);
 	fillArrayKern << <grid_bound_blocks, threads >> > (dev_grid_cube_end, TOTALCUBES, -1);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
-	gpuErrchk(cudaMemset(dev_collision_count, 0, sizeof(int) * nParticles));
+	identifyGridCubeStartEndKern << <particle_bound_blocks, threads >> > (dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
 
 	clearCollisionsKern << <particle_bound_blocks, threads >> > (dev_collision_lists, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+ 	gpuErrchk(cudaMemset(dev_collision_count, 0, sizeof(int) * nParticles));
 
 	findCollisionsKern<<<particle_bound_blocks, threads>>>(dev_collision_lists, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_collision_count);
 	gpuErrchk(cudaGetLastError());

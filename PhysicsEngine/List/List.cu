@@ -1,7 +1,7 @@
 #include "List.cuh"
 #include <stdlib.h>
 
-List::List() : count{ 0 }, head{ NULL }, tail{ NULL }
+List::List() : head{ NULL }, tail{ NULL }
 {
 }
 
@@ -14,7 +14,7 @@ void List::addNode(int value)
 {
 	Node* p = (Node*) malloc(sizeof(Node));
 	p->value = value;
-	count++;
+	p->next = NULL;
 	if (head == NULL)
 	{
 		head = p;
@@ -23,15 +23,19 @@ void List::addNode(int value)
 	}
 	
 	tail->next = p;
+	tail = tail->next;
 }
 
 void List::clearList()
 {
+	if (head == NULL) return;
 	Node* p = head;
 	while (p != NULL)
 	{
-		Node* pp = p->next;
-		free(p);
+		Node* pp = p;
+		p = p->next;
+		free(pp);
 	}
-	count = 0;
+	head = NULL;
+	tail = NULL;
 }
