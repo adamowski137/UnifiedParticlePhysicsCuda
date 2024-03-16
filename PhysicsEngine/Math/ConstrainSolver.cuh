@@ -17,7 +17,7 @@ public:
 	);
 
 	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
-	void addDynamicConstraint(int idx1, int idx2, float d, ConstraintLimitType type);
+	void addDynamicConstraints(List* collisions, int* counts, float d, ConstraintLimitType type);
 
 private:
 	// J matrix, dynamically created in every iteration
@@ -44,9 +44,9 @@ private:
 	int nConstraintsMaxAllocated;
 
 	// mainly collision constraints
-	DistanceConstrain* dev_constraints;
-	DistanceConstrain* dev_staticConstraints;
-	std::vector<DistanceConstrain> dynamicConstraints;
+	DistanceConstrain** dev_constraints;
+	DistanceConstrain** dev_staticConstraints;
+	DistanceConstrain** dev_dynamicConstraints;
 
 	void allocateArrays();
 	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz);
