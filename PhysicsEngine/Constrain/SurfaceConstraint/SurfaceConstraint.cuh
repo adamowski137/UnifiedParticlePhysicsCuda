@@ -13,8 +13,6 @@ public:
 		float* vx, float* vy, float* vz, int index, float* output);
 	__host__ __device__  void timePositionDerivative(float* x, float* y, float* z,
 		float* vx, float* vy, float* vz, int index, float* output);
-	
-	void 
 
 private:
 	float r;

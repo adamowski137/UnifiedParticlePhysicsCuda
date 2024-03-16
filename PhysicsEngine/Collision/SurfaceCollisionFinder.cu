@@ -112,8 +112,12 @@ std::pair<float*, float*> SurfaceCollisionFinder::findAndUpdateCollisions(int nP
 	gpuErrchk(cudaMalloc((void**)dev_b_surface_collisions, sizeof(float) * nCollisions));
 	gpuErrchk(cudaMemset(dev_b_surface_collisions, 0, sizeof(float) * nCollisions));
 
+	int* dev_hitsSum = thrust::raw_pointer_cast(prefixSum.data());
+
+
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_jacobian_surface_collisions, dev_b_surface_collisions,
+		dev_hit, dev_hitsSum, dev_surface, 
 		x, y, z, vx, vy, vz, 2.f);
 
 	return std::make_pair(dev_jacobian_surface_collisions, dev_b_surface_collisions);
