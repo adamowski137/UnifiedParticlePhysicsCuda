@@ -248,18 +248,7 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	jaccobiKern << <constraint_bound_blocks, threads >> > (nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max);
-
-	//thrust::device_ptr<float> f{ dev_new_lambda };
-	//for (int i = 0; i < nConstraints; i++)
-	//{
-	//	std::cout << f[i] << std::endl;
-	//}
-	//std::cout << std::endl;
-
-
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	jaccobi(nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max, 3);
 
 	//std::swap(dev_lambda, dev_new_lambda);
 	applyForce << <particlex3_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * nParticles, nConstraints);
