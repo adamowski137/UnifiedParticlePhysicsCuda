@@ -80,7 +80,20 @@ __global__ void generateGridIndiciesKern(float* x, float* y, float* z, unsigned 
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
-	indicies[index] = PositionToGrid(x[index], y[index], z[index]);
+	
+	float xCur = x[index];
+	float yCur = y[index];
+	float zCur = z[index];
+
+	if (x[index] >= MAXDIMENSION) xCur = MAXDIMENSION - 0.01f;
+	if (y[index] >= MAXDIMENSION) yCur = MAXDIMENSION - 0.01f;
+	if (z[index] >= MAXDIMENSION) zCur = MAXDIMENSION - 0.01f;
+
+	if (x[index] <= MINDIMENSION) xCur = MINDIMENSION + 0.01f;
+	if (y[index] <= MINDIMENSION) yCur = MINDIMENSION + 0.01f;
+	if (z[index] <= MINDIMENSION) zCur = MINDIMENSION + 0.01f;
+
+	indicies[index] = PositionToGrid(xCur, yCur, zCur);
 	mapping[index] = index;
 }
 
@@ -184,7 +197,7 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	thrust::inclusive_scan(p, p + nParticles, prefixSum);
 
 
-	//std::cout << prefixSum[nParticles - 1] << "\n";
+	std::cout << prefixSum[nParticles - 1] << "\n";
 }
 
 

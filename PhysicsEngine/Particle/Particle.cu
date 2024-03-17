@@ -154,11 +154,11 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_x, dev_curand, -30.f, 30.f);
+	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_x, dev_curand, MINDIMENSION, MAXDIMENSION);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_y, dev_curand, -30.f, 30.f);
+	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_y, dev_curand, MINDIMENSION, MAXDIMENSION);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
@@ -166,11 +166,11 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vx, dev_curand, -5.f, 5.f);
+	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vx, dev_curand, -1.f, 1.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vy, dev_curand, -5.f, 5.f);
+	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vy, dev_curand, -1.f, 1.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	
@@ -231,7 +231,7 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::EQ);
+	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
 	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
