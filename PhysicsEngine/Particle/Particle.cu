@@ -9,6 +9,7 @@
 #include <thrust/device_ptr.h>
 #include "../GpuErrorHandling.hpp"
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
+#include "../Constants.hpp"
 
 #define EPS 0.000001
 
@@ -230,7 +231,7 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, 2.0f, ConstraintLimitType::EQ);
+	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::EQ);
 	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 

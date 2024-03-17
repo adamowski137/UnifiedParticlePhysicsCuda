@@ -1,9 +1,9 @@
 // world constants
-#define MAXDIMENSION 20.0f
-#define MINDIMENSION -20.0f
+#define MAXDIMENSION 10.0f
+#define MINDIMENSION -10.0f
 
 // particle constants
-#define PARTICLERADIUS 2.0f
+#define PARTICLERADIUS 0.5f
 
 
 #define CUBESPERDIMENSION (MAXDIMENSION - MINDIMENSION) / (2  * PARTICLERADIUS)

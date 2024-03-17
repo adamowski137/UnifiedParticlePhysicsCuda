@@ -55,6 +55,9 @@ __global__ void findCollisionsKern(
 				for (int it = first; it <= last; it++)
 				{
 					int particle = mapping[it];
+					
+					if (particle == index) continue;
+
 					float px = x[particle];
 					float py = y[particle];
 					float pz = z[particle];
@@ -62,7 +65,7 @@ __global__ void findCollisionsKern(
 					float distanceSq = DistanceSquared(x[index], y[index], z[index], px, py, pz);
 					if (distanceSq < PARTICLERADIUS * PARTICLERADIUS)
 					{
-						if (i == xIdx && j == yIdx && k == zIdx && particle >= index) continue;
+						if (i == xIdx && j == yIdx && k == zIdx && particle < index) continue;
 						collisionList[index].addNode(particle);
 						collisionCount[index]++;
 					}

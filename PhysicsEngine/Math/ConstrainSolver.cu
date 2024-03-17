@@ -228,6 +228,12 @@ void ConstrainSolver::calculateForces(
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+	//thrust::device_ptr<float> f{ fc };
+	//for (int i = 0; i < nParticles; i++)
+	//{
+	//	std::cout << f[3 * i] << " " << f[3 * i + 1] << " " << f[3 * i + 2] << std::endl;
+	//}
 }
 
 void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
@@ -248,6 +254,7 @@ void ConstrainSolver::addDynamicConstraints(List* collisions, int* sums, float d
 	int threads = 32;
 	int blocks = (nParticles + threads - 1) / threads;
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(sums);
+
 
 	addCollisionsKern<<<blocks, threads >>>(collisions, sums, dev_dynamicConstraints, type, d, nParticles);
 	gpuErrchk(cudaGetLastError());
