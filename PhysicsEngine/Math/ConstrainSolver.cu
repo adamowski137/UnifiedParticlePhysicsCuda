@@ -120,6 +120,12 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 	}
 }
 
+__global__ void debug(DistanceConstrain* constrains, int* out, int n)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= n) return;
+	out[index] = constrains[index].p1;
+}
 
 ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
 {
@@ -173,6 +179,8 @@ void ConstrainSolver::calculateForces(
 	// kernels bound by the size of Jacobian
 	int particlex3_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
+	
+
 
 	this->allocateArrays();
 	this->projectConstraints(x, y, z, vx, vy, vz);
@@ -218,6 +226,18 @@ void ConstrainSolver::calculateForces(
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+	int blocks = (nConstraints + threads - 1) / threads;
+	int* tmp;
+	cudaMalloc((void**)&tmp, nStaticConstraints * sizeof(int));
+	thrust::device_ptr<int> out{ tmp };
+	debug << <blocks, threads >> > (dev_staticConstraints, tmp, nStaticConstraints);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+	for (int i = 0; i < nStaticConstraints; i++)
+	{
+		std::cout << i << ": " << out[i] << "\n";
+	}
+
 
 	//std::swap(dev_lambda, dev_new_lambda);
 	applyForce << <particlex3_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * nParticles, nConstraints);
@@ -225,7 +245,13 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
+	debug << <blocks, threads >> > (dev_staticConstraints, tmp, nStaticConstraints);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+	for (int i = 0; i < nStaticConstraints; i++)
+	{
+		std::cout << i << ": " << out[i] << "\n";
+	}
 }
 
 void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
@@ -234,7 +260,7 @@ void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pair
 	std::vector<DistanceConstrain> cpu_constraints;
 	for (const auto& pair : pairs)
 	{
-		//cpu_constraints.push_back(DistanceConstrain(d, pair.first, pair.second, ConstraintLimitType::EQ));
+		cpu_constraints.push_back(DistanceConstrain(d, pair.first, pair.second, ConstraintLimitType::EQ));
 	}
 
 	gpuErrchk(cudaMalloc(&dev_staticConstraints, sizeof(DistanceConstrain) * nStaticConstraints));
@@ -262,7 +288,6 @@ void ConstrainSolver::allocateArrays()
 		gpuErrchk(cudaMalloc(&dev_constraints, sizeof(DistanceConstrain) * nConstraints));
 		gpuErrchk(cudaMemset(dev_constraints, 0, sizeof(DistanceConstrain) * nConstraints));
 		gpuErrchk(cudaMemcpy(dev_constraints, dev_staticConstraints, nStaticConstraints * sizeof(DistanceConstrain), cudaMemcpyDeviceToDevice));
-
 
 		if (dev_jacobian != 0)
 			gpuErrchk(cudaFree(dev_jacobian));
@@ -303,12 +328,6 @@ void ConstrainSolver::allocateArrays()
 	}
 }
 
-__global__ void debug(DistanceConstrain* constrains, int* out, int n)
-{
-	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= n) return;
-	out[index] = constrains[index].p1;
-}
 
 void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz)
 {
@@ -316,16 +335,6 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 		sizeof(DistanceConstrain) * nDynamicConstraints, cudaMemcpyDeviceToDevice));
 	int threads = 32;
 	int blocks = (nConstraints + threads - 1) / threads;
-	int* tmp;
-	cudaMalloc((void**)&tmp, nConstraints * sizeof(int));
-	debug << <blocks, threads >> > (dev_constraints, tmp, nConstraints);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-	thrust::device_ptr<int> out{ tmp };
-	for (int i = 0; i < nConstraints; i++)
-	{
-		std::cout << i << ": " << out[i] << "\n";
-	}
 
 
 	fillJacobiansKern << < blocks, threads >> > (nConstraints, nParticles,
