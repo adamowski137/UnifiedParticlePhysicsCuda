@@ -3,7 +3,7 @@
 #define MINDIMENSION -10.0f
 
 // particle constants
-#define PARTICLERADIUS 1.f
+#define PARTICLERADIUS 2.f
 
 
 #define CUBESPERDIMENSION (MAXDIMENSION - MINDIMENSION) / (2  * PARTICLERADIUS)

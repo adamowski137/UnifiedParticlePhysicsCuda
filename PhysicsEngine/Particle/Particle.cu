@@ -105,6 +105,7 @@ ParticleType::ParticleType(int amount) : nParticles{amount}
 	blocks = ceilf((float)nParticles / THREADS);
 	constrainSolver = std::unique_ptr<ConstrainSolver>{ new ConstrainSolver{amount}};
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount}};
+	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ {Surface(0, 1, 0, 0)} , amount}};
 	setupDeviceData();
 }
 
@@ -219,6 +220,7 @@ void ParticleType::calculateNewPositions(float dt)
 	// find neighboring particles and solid contacts ??
 
 	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
+	auto surfaceCollisionData = surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
 
 	// todo implement grid (predicted positions)
 
@@ -232,6 +234,7 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
+	constrainSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
 	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 

@@ -34,12 +34,12 @@ __global__ void findCollisionsKern(
 	unsigned int yIdx = AxisIndex(y[index]);
 	unsigned int zIdx = AxisIndex(z[index]);
 
-	unsigned int minX = xIdx;
-	unsigned int minY = yIdx;
-	unsigned int minZ = zIdx;
-	unsigned int maxX = max(xIdx + 1, (int)(CUBESPERDIMENSION - 1));
-	unsigned int maxY = max(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
-	unsigned int maxZ = max(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
+	unsigned int minX = max(xIdx - 1, 0);
+	unsigned int minY = max(yIdx - 1, 0);
+	unsigned int minZ = max(zIdx - 1, 0);
+	unsigned int maxX = min(xIdx + 1, (int)(CUBESPERDIMENSION - 1));
+	unsigned int maxY = min(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
+	unsigned int maxZ = min(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
 
 	for (int i = minX; i < maxX; i++)
 	{

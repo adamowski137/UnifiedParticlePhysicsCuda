@@ -8,26 +8,8 @@
 #include "thrust/device_ptr.h"
 #include "thrust/device_vector.h"
 #include "thrust/scan.h"
+#include "../Constants.hpp"
 
-__host__ __device__ float calculateC(float x, float y, float z, float r, Surface s)
-{
-	float len = sqrtf(s.a * s.a + s.b * s.b + s.c * s.c);
-	float dist = (s.a * x + s.b * y + s.c * z + s.d) / len;
-	return dist - r;
-}
-
-__host__ __device__ float calculateTimeDerivative(float vx, float vy, float vz, Surface s)
-{
-	return s.normal[0] * vx + s.normal[1] * vy + s.normal[2] * vz;
-
-}
-
-__host__ __device__ void calculatePositionDerivative(Surface s, float* output)
-{
-	output[0] = s.normal[0];
-	output[1] = s.normal[1];
-	output[2] = s.normal[2];
-}
 
 __global__ void findSurfaceCollisions(
 	int nParticles, int nSurfaces,
@@ -53,10 +35,8 @@ __global__ void findSurfaceCollisions(
 }
 
 __global__ void fillConstraints(int nParticles, int nSurfaces,
-	float* constraints, float* resultVector,
-	int* hits, int* hitsSum, Surface* surfaces,
-	float* x, float* y, float* z, float* vx, float* vy, float* vz,
-	float r)
+	SurfaceConstraint* constraints,
+	int* hits, int* hitsSum, Surface* surfaces, float r)
 {
 	int index = blockDim.x * blockIdx.x + threadIdx.x;
 	if (index >= nParticles) return;
@@ -66,9 +46,7 @@ __global__ void fillConstraints(int nParticles, int nSurfaces,
 		if (hits[index + i * nParticles])
 		{
 			int constraintIndex = hitsSum[index + i * nParticles];
-			calculatePositionDerivative(surfaces[i], &constraints[constraintIndex * 3 * nParticles + index * 3]);
-			resultVector[constraintIndex] = -calculateC(x[index], y[index], z[index], r, surfaces[i])
-				- calculateTimeDerivative(vx[index], vy[index], vz[index], surfaces[i]);
+			constraints[constraintIndex] = SurfaceConstraint(r, index, surfaces[i]);
 		}
 	}
 }
@@ -89,12 +67,12 @@ SurfaceCollisionFinder::~SurfaceCollisionFinder()
 	gpuErrchk(cudaFree(dev_surface));
 }
 
-std::pair<float*, float*> SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, float* y, float* z, float* vx, float* vy, float* vz)
+std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, float* y, float* z)
 {
 	int threads = 32;
 	int blocks = (nParticles + threads - 1) / threads;
 
-	findSurfaceCollisions << <blocks, threads >> > (nParticles, nSurfaces, dev_hit, dev_surface, x, y, z, 2.f);
+	findSurfaceCollisions << <blocks, threads >> > (nParticles, nSurfaces, dev_hit, dev_surface, x, y, z, PARTICLERADIUS);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -104,23 +82,17 @@ std::pair<float*, float*> SurfaceCollisionFinder::findAndUpdateCollisions(int nP
 	thrust::inclusive_scan(p, p + nSurfaces * nParticles, prefixSum.begin());
 
 	int nCollisions = prefixSum[nParticles * nSurfaces - 1];
-	float* dev_jacobian_surface_collisions, *dev_b_surface_collisions;
+	SurfaceConstraint* dev_constraints;
 
-	gpuErrchk(cudaMalloc((void**)dev_jacobian_surface_collisions, sizeof(float) * 3 * nParticles * nCollisions));
-	gpuErrchk(cudaMemset(dev_jacobian_surface_collisions, 0, sizeof(float) * 3 * nParticles * nCollisions));
-
-	gpuErrchk(cudaMalloc((void**)dev_b_surface_collisions, sizeof(float) * nCollisions));
-	gpuErrchk(cudaMemset(dev_b_surface_collisions, 0, sizeof(float) * nCollisions));
-
+	gpuErrchk(cudaMalloc((void**)&dev_constraints, sizeof(SurfaceConstraint) * nCollisions));
 	int* dev_hitsSum = thrust::raw_pointer_cast(prefixSum.data());
 
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
-		dev_jacobian_surface_collisions, dev_b_surface_collisions,
-		dev_hit, dev_hitsSum, dev_surface, 
-		x, y, z, vx, vy, vz, 2.f);
+		dev_constraints,
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS);
 
-	return std::make_pair(dev_jacobian_surface_collisions, dev_b_surface_collisions);
+	return std::make_pair(dev_constraints, nCollisions);
 	
 }
 

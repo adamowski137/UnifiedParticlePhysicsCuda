@@ -7,6 +7,7 @@
 #include <vector>
 #include "../Math/ConstrainSolver.cuh"
 #include "../Collision/CollisionGrid.cuh"
+#include "../Collision/SurfaceCollisionFinder.cuh"
 
 class ParticleType
 {
@@ -42,6 +43,7 @@ private:
 
 	std::unique_ptr<ConstrainSolver> constrainSolver;
 	std::unique_ptr<CollisionGrid> collisionGrid;
+	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
 
 	int blocks;
 

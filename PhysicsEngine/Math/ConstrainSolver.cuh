@@ -4,6 +4,7 @@
 #include <memory>
 #include <thrust/device_ptr.h>
 #include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
+#include "../Constrain/SurfaceConstraint/SurfaceConstraint.cuh"
 #include "../List/List.cuh"
 
 class ConstrainSolver {
@@ -18,6 +19,7 @@ public:
 
 	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
 	void addDynamicConstraints(List* collisions, int* counts, float d, ConstraintLimitType type);
+	void addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints);
 
 private:
 	// J matrix, dynamically created in every iteration
@@ -39,6 +41,7 @@ private:
 	int nConstraints;
 	int nStaticConstraints;
 	int nDynamicConstraints;
+	int nSurfaceConstraints;
 
 	// if number of constraints decreased between simulation steps we do not want to reallocate arrays
 	int nConstraintsMaxAllocated;
@@ -48,6 +51,8 @@ private:
 	DistanceConstrain* dev_staticConstraints;
 	DistanceConstrain* dev_dynamicConstraints;
 
+	SurfaceConstraint* dev_surfaceConstraints;
+
 	void allocateArrays();
-	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz);
+	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt);
 };
