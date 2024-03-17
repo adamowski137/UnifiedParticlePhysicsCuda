@@ -215,8 +215,6 @@ void ConstrainSolver::calculateForces(
 
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 	
-
-
 	this->allocateArrays();
 	this->projectConstraints(x, y, z, vx, vy, vz, dt);
 	
@@ -252,12 +250,12 @@ void ConstrainSolver::calculateForces(
 
 	jaccobiKern << <constraint_bound_blocks, threads >> > (nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max);
 
-	thrust::device_ptr<float> f{ dev_new_lambda };
-	for (int i = 0; i < nConstraints; i++)
-	{
-		std::cout << f[i] << std::endl;
-	}
-	std::cout << std::endl;
+	//thrust::device_ptr<float> f{ dev_new_lambda };
+	//for (int i = 0; i < nConstraints; i++)
+	//{
+	//	std::cout << f[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
 
 	gpuErrchk(cudaGetLastError());
@@ -297,11 +295,13 @@ void ConstrainSolver::addDynamicConstraints(List* collisions, int* sums, float d
 	int blocks = (nParticles + threads - 1) / threads;
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(sums);
 
-
 	addCollisionsKern<<<blocks, threads >>>(collisions, sums, dev_dynamicConstraints, type, d, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-	nDynamicConstraints += p[nParticles - 1];
+	nDynamicConstraints = p[nParticles - 1];
+	if(nDynamicConstraints > 0)
+		std::cout << nDynamicConstraints << std::endl;
+	
 }
 
 void ConstrainSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
@@ -377,7 +377,13 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 		sizeof(DistanceConstrain) * nDynamicConstraints, cudaMemcpyDeviceToDevice));
 	int threads = 32;
 	int blocks = (nConstraints + threads - 1) / threads;
-
+	//DistanceConstrain* tmp = (DistanceConstrain*)malloc(nConstraints * sizeof(DistanceConstrain));
+	//cudaMemcpy(tmp, dev_constraints, nConstraints * sizeof(DistanceConstrain), cudaMemcpyDeviceToHost);
+	//for (int i = 0; i < nConstraints; i++)
+	//{
+	//	std::cout << tmp[i].p1 << " " << tmp[i].p2 << std::endl;
+	//}
+	//free(tmp);
 
 	fillJacobiansKern << < blocks, threads >> > (nConstraints, nSurfaceConstraints, nParticles,
 		x, y, z,
