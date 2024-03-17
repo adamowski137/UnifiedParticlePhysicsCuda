@@ -44,9 +44,9 @@ private:
 	int nConstraintsMaxAllocated;
 
 	// mainly collision constraints
-	DistanceConstrain** dev_constraints;
-	DistanceConstrain** dev_staticConstraints;
-	DistanceConstrain** dev_dynamicConstraints;
+	DistanceConstrain* dev_constraints;
+	DistanceConstrain* dev_staticConstraints;
+	DistanceConstrain* dev_dynamicConstraints;
 
 	void allocateArrays();
 	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz);

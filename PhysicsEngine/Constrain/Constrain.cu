@@ -4,7 +4,7 @@
 #include <iostream>
 #include <climits>
 
-Constrain::Constrain(int n, float k, ConstraintLimitType type) : n{n}, k{k}
+__host__ __device__ Constrain::Constrain(int n, float k, ConstraintLimitType type) : n{n}, k{k}
 {
 	switch (type)
 	{
@@ -30,7 +30,7 @@ Constrain::Constrain(int n, float k, ConstraintLimitType type) : n{n}, k{k}
 	//gpuErrchk(cudaMemcpy(tmp, dev_indexes, n * sizeof(int), cudaMemcpyDeviceToHost));
 }
 
-Constrain::~Constrain()
+__host__ __device__ Constrain::~Constrain()
 {
 	// MEMORY LEAK!!! 
 	//gpuErrchk(cudaFree(dev_indexes));
