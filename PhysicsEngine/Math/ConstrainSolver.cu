@@ -101,22 +101,29 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
 	float* jacobian, float dt,
+	float* dev_c_min, float* dev_c_max,
+	
 	DistanceConstrain* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
 	b[index] = -(constrains[index])(x, y, z, vx, vy, vz) - (constrains[index]).timeDerivative(x, y, z, vx, vy, vz);
+	dev_c_max[index] = constrains[index].cMax;
+	dev_c_min[index] = constrains[index].cMin;
 }
 
 __global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b, 
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
 	float* jacobian, float dt,
+	float* dev_c_min, float* dev_c_max,
 	SurfaceConstraint* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
 	b[index] = -(constrains[index])(x, y, z, vx, vy, vz) - (constrains[index]).timeDerivative(x, y, z, vx, vy, vz);
+	dev_c_max[index] = constrains[index].cMax;
+	dev_c_min[index] = constrains[index].cMin;
 }
 
 
@@ -159,6 +166,8 @@ ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
 	dev_new_lambda = 0;
 	dev_constraints = 0;
 	dev_staticConstraints = 0;
+	dev_c_min = 0;
+	dev_c_max = 0;
 
 	nDynamicConstraints = 0;
 	nStaticConstraints = 0;
@@ -177,6 +186,9 @@ ConstrainSolver::~ConstrainSolver()
 	gpuErrchk(cudaFree(dev_b));
 	gpuErrchk(cudaFree(dev_lambda));
 	gpuErrchk(cudaFree(dev_new_lambda));
+	gpuErrchk(cudaFree(dev_c_min));
+	gpuErrchk(cudaFree(dev_c_max));
+
 
 
 	gpuErrchk(cudaFree(dev_staticConstraints));
@@ -238,7 +250,15 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	jaccobiKern << <constraint_bound_blocks, threads >> > (nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda);
+	jaccobiKern << <constraint_bound_blocks, threads >> > (nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max);
+
+	thrust::device_ptr<float> f{ dev_new_lambda };
+	for (int i = 0; i < nConstraints; i++)
+	{
+		std::cout << f[i] << std::endl;
+	}
+	std::cout << std::endl;
+
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -249,11 +269,11 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	//thrust::device_ptr<float> f{ fc };
-	//for (int i = 0; i < nParticles; i++)
-	//{
-	//	std::cout << f[3 * i] << " " << f[3 * i + 1] << " " << f[3 * i + 2] << std::endl;
-	//}
+	/*thrust::device_ptr<float> f{ dev_c_max };
+	for (int i = 0; i < nConstraints; i++)
+	{
+		std::cout << f[i] << std::endl;
+	}*/
 	nSurfaceConstraints = 0;
 	gpuErrchk(cudaFree(dev_surfaceConstraints));
 }
@@ -335,6 +355,17 @@ void ConstrainSolver::allocateArrays()
 		gpuErrchk(cudaMalloc((void**)&dev_new_lambda, nConstraints * sizeof(float)));
 		gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
 
+
+		if (dev_c_min != 0)
+			gpuErrchk(cudaFree(dev_c_min));
+		gpuErrchk(cudaMalloc((void**)&dev_c_min, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_c_min, 0, nConstraints * sizeof(float)));
+
+		if (dev_c_max != 0)
+			gpuErrchk(cudaFree(dev_c_max));
+		gpuErrchk(cudaMalloc((void**)&dev_c_max, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_c_max, 0, nConstraints * sizeof(float)));
+
 		nConstraintsMaxAllocated = nConstraints;
 	}
 }
@@ -372,6 +403,7 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 	fillResultVectorKern<<<blocks, threads>>>(nParticles, nConstraints, dev_b,
 		x, y, z,
 		vx, vy, vz, dev_jacobian, dt,
+		dev_c_min, dev_c_max,
 		dev_constraints);
 
 	gpuErrchk(cudaGetLastError());
@@ -381,6 +413,7 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 	fillResultVectorKern<<<blocks, threads>>>(nParticles, nSurfaceConstraints, dev_b + nConstraints - nSurfaceConstraints,
 		x, y, z,
 		vx, vy, vz, dev_jacobian, dt,
+		dev_c_min, dev_c_max,
 		dev_surfaceConstraints);
 
 	gpuErrchk(cudaGetLastError());

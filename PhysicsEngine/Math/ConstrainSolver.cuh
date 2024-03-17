@@ -33,6 +33,9 @@ private:
 	float* dev_A;
 	float* dev_b;
 
+	float* dev_c_min;
+	float* dev_c_max;
+
 	// coefficients, results of matrix equation, multiplied by J give force that has to be applied to particles
 	float* dev_lambda;
 	float* dev_new_lambda;

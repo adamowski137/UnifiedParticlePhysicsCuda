@@ -6,7 +6,7 @@
 #include <iostream>
 #include "../GpuErrorHandling.hpp"
 
-__global__ void jaccobiKern(int n, float* A, float* b, float* x, float* outX)
+__global__ void jaccobiKern(int n, float* A, float* b, float* x, float* outX, float* c_min, float* c_max)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
@@ -17,7 +17,14 @@ __global__ void jaccobiKern(int n, float* A, float* b, float* x, float* outX)
 		if (i == index) continue;
 		cx -= (A[index * n + i] * x[index]);
 	}
-	outX[index] = cx / a;
+	//float out = cx / a;
+	//out = out > c_min[index] ? out : c_min[index];
+	//out = out < c_max[index] ? out : c_max[index];
+	outX[index] = min(max(cx / a, c_min[index]), c_max[index]);
+	//outX[index] = out;
+//	outX[index] = cx / a;
+	
+
 }
 
 void jaccobi(int n, float* A, float* b, float* x)
@@ -35,7 +42,7 @@ void jaccobi(int n, float* A, float* b, float* x)
 	int threadsPerBlock = 512;
 	int blocks = ceilf((float)n / threadsPerBlock);
 	auto start = std::chrono::high_resolution_clock::now();
-	jaccobiKern << < threadsPerBlock, blocks >> > (n, dev_a, dev_b, dev_x, dev_nx);
+	jaccobiKern << < threadsPerBlock, blocks >> > (n, dev_a, dev_b, dev_x, dev_nx, 0, 0);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	auto end = std::chrono::high_resolution_clock::now();
