@@ -7,7 +7,6 @@ class Constrain
 {
 public:
 	__host__ __device__ Constrain(int n, float k, ConstraintLimitType type);
-	__host__ __device__ ~Constrain();
 	int n;
 	float k;
 	float cMin;

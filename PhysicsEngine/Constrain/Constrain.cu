@@ -29,9 +29,3 @@ __host__ __device__ Constrain::Constrain(int n, float k, ConstraintLimitType typ
 	//int tmp[2];
 	//gpuErrchk(cudaMemcpy(tmp, dev_indexes, n * sizeof(int), cudaMemcpyDeviceToHost));
 }
-
-__host__ __device__ Constrain::~Constrain()
-{
-	// MEMORY LEAK!!! 
-	//gpuErrchk(cudaFree(dev_indexes));
-}
