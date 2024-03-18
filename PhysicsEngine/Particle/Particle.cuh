@@ -6,19 +6,32 @@
 #include "../Constrain/Constrain.cuh"
 #include <vector>
 #include "../Math/ConstrainSolver.cuh"
+#include "../Collision/CollisionGrid.cuh"
+#include "../Collision/SurfaceCollisionFinder.cuh"
+
+#define ANY_CONSTRAINTS_ON 1
+#define GRID_CHECKING_ON 2
+#define SURFACE_CHECKING_ON 4
+
+
 
 class ParticleType
 {
 public:
-	ParticleType(int amount);
+	ParticleType(int amount, int mode, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*) );
 	~ParticleType();
 
 
 	void mapCudaVBO(unsigned int vbo);
 	void renderData(unsigned int vbo);
 	void calculateNewPositions(float dt);
+	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
+	void setSurfaces(std::vector<Surface> surfaces);
+	void setExternalForces(float fx, float fy, float fz);
+	inline int particleCount() { return nParticles; }
 private:
-	const int amountOfParticles;
+	const int nParticles;
+	int mode;
 	float* dev_x;
 	float* dev_y;
 	float* dev_z;
@@ -31,16 +44,18 @@ private:
 	float* dev_invmass;
 	float* dev_fc;
 	
-
+	List* dev_collisions;
+	int* dev_sums;
 	curandState* dev_curand;
 	
 	float fextx, fexty, fextz;
 
 	std::unique_ptr<ConstrainSolver> constrainSolver;
-	std::vector<DistanceConstrain*> constrains;
-
+	std::unique_ptr<CollisionGrid> collisionGrid;
+	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
 
 	int blocks;
 
-	void setupDeviceData();
+	void setupDeviceData(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*));
+	void allocateDeviceData();
 };

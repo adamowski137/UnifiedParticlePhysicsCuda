@@ -3,8 +3,11 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <thrust/transform.h>
+#include <thrust/sort.h>
 #include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include "LinearSolver.cuh"
+#include "../Constants.hpp"
 
 #define SHMEM_SIZE 1024
 
@@ -17,12 +20,29 @@ __global__ void fillJacobiansKern(
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsAmount) return;
-	for (int i = 0; i < constrains[index].n; i++)
-	{
-		constrains[index].positionDerivative(x, y, z, vx, vy, vz, i, &jacobian[index * 3 * particles + 3 * constrains[index].dev_indexes[i]]);
-		constrains[index].timePositionDerivative(x, y, z, vx, vy, vz, i, &velocity_jacobian[index * 3 * particles + 3 * constrains[index].dev_indexes[i]]);
-	}
+
+	(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * particles + 3 * (constrains[index]).p1]);
+	(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, 0, &velocity_jacobian[index * 3 * particles + 3 * (constrains[index]).p1]);
+
+	(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 1, &jacobian[index * 3 * particles + 3 * (constrains[index]).p2]);
+	(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, 1, &velocity_jacobian[index * 3 * particles + 3 * (constrains[index]).p2]);
 }
+
+__global__ void fillJacobiansKern(
+	int nConstraints, int nParticles,
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz,
+	float* jacobian, float* velocity_jacobian,
+	SurfaceConstraint* constrains)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nConstraints) return;
+
+	(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p]);
+	(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, &velocity_jacobian[index * 3 * nParticles + 3 * (constrains[index]).p]);
+}
+
+
 __global__ void matrixMulKern(const float* a, const float* b, float* c, int N, int K) {
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -77,83 +97,90 @@ __global__ void transposeKern(int columns, int rows, float* A, float* AT)
 	AT[column * rows + row] = A[row * columns + column];
 }
 
-__global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b, 
+__global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b,
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
 	float* jacobian, float dt,
+	float* dev_c_min, float* dev_c_max,
+
 	DistanceConstrain* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	for (int i = 0; i < constrainsNumber; i++)
-	{
-		b[i] = -constrains[i](x, y, z, vx, vy, vz) - constrains->timeDerivative(x, y, z, vx, vy, vz);
-		//for (int j = 0; j < particles; j++)
-		//{
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j] * vx[j] / dt;
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j + 1] * vy[j] / dt;
-		//	b[i] -= jacobian[i * 3 * particles + 3 * j + 2] * vz[j] / dt;
-		//}
-	}
+	//b[index] = -(constrains[index])(x, y, z, vx, vy, vz) - (constrains[index]).timeDerivative(x, y, z, vx, vy, vz);
+	b[index] = -(constrains[index])(x, y, z, vx, vy, vz);
+	dev_c_max[index] = constrains[index].cMax;
+	dev_c_min[index] = constrains[index].cMin;
 }
 
-__global__ void calculateForceKern(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)
+__global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b,
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz,
+	float* jacobian, float dt,
+	float* dev_c_min, float* dev_c_max,
+	SurfaceConstraint* constrains)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= constrainsNumber) return;
+	b[index] = -(constrains[index])(x, y, z, vx, vy, vz);
+	dev_c_max[index] = constrains[index].cMax;
+	dev_c_min[index] = constrains[index].cMin;
+}
+
+
+__global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index < 3 * nParticles)
 	{
 		for (int i = 0; i < nConstraints; i++)
 		{
-			fc[index] = new_lambda[i] * jacobi_transposed[index * nConstraints + i];
+			fc[index] += new_lambda[i] * jacobi_transposed[index * nConstraints + i];
 		}
 	}
 }
 
-__global__ void applyForceKern(float* x, float* y, float* z, float* fc, float* invmass, float dt, int nParticles)
+__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= nParticles) return;
-	x[index] += fc[3 * index + 0] * dt * dt;
-	y[index] += fc[3 * index + 1] * dt * dt;
-	z[index] += fc[3 * index + 2] * dt * dt;
+	if (index >= nParticles - 1) return;
+	Node* p = collisions[index].head;
+	int constrainIndex = counts[index] - 1;
+
+	while (p != NULL)
+	{
+		constraints[constrainIndex] = DistanceConstrain(d, index, p->value, type);
+		p = p->next;
+		constrainIndex--;
+	}
 }
 
-ConstrainSolver::ConstrainSolver(int particles, int constrainsNumber) : particles{ particles }, constrainsNumber{constrainsNumber}
+ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
 {
-	int* indexes = new int[2];
-	indexes[0] = 0;
-	indexes[1] = 1;
-	DistanceConstrain* constrains = new DistanceConstrain{ 4.f, indexes };
-	gpuErrchk(cudaMalloc((void**)&dev_constrains, constrainsNumber * sizeof(DistanceConstrain)));
-	gpuErrchk(cudaMemcpy(dev_constrains, constrains, constrainsNumber * sizeof(DistanceConstrain), cudaMemcpyHostToDevice));
-	delete[] indexes;
+	// set pointers to 0 - this way it will be easy to distinguish whether they have already been allocated or not
+	dev_jacobian = 0;
+	dev_jacobian_transposed = 0;
+	dev_velocity_jacobian = 0;
+	dev_A = 0;
+	dev_b = 0;
+	dev_lambda = 0;
+	dev_new_lambda = 0;
+	dev_constraints = 0;
+	dev_staticConstraints = 0;
+	dev_c_min = 0;
+	dev_c_max = 0;
 
-	gpuErrchk(cudaMalloc((void**)&dev_jacobian, 3 * particles * constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * particles * constrainsNumber * sizeof(float)));
+	nDynamicConstraints = 0;
+	nStaticConstraints = 0;
+	nSurfaceConstraints = 0;
+	nConstraints = 0;
 
-	gpuErrchk(cudaMalloc((void**)&dev_jacobian_transposed, 3 * particles * constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * particles * constrainsNumber * sizeof(float)));
-
-	gpuErrchk(cudaMalloc((void**)&dev_velocity_jacobian, 3 * particles * constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_velocity_jacobian, 0, 3 * particles * constrainsNumber * sizeof(float)));
-
-	gpuErrchk(cudaMalloc((void**)&dev_A, constrainsNumber * constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_A, 0, constrainsNumber * constrainsNumber * sizeof(float)));
-
-	gpuErrchk(cudaMalloc((void**)&dev_b, constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_b, 0, constrainsNumber * sizeof(float)));
-
-	gpuErrchk(cudaMalloc((void**)&dev_lambda, constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_lambda, 0, constrainsNumber * sizeof(float)));
-
-	gpuErrchk(cudaMalloc((void**)&dev_new_lambda, constrainsNumber * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_new_lambda, 0, constrainsNumber * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_dynamicConstraints, sizeof(DistanceConstrain) * 100));
 
 }
 
 ConstrainSolver::~ConstrainSolver()
 {
-	gpuErrchk(cudaFree(dev_constrains));
 	gpuErrchk(cudaFree(dev_jacobian));
 	gpuErrchk(cudaFree(dev_jacobian_transposed));
 	gpuErrchk(cudaFree(dev_velocity_jacobian));
@@ -161,6 +188,13 @@ ConstrainSolver::~ConstrainSolver()
 	gpuErrchk(cudaFree(dev_b));
 	gpuErrchk(cudaFree(dev_lambda));
 	gpuErrchk(cudaFree(dev_new_lambda));
+	gpuErrchk(cudaFree(dev_c_min));
+	gpuErrchk(cudaFree(dev_c_max));
+
+
+
+	gpuErrchk(cudaFree(dev_staticConstraints));
+	gpuErrchk(cudaFree(dev_constraints));
 }
 
 void ConstrainSolver::calculateForces(
@@ -170,107 +204,225 @@ void ConstrainSolver::calculateForces(
 	float* invmass, float* fc, float dt
 )
 {
-	int N = particles * 3;
-	float* tmp = new float[N * N];
-
+	nConstraints = nStaticConstraints + nDynamicConstraints + nSurfaceConstraints;
+	if (nConstraints == 0) return;
+	//std::cout << "i work" << "\n";
 
 	unsigned int threads = 32;
-	int blocks = ceilf(constrainsNumber / (float)threads);
 
-	fillJacobiansKern << < blocks, threads >> > (constrainsNumber, particles,
-		x, y, z,
-		vx, vy, vz,
-		dev_jacobian, dev_velocity_jacobian,
-		dev_constrains);
+	// kernels bound by number of constraints
+	int constraint_bound_blocks = (nConstraints + threads - 1) / threads;
 
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	// kernels bound by the size of Jacobian
+	int jacobian_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
 
-	//cudaMemcpy(tmp, dev_jacobian, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//for (int i = 0; i < N; i++)
-	//	std::cout << tmp[i] << " ";
-	//std::cout << "\n\n";
+	int particlex3_bound_blocks = ((3 * nParticles) + threads - 1) / threads;
 
-	
-	fillResultVectorKern<<<1, particles>>>(particles, constrainsNumber, dev_b,
-		x, y, z,
-		vx, vy, vz, dev_jacobian, dt,
-		dev_constrains);
+	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	this->allocateArrays();
+	this->projectConstraints(x, y, z, vx, vy, vz, dt);
 
-	//cudaMemcpy(tmp, dev_b, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//	for (int i = 0; i < constrainsNumber; i++)
-	//		std::cout << tmp[i] << " ";
-	//	std::cout << "\n";
 
-	transposeKern << <blocks, threads>> > (
-		3 * particles,
-		constrainsNumber,
+	transposeKern << <jacobian_bound_blocks, threads >> > (
+		3 * nParticles,
+		nConstraints,
 		dev_jacobian,
 		dev_jacobian_transposed);
 
 	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaDeviceSynchronize())
 
-
-	massVectorMultpilyKern << <blocks, threads >> > (
-		3 * particles,
-		constrainsNumber,
-		invmass,
-		dev_jacobian);
+		massVectorMultpilyKern << <jacobian_bound_blocks, threads >> > (
+			3 * nParticles,
+			nConstraints,
+			invmass,
+			dev_jacobian);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	cudaMemcpy(tmp, dev_jacobian, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	for (int i = 0; i < N; i++)
-		std::cout << tmp[i] << " ";
-	std::cout << "\n";
-
-	unsigned int BLOCKS_X = (constrainsNumber + threads - 1) / threads;
-	unsigned int BLOCKS_Y = (constrainsNumber + threads - 1) / threads;
+	unsigned int BLOCKS_X = (nConstraints + threads - 1) / threads;
+	unsigned int BLOCKS_Y = (nConstraints + threads - 1) / threads;
 
 	dim3 t{ threads, threads };
 	dim3 b{ BLOCKS_X, BLOCKS_Y };
 
-	matrixMulKern<<<b, t>>>(dev_jacobian, dev_jacobian_transposed, dev_A, constrainsNumber, 3 * particles);
-
-	cudaMemcpy(tmp, dev_A, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	cudaMemcpy(tmp + 1, dev_b, constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-		std::cout << tmp[0] << "*X = " << tmp[1];
-	std::cout << "\n\n";
+	matrixMulKern << <b, t >> > (dev_jacobian, dev_jacobian_transposed, dev_A, nConstraints, 3 * nParticles);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	jaccobiKern << <blocks, threads >> > (constrainsNumber, dev_A, dev_b, dev_lambda, dev_new_lambda);
-
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	jaccobi(nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max, 1);
 
 	//std::swap(dev_lambda, dev_new_lambda);
-	calculateForceKern << <blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, 3 * particles, constrainsNumber);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-	
-	applyForceKern<<<blocks, threads>>>(new_x, new_y, new_z, fc, invmass, dt, particles);
+	applyForce << <particlex3_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, nParticles, nConstraints);
+
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	/*applyForceKern << <blocks, threads >> > (x, y, z, fc, invmass, dt, particles);
+	/*thrust::device_ptr<float> f{ dev_c_max };
+	for (int i = 0; i < nConstraints; i++)
+	{
+		std::cout << f[i] << std::endl;
+	}*/
+
+}
+
+void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
+{
+	nStaticConstraints = pairs.size();
+	std::vector<DistanceConstrain> cpu_constraints;
+	for (const auto& pair : pairs)
+	{
+		cpu_constraints.push_back(DistanceConstrain(d, pair.first, pair.second, ConstraintLimitType::EQ));
+	}
+
+	gpuErrchk(cudaMalloc(&dev_staticConstraints, sizeof(DistanceConstrain) * nStaticConstraints));
+	gpuErrchk(cudaMemcpy(dev_staticConstraints, cpu_constraints.data(), cpu_constraints.size() * sizeof(DistanceConstrain), cudaMemcpyHostToDevice));
+}
+
+void ConstrainSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
+{
+	int threads = 32;
+	int blocks = (nParticles + threads - 1) / threads;
+	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(sums);
+
+	addCollisionsKern << <blocks, threads >> > (collisions, sums, dev_dynamicConstraints, type, d, nParticles);
 	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());*/
+	gpuErrchk(cudaDeviceSynchronize());
+	nDynamicConstraints = p[nParticles - 1];
+	//if(nDynamicConstraints > 0)
+		//std::cout << nDynamicConstraints << std::endl;
+
+}
+
+void ConstrainSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
+{
+	this->dev_surfaceConstraints = surfaceConstraints;
+	this->nSurfaceConstraints = nSurfaceConstraints;
+}
+
+void ConstrainSolver::allocateArrays()
+{
+	if (nConstraints > nConstraintsMaxAllocated)
+	{
+		if (dev_constraints != 0)
+			gpuErrchk(cudaFree(dev_constraints));
+		gpuErrchk(cudaMalloc(&dev_constraints, sizeof(DistanceConstrain) * nConstraints));
+		gpuErrchk(cudaMemset(dev_constraints, 0, sizeof(DistanceConstrain) * nConstraints));
+		gpuErrchk(cudaMemcpy(dev_constraints, dev_staticConstraints, nStaticConstraints * sizeof(DistanceConstrain), cudaMemcpyDeviceToDevice));
+
+		if (dev_jacobian != 0)
+			gpuErrchk(cudaFree(dev_jacobian));
+		gpuErrchk(cudaMalloc((void**)&dev_jacobian, 3 * nParticles * nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
+
+		if (dev_jacobian_transposed != 0)
+			gpuErrchk(cudaFree(dev_jacobian_transposed));
+		gpuErrchk(cudaMalloc((void**)&dev_jacobian_transposed, 3 * nParticles * nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));
+
+		if (dev_velocity_jacobian != 0)
+			gpuErrchk(cudaFree(dev_velocity_jacobian));
+		gpuErrchk(cudaMalloc((void**)&dev_velocity_jacobian, 3 * nParticles * nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_velocity_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
+
+		if (dev_A != 0)
+			gpuErrchk(cudaFree(dev_A));
+		gpuErrchk(cudaMalloc((void**)&dev_A, nConstraints * nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_A, 0, nConstraints * nConstraints * sizeof(float)));
+
+		if (dev_b != 0)
+			gpuErrchk(cudaFree(dev_b));
+		gpuErrchk(cudaMalloc((void**)&dev_b, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_b, 0, nConstraints * sizeof(float)));
+
+		if (dev_lambda != 0)
+			gpuErrchk(cudaFree(dev_lambda));
+		gpuErrchk(cudaMalloc((void**)&dev_lambda, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_lambda, 0, nConstraints * sizeof(float)));
+
+		if (dev_new_lambda != 0)
+			gpuErrchk(cudaFree(dev_new_lambda));
+		gpuErrchk(cudaMalloc((void**)&dev_new_lambda, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
 
 
+		if (dev_c_min != 0)
+			gpuErrchk(cudaFree(dev_c_min));
+		gpuErrchk(cudaMalloc((void**)&dev_c_min, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_c_min, 0, nConstraints * sizeof(float)));
+
+		if (dev_c_max != 0)
+			gpuErrchk(cudaFree(dev_c_max));
+		gpuErrchk(cudaMalloc((void**)&dev_c_max, nConstraints * sizeof(float)));
+		gpuErrchk(cudaMemset(dev_c_max, 0, nConstraints * sizeof(float)));
+
+		nConstraintsMaxAllocated = nConstraints;
+	}
+}
 
 
-
-	//cudaMemcpy(tmp, fc, N * constrainsNumber * sizeof(float), cudaMemcpyDeviceToHost);
-	//for (int i = 0; i < N * constrainsNumber; i++)
+void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt)
+{
+	gpuErrchk(cudaMemcpy(dev_constraints + nStaticConstraints, dev_dynamicConstraints,
+		sizeof(DistanceConstrain) * nDynamicConstraints, cudaMemcpyDeviceToDevice));
+	int threads = 32;
+	int blocks = (nConstraints + threads - 1) / threads;
+	//DistanceConstrain* tmp = (DistanceConstrain*)malloc(nConstraints * sizeof(DistanceConstrain));
+	//cudaMemcpy(tmp, dev_constraints, nConstraints * sizeof(DistanceConstrain), cudaMemcpyDeviceToHost);
+	//for (int i = 0; i < nConstraints; i++)
 	//{
-	//	std::cout << tmp[i] << " ";
+	//	std::cout << tmp[i].p1 << " " << tmp[i].p2 << std::endl;
 	//}
-	//std::cout << "\n";
+	//free(tmp);
+
+	fillJacobiansKern << < blocks, threads >> > (nConstraints - nSurfaceConstraints, nParticles,
+		x, y, z,
+		vx, vy, vz,
+		dev_jacobian, dev_velocity_jacobian,
+		dev_constraints);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillResultVectorKern << <blocks, threads >> > (nParticles, nConstraints - nSurfaceConstraints, dev_b,
+		x, y, z,
+		vx, vy, vz, dev_jacobian, dt,
+		dev_c_min, dev_c_max,
+		dev_constraints);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	if (nSurfaceConstraints > 0)
+	{
+		int offset = nConstraints - nSurfaceConstraints;
+		fillJacobiansKern<< < blocks, threads >> > (nSurfaceConstraints, nParticles,
+			x + 3 * offset, y + 3 * offset, z + 3 * offset,
+			vx + 3 * offset, vy + 3 * offset, vz + 3 * offset,
+			dev_jacobian + 3 * nParticles * (nConstraints - nSurfaceConstraints), dev_velocity_jacobian + 3 * nParticles * (nConstraints - nSurfaceConstraints),
+			dev_surfaceConstraints);
+
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+
+		fillResultVectorKern << <blocks, threads >> > (nParticles, nSurfaceConstraints, dev_b + nConstraints - nSurfaceConstraints,
+			x + 3 * offset, y + 3 * offset, z + 3 * offset,
+			vx + 3 * offset, vy + 3 * offset, vz + 3 * offset, dev_jacobian, dt,
+			dev_c_min, dev_c_max,
+			dev_surfaceConstraints);
+
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+
+		nSurfaceConstraints = 0;
+		gpuErrchk(cudaFree(dev_surfaceConstraints));
+
+	}
+
+	nDynamicConstraints = 0;
 }

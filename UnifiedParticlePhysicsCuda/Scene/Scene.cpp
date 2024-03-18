@@ -8,9 +8,9 @@
 #include <fstream>
 
 
-Scene::Scene(std::shared_ptr<Shader>& shader, int n) : 
+Scene::Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*), int mode) : 
 	camera(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height),
-	particles(n)
+	particles(n, mode, setDataFunction)
 {
 	renderer = std::make_unique<Renderer>(shader);
 	sceneSphere = getSphereData(10, 10);

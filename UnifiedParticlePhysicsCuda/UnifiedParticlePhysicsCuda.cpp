@@ -42,13 +42,20 @@ int main()
 	ResourceManager::Instance.loadAllShaders(shaderResPath);
 	ResourceManager::Instance.loadScenes(n);
 	
-	
-	float dt = 0.001f;
+	// semi fixed time step
+	// https://gafferongames.com/post/fix_your_timestep/
+	float dt = (1.f / 60.f) / 2.f;
+	float frameTime = 0.001f;
 	while (!Window::Instance.isClosed())
 	{
 		auto start = std::chrono::high_resolution_clock::now();
 
-		ResourceManager::Instance.getActiveScene()->update(dt);
+
+		while (dt < frameTime)
+		{
+			ResourceManager::Instance.getActiveScene()->update(dt);
+			frameTime -= dt;
+		}
 
 		Window::Instance.clear(255, 255, 255, 1);
 		ResourceManager::Instance.getActiveScene()->draw();
@@ -56,7 +63,7 @@ int main()
 
 		auto end = std::chrono::high_resolution_clock::now();
 		long long ticks = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		dt = (float)ticks / 1000000.0f;
+		frameTime += (float)ticks / 1000000.0f;
 	}
 	return 0;
 }

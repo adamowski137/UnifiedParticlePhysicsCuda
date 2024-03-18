@@ -1,19 +1,26 @@
 #pragma once
 #include "../Constrain.cuh"
+#include "../../Collision/Surface.hpp"
 
-class DistanceConstrain : public Constrain
+#include <cuda_runtime.h>
+
+class SurfaceConstraint	: public Constrain
 {
 public:
-	int p1, p2;
-	__host__ __device__ DistanceConstrain(float d, int p1, int p2, ConstraintLimitType type);
+	__host__ __device__ SurfaceConstraint(float d, int particle, Surface s);
+
 	__host__ __device__ float operator()(float* x, float* y, float* z,
 		float* vx, float* vy, float* vz);
 	__host__ __device__  float timeDerivative(float* x, float* y, float* z,
 		float* vx, float* vy, float* vz);
 	__host__ __device__ void positionDerivative(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz, int index, float* output);
+		float* vx, float* vy, float* vz, float* output);
 	__host__ __device__  void timePositionDerivative(float* x, float* y, float* z,
-		float* vx, float* vy, float* vz, int index, float* output);
+		float* vx, float* vy, float* vz, float* output);
+
+	int p;
 private:
-	float d;
+	float r;
+	Surface s;
 };
+

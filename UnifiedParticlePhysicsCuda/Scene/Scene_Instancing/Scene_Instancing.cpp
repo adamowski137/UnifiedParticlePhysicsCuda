@@ -1,7 +1,7 @@
 #include "Scene_Instancing.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"], 1)
+Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"], 1, nullptr)
 {
 	std::vector<float> offsets;
 	for (int i = -60; i < 60; i += 3)

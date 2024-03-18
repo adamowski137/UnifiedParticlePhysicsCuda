@@ -6,40 +6,31 @@
 #include <iostream>
 #include "../GpuErrorHandling.hpp"
 
-__global__ void jaccobiKern(int n, float* A, float* b, float* x, float* outX)
+__global__ void jaccobiKern(int n, int nIterations, float* A, float* b, float* x, float* outX, float* c_min, float* c_max)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
-	float a = A[index * n + index];
-	float cx = b[index];
-	for (int i = 0; i < n; i++)
+	for (int k = 0; k < nIterations; k++)
 	{
-		if (i == index) continue;
-		cx -= (A[index * n + i] * x[index]);
+		float a = A[index * n + index];
+		float cx = b[index];
+		for (int i = 0; i < n; i++)
+		{
+			if (i == index) continue;
+			cx -= (A[index * n + i] * x[index]);
+		}
+		outX[index] = min(max(cx / a, c_min[index]), c_max[index]);
+
+		x[index] = outX[index];
+		__syncthreads();
 	}
-	outX[index] = cx / a;
 }
 
-void jaccobi(int n, float* A, float* b, float* x)
+void jaccobi(int n, float* A, float* b, float* x, float* new_x, float* c_min, float* c_max, int iterations)
 {
-	float* dev_a, * dev_b, * dev_x, * dev_nx;
-	cudaMalloc((void**)&dev_a, sizeof(float) * n * n);
-	cudaMalloc((void**)&dev_b, sizeof(float) * n);
-	cudaMalloc((void**)&dev_x, sizeof(float) * n);
-	cudaMalloc((void**)&dev_nx, sizeof(float) * n);
-
-	cudaMemcpy(dev_a, A, sizeof(float) * n * n, cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_b, b, sizeof(float) * n, cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_x, x, sizeof(float) * n, cudaMemcpyHostToDevice);
-
 	int threadsPerBlock = 512;
 	int blocks = ceilf((float)n / threadsPerBlock);
-	auto start = std::chrono::high_resolution_clock::now();
-	jaccobiKern << < threadsPerBlock, blocks >> > (n, dev_a, dev_b, dev_x, dev_nx);
+	jaccobiKern << <blocks, threadsPerBlock >> > (n, iterations, A, b, x, new_x, c_min, c_max);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << "duration kernel: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
-
-	cudaMemcpy(x, dev_nx, sizeof(float) * n, cudaMemcpyDeviceToHost);
 }
