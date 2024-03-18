@@ -109,7 +109,9 @@ std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisio
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_constraints,
-		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS);
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS / 2);
+
+	gpuErrchk(cudaMemset(dev_hit, 0, sizeof(int) * nParticles * nSurfaces));
 
 	return std::make_pair(dev_constraints, nCollisions);
 	

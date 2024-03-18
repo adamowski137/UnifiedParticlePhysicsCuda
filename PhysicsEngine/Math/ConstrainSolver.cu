@@ -199,6 +199,7 @@ ConstrainSolver::~ConstrainSolver()
 
 void ConstrainSolver::calculateForces(
 	float* x, float* y, float* z,
+	float* new_x, float* new_y, float* new_z,
 	float* vx, float* vy, float* vz,
 	float* invmass, float* fc, float dt
 )

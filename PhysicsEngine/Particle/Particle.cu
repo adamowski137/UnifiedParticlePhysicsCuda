@@ -222,12 +222,12 @@ void ParticleType::calculateNewPositions(float dt)
 	// find neighboring particles and solid contacts ??
 
 	if(mode & GRID_CHECKING_ON)
-		collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
+		collisionGrid->findCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles, dev_sums, dev_collisions);
 	
 	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
-		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z) 
+		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z) 
 		: std::make_pair((SurfaceConstraint*)0, 0);
-	//std::cout << surfaceCollisionData.second << "\n";
+	std::cout << surfaceCollisionData.second << "\n";
 	// todo implement grid (predicted positions)
 
 	// stabilization iterations
@@ -244,7 +244,7 @@ void ParticleType::calculateNewPositions(float dt)
 	if(mode & SURFACE_CHECKING_ON)
 		constrainSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
 	if(mode & ANY_CONSTRAINTS_ON)
-		constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
+		constrainSolver->calculateForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
