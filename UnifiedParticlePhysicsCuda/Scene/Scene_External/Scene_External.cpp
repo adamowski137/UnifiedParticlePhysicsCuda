@@ -14,7 +14,7 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
-	particles.setSurfaces({ Surface(0, 1, 0, 0) });
+	particles.setSurfaces({ Surface(0, 1, 0, 0), Surface(1, 0, 0, 20), Surface(-1, 0, 0, 20)});
 }
 
 Scene_External::~Scene_External()

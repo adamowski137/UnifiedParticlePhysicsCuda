@@ -61,16 +61,20 @@ __global__ void applyChangesKern(int amount,
 	float* vx, float* vy, float* vz, float* fc, float invdt, float dt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+
 	if (index >= amount) return;
+	new_x[index] += fc[3 * index] * dt;
+	new_y[index] += fc[3 * index + 1] * dt;
+	new_z[index] += fc[3 * index + 2] * dt;
 
 	float changeX = (new_x[index] - x[index]);
 	float changeY = (new_y[index] - y[index]);
 	float changeZ = (new_z[index] - z[index]);
 
 	// update velocity
-	vx[index] = invdt * (changeX)+fc[3 * index];
-	vy[index] = invdt * (changeY)+fc[3 * index + 1];
-	vz[index] = invdt * (changeZ)+fc[3 * index + 2];
+	vx[index] = invdt * (changeX);
+	vy[index] = invdt * (changeY);
+	vz[index] = invdt * (changeZ);
 
 	// advect diffuse particles ??
 
