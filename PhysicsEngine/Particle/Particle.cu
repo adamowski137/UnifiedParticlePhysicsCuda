@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "Particle.cuh"
+#include "ParticleData.cuh"
 #include <cuda_runtime.h>
 #include <cstdlib>
 #include <cuda_gl_interop.h>
@@ -13,19 +14,6 @@
 
 #define EPS 0.000001
 
-__global__ void initializeRandomKern(int amount, curandState* state)
-{
-	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= amount) return;
-	curand_init(1234, index, 0, &state[index]);
-}
-
-__global__ void fillRandomKern(int amount, float* dst, curandState* state, float min, float max)
-{
-	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= amount) return;
-	dst[index] = (max - min) * curand_uniform(&state[index]) + min;
-}
 
 __global__ void copyToVBOKernel(int amount, float* x, float* y, float* z, float* dst)
 {
@@ -43,9 +31,9 @@ __global__ void setDiagonalMatrix(int amount, float* src, float* dst)
 	dst[amount * index + index] = src[index];
 }
 
-__global__ void predictPositionsKern(int amount, 
+__global__ void predictPositionsKern(int amount,
 	float* x, float* y, float* z,
-	float* new_x, float* new_y, float* new_z, 
+	float* new_x, float* new_y, float* new_z,
 	float* vx, float* vy, float* vz,
 	float dvx, float dvy, float dvz,
 	float dt
@@ -70,7 +58,7 @@ __global__ void predictPositionsKern(int amount,
 __global__ void applyChangesKern(int amount,
 	float* x, float* y, float* z,
 	float* new_x, float* new_y, float* new_z,
-	float* vx, float* vy, float* vz, float* fc, float invdt)
+	float* vx, float* vy, float* vz, float* fc, float invdt, float dt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
@@ -80,12 +68,12 @@ __global__ void applyChangesKern(int amount,
 	float changeZ = (new_z[index] - z[index]);
 
 	// update velocity
-	vx[index] = invdt * (changeX) + fc[3 * index];
-	vy[index] = invdt * (changeY) + fc[3 * index + 1];
-	vz[index] = invdt * (changeZ) + fc[3 * index + 2];
+	vx[index] = invdt * (changeX)+fc[3 * index];
+	vy[index] = invdt * (changeY)+fc[3 * index + 1];
+	vz[index] = invdt * (changeZ)+fc[3 * index + 2];
 
 	// advect diffuse particles ??
-	
+
 	// apply internal forces
 
 	// update position or apply sleeping
@@ -100,13 +88,15 @@ __global__ void applyChangesKern(int amount,
 
 }
 
-ParticleType::ParticleType(int amount) : nParticles{amount}
+ParticleType::ParticleType(int amount, int mode, 
+	void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*)) : nParticles{ amount }, mode{ mode }
 {
 	blocks = ceilf((float)nParticles / THREADS);
-	constrainSolver = std::unique_ptr<ConstrainSolver>{ new ConstrainSolver{amount}};
-	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount}};
-	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ {Surface(0, 1, 0, 0)} , amount}};
-	setupDeviceData();
+	constrainSolver = std::unique_ptr<ConstrainSolver>{ new ConstrainSolver{amount} };
+	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
+	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
+	allocateDeviceData();
+	setupDeviceData(setDataFunction);
 }
 
 ParticleType::~ParticleType()
@@ -123,7 +113,47 @@ ParticleType::~ParticleType()
 	gpuErrchk(cudaFree(dev_invmass));
 }
 
-void ParticleType::setupDeviceData()
+void ParticleType::setupDeviceData(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*))
+{
+	if (setDataFunction != nullptr)
+	{
+		setDataFunction(nParticles, dev_x, dev_y, dev_z, dev_vx, dev_vy, dev_vz);
+	}
+	else
+	{
+		gpuErrchk(cudaMalloc((void**)&dev_curand, nParticles * sizeof(curandState)));
+
+		initializeRandomKern << < blocks, THREADS >> > (nParticles, dev_curand);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		fillRandomKern << <blocks, THREADS >> > (nParticles, dev_x, dev_curand, -10.f, 10.f);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		fillRandomKern << <blocks, THREADS >> > (nParticles, dev_y, dev_curand, 5.f, 15.f);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		fillRandomKern << <blocks, THREADS >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vx, dev_curand, -1.f, 1.f);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
+
+		//fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vz, dev_curand, -5.f, 5.f);
+		//gpuErrchk(cudaGetLastError());
+		//gpuErrchk(cudaDeviceSynchronize());
+	}
+}
+
+void ParticleType::allocateDeviceData()
 {
 	gpuErrchk(cudaMalloc((void**)&dev_curand, nParticles * sizeof(curandState)));
 	gpuErrchk(cudaMalloc((void**)&dev_x, nParticles * sizeof(float)));
@@ -133,51 +163,23 @@ void ParticleType::setupDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_new_x, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_new_y, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_new_z, nParticles * sizeof(float)));
-	
+
 	gpuErrchk(cudaMalloc((void**)&dev_vx, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
-	
+
 	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
 	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
 
 
-	
+
 	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));
 
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, nParticles * sizeof(float)));
 	thrust::device_ptr<float> massptr{ dev_invmass };
 	thrust::fill(massptr, massptr + nParticles, 1);
 
-	int amountOfConstrains = nParticles;
 
-	initializeRandomKern << < blocks, THREADS >> > (nParticles, dev_curand);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_x, dev_curand, MINDIMENSION, MAXDIMENSION);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_y, dev_curand, MINDIMENSION, MAXDIMENSION);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-	
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vx, dev_curand, -1.f, 1.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-	
-	fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vy, dev_curand, -1.f, 1.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
-	
-	//fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vz, dev_curand, -5.f, 5.f);
-	//gpuErrchk(cudaGetLastError());
-	//gpuErrchk(cudaDeviceSynchronize());
 }
 
 void ParticleType::renderData(unsigned int vbo)
@@ -185,11 +187,11 @@ void ParticleType::renderData(unsigned int vbo)
 	float* dst;
 	cudaGLMapBufferObject((void**)&dst, vbo);
 
-	copyToVBOKernel <<<blocks, THREADS>>>(nParticles, dev_x, dev_y, dev_z, dst);
+	copyToVBOKernel << <blocks, THREADS >> > (nParticles, dev_x, dev_y, dev_z, dst);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-	
+
 	cudaGLUnmapBufferObject(vbo);
 }
 
@@ -197,11 +199,7 @@ void ParticleType::calculateNewPositions(float dt)
 {
 	cudaMemset(dev_fc, 0, 3 * nParticles * sizeof(float));
 	// predict new positions and update velocities
-	fextx = 0.0f;
-	//fexty = -9.81f;
-	fexty = 0.0f;
-	fextz = 0.0f;
-
+	
 	float dvx = fextx * dt;
 	float dvy = fexty * dt;
 	float dvz = fextz * dt;
@@ -219,9 +217,13 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// find neighboring particles and solid contacts ??
 
-	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
-	auto surfaceCollisionData = surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
-
+	if(mode & GRID_CHECKING_ON)
+		collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
+	
+	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
+		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z) 
+		: std::make_pair((SurfaceConstraint*)0, 0);
+	//std::cout << surfaceCollisionData.second << "\n";
 	// todo implement grid (predicted positions)
 
 	// stabilization iterations
@@ -233,9 +235,12 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-	constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
-	constrainSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
-	constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
+	if(mode & GRID_CHECKING_ON)
+		constrainSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
+	if(mode & SURFACE_CHECKING_ON)
+		constrainSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
+	if(mode & ANY_CONSTRAINTS_ON)
+		constrainSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -244,7 +249,7 @@ void ParticleType::calculateNewPositions(float dt)
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
 		dev_vx, dev_vy, dev_vz, dev_fc,
-		1/dt
+		1 / dt, dt
 		);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -253,6 +258,18 @@ void ParticleType::calculateNewPositions(float dt)
 void ParticleType::setConstraints(std::vector<std::pair<int, int>> pairs, float d)
 {
 	this->constrainSolver->setStaticConstraints(pairs, d);
+}
+
+void ParticleType::setSurfaces(std::vector<Surface> surfaces)
+{
+	this->surfaceCollisionFinder->setSurfaces(surfaces, nParticles);
+}
+
+void ParticleType::setExternalForces(float fx, float fy, float fz)
+{
+	fextx = fx;
+	fexty = fy;
+	fextz = fz;
 }
 
 void ParticleType::mapCudaVBO(unsigned int vbo)

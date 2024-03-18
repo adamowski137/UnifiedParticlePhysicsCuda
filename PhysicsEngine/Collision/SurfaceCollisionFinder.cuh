@@ -14,6 +14,8 @@ public:
 	SurfaceCollisionFinder(std::vector<Surface> surfaces, int nParticles);
 	~SurfaceCollisionFinder();
 
+	void setSurfaces(std::vector<Surface> surfaces, int nParticles);
+
 	std::pair<SurfaceConstraint*, int> findAndUpdateCollisions(
 		int nParticles,
 		float* x, float* y, float* z);

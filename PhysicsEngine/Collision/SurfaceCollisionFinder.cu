@@ -23,7 +23,7 @@ __global__ void findSurfaceCollisions(
 	{
 		Surface s = surfaces[i];
 		float v1 = s.a * x[index] + s.b * y[index] + s.c * z[index] + s.d;
-		float sign = v1 < 0 ? -1 : 1;
+		float sign = v1 < 0 ? 1 : -1;
 
 		float v2 = s.a * (x[index] + sign * s.normal[0] * r) + s.b * (y[index] + sign * s.normal[1] * r) + s.c * (z[index] + sign * s.normal[2] * r) + s.d;
 
@@ -45,7 +45,8 @@ __global__ void fillConstraints(int nParticles, int nSurfaces,
 	{
 		if (hits[index + i * nParticles])
 		{
-			int constraintIndex = hitsSum[index + i * nParticles];
+			// offset by 1 because we index array starting from 0
+			int constraintIndex = hitsSum[index + i * nParticles] - 1;
 			constraints[constraintIndex] = SurfaceConstraint(r, index, surfaces[i]);
 		}
 	}
@@ -67,8 +68,26 @@ SurfaceCollisionFinder::~SurfaceCollisionFinder()
 	gpuErrchk(cudaFree(dev_surface));
 }
 
+void SurfaceCollisionFinder::setSurfaces(std::vector<Surface> surfaces, int nParticles)
+{
+	gpuErrchk(cudaFree(dev_hit));
+	gpuErrchk(cudaFree(dev_surface));
+
+	nSurfaces = surfaces.size();
+
+	gpuErrchk(cudaMalloc((void**)&dev_hit, sizeof(int) * nParticles * surfaces.size()));
+	gpuErrchk(cudaMemset(dev_hit, 0, sizeof(int) * nParticles * surfaces.size()));
+
+	gpuErrchk(cudaMalloc((void**)&dev_surface, sizeof(Surface) * surfaces.size()));
+	gpuErrchk(cudaMemcpy(dev_surface, surfaces.data(), sizeof(Surface) * surfaces.size(), cudaMemcpyHostToDevice));
+
+}
+
 std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, float* y, float* z)
 {
+	if (nSurfaces == 0)
+		return std::make_pair((SurfaceConstraint*)0, 0);
+
 	int threads = 32;
 	int blocks = (nParticles + threads - 1) / threads;
 

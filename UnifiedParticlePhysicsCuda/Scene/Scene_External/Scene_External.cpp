@@ -1,7 +1,9 @@
 #include "Scene_External.hpp"
+#include "Scene_External_data.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints)
+Scene_External::Scene_External(int amountOfPoints) : Scene(
+	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, initData_SceneExternal, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(amountOfPoints * 3, 0.0f);
@@ -10,7 +12,9 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(ResourceManager::Inst
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setConstraints({ {0, 1}, {1, 2}, {0, 2}, {0,3}, {1,3}, {2,3} }, 2.f);
+	particles.setConstraints({ }, 2.f);
+	particles.setExternalForces(0.f, -9.81f, 0.f);
+	particles.setSurfaces({ Surface(0, 1, 0, 0) });
 }
 
 Scene_External::~Scene_External()

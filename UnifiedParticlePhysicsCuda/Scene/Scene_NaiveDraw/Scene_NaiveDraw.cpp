@@ -1,7 +1,7 @@
 #include "Scene_NaiveDraw.hpp"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"], 1)
+Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"], 1, nullptr)
 {
 
 }

@@ -8,6 +8,8 @@ uniform vec3 lightPos;
 uniform vec3 cameraPos;
 uniform vec3 color;
 
+in vec3 inst_color;
+
 void main()
 {
 	// ambient
@@ -23,5 +25,5 @@ void main()
 	vec3 reflectDir = reflect(-lightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
 
-	out_color = vec4(color * (ambient + vec3(1.0f, 1.0f, 1.0f) * (diff + spec * specularStrength)), 1.0f);
+	out_color = vec4(inst_color * (ambient + vec3(1.0f, 1.0f, 1.0f) * (diff + spec * specularStrength)), 1.0f);
 }

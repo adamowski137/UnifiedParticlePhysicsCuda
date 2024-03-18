@@ -11,6 +11,7 @@ add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstrainSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/LinearSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/Particle.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Particle/ParticleData.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/List/List.cu
 )
 
