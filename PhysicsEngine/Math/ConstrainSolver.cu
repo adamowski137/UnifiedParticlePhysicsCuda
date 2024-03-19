@@ -389,7 +389,7 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillResultVectorKern << <blocks, threads >> > (nParticles, nSurfaceConstraints, dev_b,
+	fillResultVectorKern << <blocks, threads >> > (nParticles, nConstraints - nSurfaceConstraints, dev_b,
 		x, y, z,
 		vx, vy, vz, dev_jacobian, dt,
 		dev_c_min, dev_c_max,
