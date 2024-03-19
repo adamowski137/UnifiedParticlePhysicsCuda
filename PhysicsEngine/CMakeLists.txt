@@ -22,8 +22,6 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PhysicsEngine PROPERTY CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
 
-set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} "--expt-extended-lambda -g -G --rdc=true")
-
 find_package(CUDAToolkit)
 find_package(Thrust REQUIRED CONFIG)
 thrust_create_target(Thrust)
@@ -33,6 +31,7 @@ target_compile_options(PhysicsEngine PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
                        --use_fast_math
                        --relocatable-device-code=true
 					   --expt-extended-lambda
+					   -g -G
                        >)
 
 target_link_libraries(PhysicsEngine PUBLIC CUDA::cudart glad Thrust)

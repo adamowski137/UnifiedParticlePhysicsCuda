@@ -233,11 +233,11 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize())
 
-		massVectorMultpilyKern << <jacobian_bound_blocks, threads >> > (
-			3 * nParticles,
-			nConstraints,
-			invmass,
-			dev_jacobian);
+	massVectorMultpilyKern << <jacobian_bound_blocks, threads >> > (
+		3 * nParticles,
+		nConstraints,
+		invmass,
+		dev_jacobian);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
