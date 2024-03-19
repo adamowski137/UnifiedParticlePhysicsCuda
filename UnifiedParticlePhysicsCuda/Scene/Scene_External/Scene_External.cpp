@@ -3,7 +3,7 @@
 #include "../../ResourceManager/ResourceManager.hpp"
 
 Scene_External::Scene_External(int amountOfPoints) : Scene(
-	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, initData_SceneExternal, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON | SURFACE_CHECKING_ON)
+	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, initData_SceneExternal, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(amountOfPoints * 3, 0.0f);
@@ -15,6 +15,7 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
 	particles.setSurfaces({ Surface(0, 1, 0, 0), Surface(1, 0, 0, 20), Surface(-1, 0, 0, 20)});
+	//particles.setSurfaces({ Surface(0, 1, 0, 0) });
 }
 
 Scene_External::~Scene_External()

@@ -223,7 +223,6 @@ void ConstrainSolver::calculateForces(
 	this->allocateArrays();
 	this->projectConstraints(x, y, z, vx, vy, vz, dt);
 
-
 	transposeKern << <jacobian_bound_blocks, threads >> > (
 		3 * nParticles,
 		nConstraints,
@@ -253,19 +252,13 @@ void ConstrainSolver::calculateForces(
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	jaccobi(nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max, 1);
+	jaccobi(nConstraints, dev_A, dev_b, dev_lambda, dev_new_lambda, dev_c_min, dev_c_max, 5);
 
 	//std::swap(dev_lambda, dev_new_lambda);
 	applyForce << <particlex3_bound_blocks, threads >> > (dev_new_lambda, dev_jacobian_transposed, fc, nParticles, nConstraints);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-
-	/*thrust::device_ptr<float> f{ dev_c_max };
-	for (int i = 0; i < nConstraints; i++)
-	{
-		std::cout << f[i] << std::endl;
-	}*/
 
 }
 
@@ -361,8 +354,17 @@ void ConstrainSolver::allocateArrays()
 
 		nConstraintsMaxAllocated = nConstraints;
 	}
+	else this->clearArrays();
 }
 
+void ConstrainSolver::clearArrays()
+{
+	gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_b, 0, nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
+
+}
 
 void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt)
 {
@@ -387,7 +389,7 @@ void ConstrainSolver::projectConstraints(float* x, float* y, float* z, float* vx
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillResultVectorKern << <blocks, threads >> > (nParticles, nConstraints - nSurfaceConstraints, dev_b,
+	fillResultVectorKern << <blocks, threads >> > (nParticles, nSurfaceConstraints, dev_b,
 		x, y, z,
 		vx, vy, vz, dev_jacobian, dt,
 		dev_c_min, dev_c_max,

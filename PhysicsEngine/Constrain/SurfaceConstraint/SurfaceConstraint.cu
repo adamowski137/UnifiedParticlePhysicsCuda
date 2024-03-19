@@ -9,9 +9,7 @@ __host__ __device__ SurfaceConstraint::SurfaceConstraint(float d, int particle, 
 __host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z, float* vx, float* vy, float* vz)
 {
 
-	float len = sqrtf(s.a * s.a + s.b * s.b + s.c * s.c);
-	float dist = (s.a * x[p] + s.b * y[p] + s.c * z[p] + s.d) / len;
-	return dist - r;
+	return (s.normal[0] * x[p] + s.normal[1] * y[p] + s.normal[2] * z[p]) - r;
 }
 
 __host__ __device__ float SurfaceConstraint::timeDerivative(float* x, float* y, float* z, float* vx, float* vy, float* vz)

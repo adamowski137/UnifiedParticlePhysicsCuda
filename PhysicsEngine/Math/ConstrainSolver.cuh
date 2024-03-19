@@ -59,4 +59,5 @@ private:
 
 	void allocateArrays();
 	void projectConstraints(float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt);
+	void clearArrays();
 };
