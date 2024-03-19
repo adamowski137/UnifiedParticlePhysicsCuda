@@ -19,11 +19,11 @@ void initData_SceneExternal(int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -10.f, 10.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -8.f, 8.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 5.f, 15.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 3.f, 8.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
