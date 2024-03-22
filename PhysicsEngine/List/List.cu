@@ -7,7 +7,7 @@ List::List() : head{ NULL }, tail{ NULL }
 
 List::~List()
 {
-	clearList();
+	//clearList();
 }
 
 void List::addNode(int value)

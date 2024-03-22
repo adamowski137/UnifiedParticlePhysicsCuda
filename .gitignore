@@ -7,3 +7,10 @@
 
 .vs/
 out/
+.cache
+CMakeFiles
+.ninja_deps
+.cmake_install.cmake
+build.ninja
+.ninja_log
+*.cmake

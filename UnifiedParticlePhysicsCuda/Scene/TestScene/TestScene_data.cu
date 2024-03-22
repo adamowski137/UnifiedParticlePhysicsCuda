@@ -45,15 +45,17 @@ void initData_TestScene(int nParticles,
 	gpuErrchk(cudaDeviceSynchronize());
 
 	//TEST FOR 2 PARTICLES
-	float tmp[2] = { -5.f, 5.f };
+	float tmp[2] = { 5.f, -10.f };
 	gpuErrchk(cudaMemcpy(dev_x, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(dev_y, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice));
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	tmp[0] = 5.f;
-	tmp[1] = -5.f;
+	tmp[0] = -5.f;
+	tmp[1] = 5.f;
 	cudaMemcpy(dev_vx, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_vy, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());

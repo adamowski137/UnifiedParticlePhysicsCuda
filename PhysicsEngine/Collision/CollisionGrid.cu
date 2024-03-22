@@ -34,9 +34,9 @@ __global__ void findCollisionsKern(
 	unsigned int yIdx = AxisIndex(y[index]);
 	unsigned int zIdx = AxisIndex(z[index]);
 
-	unsigned int minX = xIdx;
-	unsigned int minY = yIdx;
-	unsigned int minZ = zIdx;
+	unsigned int minX = max(xIdx - 1, 0);
+	unsigned int minY = max(yIdx - 1, 0);
+	unsigned int minZ = max(zIdx - 1, 0);
 	unsigned int maxX = min(xIdx + 1, (int)(CUBESPERDIMENSION - 1));
 	unsigned int maxY = min(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
 	unsigned int maxZ = min(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
@@ -47,7 +47,7 @@ __global__ void findCollisionsKern(
 		{
 			for (int k = minZ; k <= maxZ; k++)
 			{
-				int currentCube = i + CUBESPERDIMENSION * (j + CUBESPERDIMENSION * k);	
+				int currentCube = i + CUBESPERDIMENSION * (j + CUBESPERDIMENSION * k);
 				int first = gridCubeStart[currentCube];
 				int last = gridCubeEnd[currentCube];
 
@@ -55,7 +55,7 @@ __global__ void findCollisionsKern(
 				for (int it = first; it <= last; it++)
 				{
 					unsigned int particle = mapping[it];
-					
+
 					if (particle == index) continue;
 
 					float px = x[particle];
@@ -65,7 +65,7 @@ __global__ void findCollisionsKern(
 					float distanceSq = DistanceSquared(x[index], y[index], z[index], px, py, pz);
 					if (distanceSq < PARTICLERADIUS * PARTICLERADIUS)
 					{
-						if (i == xIdx && j == yIdx && k == zIdx && particle < index) continue;
+						if (particle < index) continue;
 						collisionList[index].addNode(particle);
 						collisionCount[index]++;
 					}
@@ -75,12 +75,30 @@ __global__ void findCollisionsKern(
 	}
 }
 
+__global__ void findCollisionsNaiveKern(
+	List* collisionList,
+	float* x, float* y, float* z,
+	unsigned int* mapping, unsigned int* grid,
+	int* gridCubeStart, int* gridCubeEnd, int nParticles, int* collisionCount)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	for (int i = index + 1; i < nParticles; i++)
+	{
+		if (DistanceSquared(x[index], y[index], z[index], x[i], y[i], z[i]) < PARTICLERADIUS * PARTICLERADIUS) {
+			collisionList[index].addNode(i);			
+			collisionCount[index]++;
+		}
+	}
+
+}
+
 
 __global__ void generateGridIndiciesKern(float* x, float* y, float* z, unsigned int* indicies, unsigned int* mapping, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
-	
+
 	float xCur = x[index];
 	float yCur = y[index];
 	float zCur = z[index];
@@ -200,7 +218,6 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
 	identifyGridCubeStartEndKern << <particle_bound_blocks, threads >> > (dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -215,18 +232,22 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
- 	gpuErrchk(cudaMemset(dev_counts, 0, sizeof(int) * nParticles));
+	gpuErrchk(cudaMemset(dev_counts, 0, sizeof(int) * nParticles));
 
-	findCollisionsKern<<<particle_bound_blocks, threads>>>(collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
+	findCollisionsNaiveKern << <particle_bound_blocks, threads >> > (collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
+	//findCollisionsKern << <particle_bound_blocks, threads >> > (collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+	//List test[2];
+	//cudaMemcpy(test, collisions, 2 * sizeof(List), cudaMemcpyDeviceToHost);
+	//std::cout << test[0].head << " " << test[1].head << "\n";
 
 	gpuErrchk(cudaMemset(sums, 0, nParticles * sizeof(int)));
 
 	thrust::device_ptr<int> prefixSum{ sums };
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(dev_counts);
 	thrust::inclusive_scan(p, p + nParticles, prefixSum);
-
 }
 
 

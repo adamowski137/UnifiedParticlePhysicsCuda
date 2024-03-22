@@ -44,26 +44,28 @@ int main()
 	
 	// semi fixed time step
 	// https://gafferongames.com/post/fix_your_timestep/
+	float t = 0.f;
 	float dt = (1.f / 60.f) / 2.f;
-	float frameTime = 0.001f;
+	float accumulator = 0.f;
+	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())
 	{
-		auto start = std::chrono::high_resolution_clock::now();
+		auto new_time = std::chrono::high_resolution_clock::now();
+		float frameTime = std::chrono::duration_cast<std::chrono::microseconds>(new_time - current_time).count() / 1000000.f;
+		current_time = new_time;
 
+		accumulator += frameTime;
 
-		while (dt < frameTime)
+		while (accumulator > dt)
 		{
 			ResourceManager::Instance.getActiveScene()->update(dt);
-			frameTime -= dt;
+			accumulator -= dt;
+			t += dt;
 		}
 
 		Window::Instance.clear(255, 255, 255, 1);
 		ResourceManager::Instance.getActiveScene()->draw();
 		Window::Instance.finishRendering(ResourceManager::Instance.options);
-
-		auto end = std::chrono::high_resolution_clock::now();
-		long long ticks = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		frameTime += (float)ticks / 1000000.0f;
 	}
 	return 0;
 }
