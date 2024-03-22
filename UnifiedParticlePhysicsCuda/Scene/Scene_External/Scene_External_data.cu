@@ -31,7 +31,7 @@ void initData_SceneExternal(int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, -7.f, 7.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

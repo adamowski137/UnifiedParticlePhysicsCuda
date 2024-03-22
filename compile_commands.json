@@ -1,0 +1,296 @@
+[
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\UnifiedParticlePhysicsCuda.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\UnifiedParticlePhysicsCuda.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\UnifiedParticlePhysicsCuda.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\TestScene\\TestScene.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\TestScene\\TestScene.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\TestScene\\TestScene.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\TestScene\\TestScene.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\TestScene\\TestScene.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-Zi -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\TestScene\\TestScene_data.cu -o UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\TestScene\\TestScene_data.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\TestScene\\TestScene_data.cu",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\TestScene\\TestScene_data.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_NaiveDraw\\Scene_NaiveDraw.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_NaiveDraw\\Scene_NaiveDraw.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_NaiveDraw\\Scene_NaiveDraw.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_NaiveDraw\\Scene_NaiveDraw.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_NaiveDraw\\Scene_NaiveDraw.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_Instancing\\Scene_Instancing.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_Instancing\\Scene_Instancing.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_Instancing\\Scene_Instancing.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_Instancing\\Scene_Instancing.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_Instancing\\Scene_Instancing.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_External\\Scene_External.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_External\\Scene_External.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_External\\Scene_External.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_External\\Scene_External.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_External\\Scene_External.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-Zi -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_External\\Scene_External_data.cu -o UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_External\\Scene_External_data.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\Scene\\Scene_External\\Scene_External_data.cu",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\Scene\\Scene_External\\Scene_External_data.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. -external:I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -external:W0 /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -Zi @UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\ResourceManager\\ResourceManager.cpp.obj.modmap /FoUnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\ResourceManager\\ResourceManager.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\ResourceManager\\ResourceManager.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\ResourceManager\\ResourceManager.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\CMakeFiles\\UnifiedParticlePhysicsCuda.dir\\ResourceManager\\ResourceManager.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Camera\\Camera.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Camera\\Camera.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Camera\\Camera.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Camera\\Camera.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Error\\ErrorHandling.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Error\\ErrorHandling.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Error\\ErrorHandling.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Error\\ErrorHandling.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\MeshGenerator.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\MeshGenerator.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\MeshGenerator.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\MeshGenerator.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\Renderer.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\Renderer.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\Renderer.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\Renderer.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\RenderInfo.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\RenderInfo.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Renderer\\RenderInfo.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Renderer\\RenderInfo.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Shader\\Shader.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Shader\\Shader.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Shader\\Shader.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Shader\\Shader.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Window\\Window.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Window\\Window.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\Window\\Window.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\Window\\Window.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\backends\\imgui_impl_glfw.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\backends\\imgui_impl_glfw.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\backends\\imgui_impl_glfw.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\backends\\imgui_impl_glfw.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\backends\\imgui_impl_opengl3.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\backends\\imgui_impl_opengl3.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\backends\\imgui_impl_opengl3.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\backends\\imgui_impl_opengl3.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_demo.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_demo.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_demo.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_demo.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_draw.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_draw.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_draw.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_draw.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_tables.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_tables.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_tables.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_tables.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\imgui -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glm\\glm\\.. /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++17 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_widgets.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_widgets.cpp",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\GUI\\imgui\\imgui_widgets.cpp",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\CMakeFiles\\gui.dir\\imgui\\imgui_widgets.cpp.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\context.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\context.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\context.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\context.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\init.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\init.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\init.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\init.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\input.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\input.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\input.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\input.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\monitor.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\monitor.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\monitor.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\monitor.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\vulkan.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\vulkan.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\vulkan.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\vulkan.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\window.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\window.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\window.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\window.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_init.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_init.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_init.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_init.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_joystick.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_joystick.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_joystick.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_joystick.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_monitor.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_monitor.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_monitor.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_monitor.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_time.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_time.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_time.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_time.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_thread.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_thread.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_thread.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_thread.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_window.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_window.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\win32_window.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\win32_window.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\wgl_context.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\wgl_context.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\wgl_context.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\wgl_context.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\egl_context.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\egl_context.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\egl_context.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\egl_context.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_GLFW_USE_CONFIG_H -D_UNICODE -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\include -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\UnifiedParticlePhysicsCuda\\gui\\glfw\\src /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /W3 /FoUnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\osmesa_context.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\osmesa_context.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glfw-3.3.9\\src\\osmesa_context.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glfw\\src\\CMakeFiles\\glfw.dir\\osmesa_context.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include /DWIN32 /D_WINDOWS /W3 /MDd /Ob0 /Od /RTC1 -ZI /FoUnifiedParticlePhysicsCuda\\gui\\glad\\CMakeFiles\\glad.dir\\src\\glad.c.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\src\\glad.c",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\src\\glad.c",
+  "output": "UnifiedParticlePhysicsCuda\\gui\\glad\\CMakeFiles\\glad.dir\\src\\glad.c.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\Constrain.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\Constrain.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\Constrain.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\Constrain.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Collision\\CollisionGrid.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Collision\\CollisionGrid.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Collision\\CollisionGrid.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Collision\\CollisionGrid.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\SurfaceConstraint\\SurfaceConstraint.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\SurfaceConstraint\\SurfaceConstraint.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\SurfaceConstraint\\SurfaceConstraint.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\SurfaceConstraint\\SurfaceConstraint.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Collision\\SurfaceCollisionFinder.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Collision\\SurfaceCollisionFinder.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Collision\\SurfaceCollisionFinder.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Collision\\SurfaceCollisionFinder.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\DistanceConstrain\\DistanceConstrain.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\DistanceConstrain\\DistanceConstrain.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Constrain\\DistanceConstrain\\DistanceConstrain.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Constrain\\DistanceConstrain\\DistanceConstrain.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Math\\ConstrainSolver.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Math\\ConstrainSolver.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Math\\ConstrainSolver.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Math\\ConstrainSolver.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Math\\LinearSolver.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Math\\LinearSolver.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Math\\LinearSolver.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Math\\LinearSolver.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Particle\\Particle.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Particle\\Particle.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Particle\\Particle.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Particle\\Particle.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Particle\\ParticleData.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Particle\\ParticleData.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\Particle\\ParticleData.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\Particle\\ParticleData.cu.obj"
+},
+{
+  "directory": "C:/Users/milos/source/repos/UnifiedParticlePhysicsCuda",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v12.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -IC:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\External\\glad\\include -isystem \"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.2\\include\" -D_WINDOWS -Xcompiler=\"/W3 /GR /EHsc\" -Xcompiler=\"-MDd  -Ob0 -Od /RTC1\" -std=c++20 -Xcompiler=-ZI --generate-line-info --use_fast_math --relocatable-device-code=true --expt-extended-lambda -g -G -x cu -rdc=true -c C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\List\\List.cu -o UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\List\\List.cu.obj -Xcompiler=-FdTARGET_COMPILE_PDB,-FS",
+  "file": "C:\\Users\\milos\\source\\repos\\UnifiedParticlePhysicsCuda\\PhysicsEngine\\List\\List.cu",
+  "output": "UnifiedParticlePhysicsCuda\\PhysicsEngine\\CMakeFiles\\PhysicsEngine.dir\\List\\List.cu.obj"
+}
+]

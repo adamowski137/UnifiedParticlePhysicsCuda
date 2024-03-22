@@ -27,9 +27,6 @@ private:
 	float* dev_jacobian;
 	float* dev_jacobian_transposed;
 
-	// J dot matrix
-	float* dev_velocity_jacobian;
-
 	// as in Ax = b matrix equation
 	float* dev_A;
 	float* dev_b;

@@ -5,13 +5,14 @@ struct Node
 {
 	int value;
 	Node* next;
+	__host__ __device__ Node() {}
 };
 
 class List 
 {
 public:
-	List();
-	~List();
+	__host__ __device__ List();
+	__host__ __device__ ~List();
 
 	Node* head;
 	Node* tail;
