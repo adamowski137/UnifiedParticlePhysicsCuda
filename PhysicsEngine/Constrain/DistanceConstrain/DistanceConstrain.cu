@@ -2,6 +2,10 @@
 #include <cmath>
 #include "../Constrain.cuh"
 
+DistanceConstrain::DistanceConstrain() : Constrain{ 0, 0.0f, ConstraintLimitType::EQ }, d{ 0 }, p1{ 0 }, p2{ 0 }
+{
+}
+
 __host__ __device__ DistanceConstrain::DistanceConstrain(float d, int p1, int p2, ConstraintLimitType type) : Constrain{ 2, 1.0f, type }, d{ d }, p1{ p1 }, p2 { p2 }
 {
 }

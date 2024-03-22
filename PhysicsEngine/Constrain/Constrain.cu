@@ -31,3 +31,7 @@ __host__ __device__ Constrain::Constrain(int n, float k, ConstraintLimitType typ
 	//int tmp[2];
 	//gpuErrchk(cudaMemcpy(tmp, dev_indexes, n * sizeof(int), cudaMemcpyDeviceToHost));
 }
+
+__host__ __device__ Constrain::Constrain() : n{ 0 }, k{ 0 }, cMin{ 0 }, cmax{ 0 }
+{
+}
