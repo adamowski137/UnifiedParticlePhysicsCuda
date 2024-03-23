@@ -5,6 +5,22 @@ __device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraint
 
 ConstrainStorage ConstrainStorage::Instance;
 
+__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles - 1) return;
+	Node* p = collisions[index].head;
+	int constrainIndex = counts[index] - 1;
+
+	while (p != NULL)
+	{
+		constraints[constrainIndex] = DistanceConstrain().init(d, index, p->value, type);
+		p = p->next;
+		constrainIndex--;
+	}
+}
+
+
 void ConstrainStorage::initInstance()
 {
 	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
@@ -38,7 +54,7 @@ void ConstrainStorage::addCollisions(List* collisions, int* counts, ConstraintLi
 	unsigned int threads = 32;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	//addCollisionsKern<< <particle_bound_blocks, threads> >>(collisions, counts, dynamicDistanceConstraints, type, d, nParticles);
-	//gpuErrchk(cudaGetLastError());
-	//gpuErrchk(cudaDeviceSynchronize());
+	addCollisionsKern(collisions, counts, dynamicDistanceConstraints, type, d, nParticles);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 }

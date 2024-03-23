@@ -66,22 +66,6 @@ private:
 
 };
 
-//__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
-//{
-//	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-//	if (index >= nParticles - 1) return;
-//	Node* p = collisions[index].head;
-//	int constrainIndex = counts[index] - 1;
-//
-//	while (p != NULL)
-//	{
-//		constraints[constrainIndex] = DistanceConstrain().init(d, index, p->value, type);
-//		p = p->next;
-//		constrainIndex--;
-//	}
-//}
-
-
 template<typename T>
 void ConstrainStorage::setStaticConstraints(T* constrains, int nConstrains, ConstrainType type)
 {
