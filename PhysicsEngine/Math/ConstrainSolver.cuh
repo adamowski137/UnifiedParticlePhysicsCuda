@@ -7,6 +7,7 @@
 #include "../Constrain/SurfaceConstraint/SurfaceConstraint.cuh"
 #include "../List/List.cuh"
 
+
 class ConstrainSolver {
 public:
 	ConstrainSolver(int particles);

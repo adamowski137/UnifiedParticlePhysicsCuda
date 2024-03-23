@@ -5,9 +5,10 @@
 #include <memory>
 #include "../Constrain/Constrain.cuh"
 #include <vector>
-#include "../Math/ConstrainSolver.cuh"
 #include "../Collision/CollisionGrid.cuh"
 #include "../Collision/SurfaceCollisionFinder.cuh"
+#include "../Math/ConstrainSolver.cuh"
+
 
 #define ANY_CONSTRAINTS_ON 1
 #define GRID_CHECKING_ON 2

@@ -7,8 +7,8 @@
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 #include "LinearSolver.cuh"
-#include "../Constrain/ConstrainStorage.cuh"
 #include "../Constants.hpp"
+#include "../Constrain/ConstrainStorage.cuh"
 
 #define SHMEM_SIZE 1024
 
