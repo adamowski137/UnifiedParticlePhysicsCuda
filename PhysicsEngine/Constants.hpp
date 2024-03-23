@@ -1,3 +1,5 @@
+#pragma once
+
 // world constants
 #define MAXDIMENSION 50.0f
 #define MINDIMENSION -50.0f

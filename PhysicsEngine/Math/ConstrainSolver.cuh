@@ -51,9 +51,6 @@ private:
 	int nConstraintsMaxAllocated;
 
 	// mainly collision constraints
-	DistanceConstrain* dev_constraints;
-	DistanceConstrain* dev_staticConstraints;
-	DistanceConstrain* dev_dynamicConstraints;
 
 	SurfaceConstraint* dev_surfaceConstraints;
 
