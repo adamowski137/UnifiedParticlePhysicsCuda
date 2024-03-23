@@ -1,9 +1,6 @@
 #include "ConstrainStorage.cuh"
-
-__device__ __constant__ DistanceConstrain CUDAConstants::staticDistanceConstraints[MAX_CONSTRAINS];
-__device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraints[MAX_CONSTRAINS];
-
-ConstrainStorage ConstrainStorage::Instance;
+#include <device_launch_parameters.h>
+#include <cuda_runtime.h>
 
 __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
 {
@@ -19,6 +16,12 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 		constrainIndex--;
 	}
 }
+
+__device__ __constant__ DistanceConstrain CUDAConstants::staticDistanceConstraints[MAX_CONSTRAINS];
+__device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraints[MAX_CONSTRAINS];
+
+ConstrainStorage ConstrainStorage::Instance;
+
 
 
 void ConstrainStorage::initInstance()
@@ -54,7 +57,7 @@ void ConstrainStorage::addCollisions(List* collisions, int* counts, ConstraintLi
 	unsigned int threads = 32;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	addCollisionsKern(collisions, counts, dynamicDistanceConstraints, type, d, nParticles);
+	addCollisionsKern< <<particle_bound_blocks, threads> >>(collisions, counts, dynamicDistanceConstraints, type, d, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
