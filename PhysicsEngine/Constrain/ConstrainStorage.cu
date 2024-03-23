@@ -1,6 +1,7 @@
 #include "ConstrainStorage.cuh"
 #include <device_launch_parameters.h>
 #include <cuda_runtime.h>
+#include <thrust/device_ptr.h>
 
 __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
 {
@@ -22,8 +23,6 @@ __device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraint
 
 ConstrainStorage ConstrainStorage::Instance;
 
-
-
 void ConstrainStorage::initInstance()
 {
 	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
@@ -44,8 +43,19 @@ ConstrainStorage::~ConstrainStorage()
 }
 
 
-void ConstrainStorage::addCollisions(List* collisions, int* counts, ConstraintLimitType type, float d, int nParticles)
+int ConstrainStorage::getTotalConstraints()
 {
+	int sum = 0;
+	for(int i = 0; i < CONSTRAINTYPESNUMBER; i++)
+	{
+		sum += nStaticConstraints[i] + nDynamicConstraints[i];
+	}
+	return sum;
+}
+
+void ConstrainStorage::addCollisions(List* collisions, int* sums, ConstraintLimitType ctype, float d, int nParticles)
+{
+	thrust::device_ptr<int> counts(sums);
 	nDynamicConstraints[(int)ConstrainType::DISTANCE] = counts[nParticles - 1];
 	if (maxDynamicConstraints[(int)ConstrainType::DISTANCE] < counts[nParticles - 1])
 	{
@@ -54,10 +64,10 @@ void ConstrainStorage::addCollisions(List* collisions, int* counts, ConstraintLi
 		gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, counts[nParticles - 1] * sizeof(DistanceConstrain)));
 	}
 
-	unsigned int threads = 32;
+	int threads = 32;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	addCollisionsKern< <<particle_bound_blocks, threads> >>(collisions, counts, dynamicDistanceConstraints, type, d, nParticles);
+	addCollisionsKern<<<particle_bound_blocks, threads>>> (collisions, sums, dynamicDistanceConstraints, ctype, d, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

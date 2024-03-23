@@ -32,7 +32,6 @@ target_compile_options(PhysicsEngine PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
                        --use_fast_math
                        --relocatable-device-code=true
 					   --expt-extended-lambda
-					   -g -G
                        >)
 
 target_link_libraries(PhysicsEngine PUBLIC CUDA::cudart glad Thrust)
