@@ -11,6 +11,48 @@
 #define SHMEM_SIZE 1024
 
 
+template<typename T>
+__global__ void fillJacobiansKern(
+	int nConstraints, int nParticles,
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz,
+	float* jacobian, float* velocity_jacobian,
+	T* constrains, ConstrainType type)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nConstraints) return;
+	if (type == ConstrainType::DISTANCE)
+	{
+		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+		(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, 0, &velocity_jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+
+		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 1, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
+		(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, 1, &velocity_jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
+	}
+	if (type == ConstrainType::SURFACE)
+	{
+		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+		(constrains[index]).timePositionDerivative(x, y, z, vx, vy, vz, 0, &velocity_jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+	}
+}
+
+
+template <typename T>
+__global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b,
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz,
+	float* jacobian, float dt,
+	float* dev_c_min, float* dev_c_max,
+	T* constrains)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= constrainsNumber) return;
+	b[index] = -(constrains[index])(x, y, z, vx, vy, vz);
+	dev_c_max[index] = constrains[index].cMax;
+	dev_c_min[index] = constrains[index].cMin;
+}
+
+
 __global__ void matrixMulKern(const float* a, const float* b, float* c, int N, int K) {
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -76,6 +118,74 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* f
 			fc[index] += new_lambda[i] * jacobi_transposed[index * nConstraints + i];
 		}
 	}
+}
+
+template<typename T>
+void fillJacobiansWrapper(int nConstraints, int nParticles,
+	float* x, float* y, float* z,
+	float* vx, float* vy, float* vz,
+	float* jacobian, float* velocity_jacobian,
+	float* jacobian_transposed, float* A,
+	float* b, float dt,
+	float* invmass, float* fc, float* lambda, float* new_lambda, float* c_min, float* c_max,
+	T* constraints, ConstrainType type)
+{
+	unsigned int threads = 32;
+
+	// kernels bound by number of constraints
+	int constraint_bound_blocks = (nConstraints + threads - 1) / threads;
+
+	// kernels bound by the size of Jacobian
+	int jacobian_bound_blocks = ((3 * nParticles * nConstraints) + threads - 1) / threads;
+
+	int particlex3_bound_blocks = ((3 * nParticles) + threads - 1) / threads;
+
+	int particle_bound_blocks = (nParticles + threads - 1) / threads;
+
+	fillJacobiansKern<<<constraint_bound_blocks, threads>>>(nConstraints, nParticles,
+		x, y, z,
+		vx, vy, vz,
+		jacobian, velocity_jacobian,
+		constraints, type);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillResultVectorKern << <constraint_bound_blocks, threads >> > (nParticles, nConstraints, b,
+		x, y, z,
+		vx, vy, vz, jacobian, dt,
+		c_min, c_max,
+		constraints);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	massVectorMultpilyKern <<<jacobian_bound_blocks, threads>>> (
+		3 * nParticles,
+		nConstraints,
+		invmass,
+		jacobian);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	unsigned int BLOCKS_X = (nConstraints + threads - 1) / threads;
+	unsigned int BLOCKS_Y = (nConstraints + threads - 1) / threads;
+
+	dim3 th{ threads, threads };
+	dim3 bl{ BLOCKS_X, BLOCKS_Y };
+
+	matrixMulKern<<<bl, th>>> (jacobian, jacobian_transposed, A, nConstraints, 3 * nParticles);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, 1);
+
+	applyForce <<<particlex3_bound_blocks, threads>>> (new_lambda, jacobian_transposed, fc, nParticles, nConstraints);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 }
 
 ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
