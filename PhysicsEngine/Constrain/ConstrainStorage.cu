@@ -56,12 +56,16 @@ int ConstrainStorage::getTotalConstraints()
 void ConstrainStorage::addCollisions(List* collisions, int* sums, ConstraintLimitType ctype, float d, int nParticles)
 {
 	thrust::device_ptr<int> counts(sums);
-	nDynamicConstraints[(int)ConstrainType::DISTANCE] = counts[nParticles - 1];
-	if (maxDynamicConstraints[(int)ConstrainType::DISTANCE] < counts[nParticles - 1])
+	int nCollisions = counts[nParticles - 1];
+
+	if (nCollisions == 0) return;
+	
+	nDynamicConstraints[(int)ConstrainType::DISTANCE] = nCollisions;
+	if (maxDynamicConstraints[(int)ConstrainType::DISTANCE] < nCollisions)
 	{
-		maxDynamicConstraints[(int)ConstrainType::DISTANCE] = counts[nParticles - 1];
+		maxDynamicConstraints[(int)ConstrainType::DISTANCE] = nCollisions;
 		gpuErrchk(cudaFree(dynamicDistanceConstraints));
-		gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, counts[nParticles - 1] * sizeof(DistanceConstrain)));
+		gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, nCollisions * sizeof(DistanceConstrain)));
 	}
 
 	int threads = 32;

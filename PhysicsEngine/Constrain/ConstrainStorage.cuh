@@ -97,7 +97,7 @@ void ConstrainStorage::setDynamicConstraints(T* constrains, int nConstrains, Con
 			gpuErrchk(cudaFree(dynamicDistanceConstraints));
 			gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, nConstrains * sizeof(T)));
 		}
-		gpuErrchk(cudaMemcpy(dynamicDistanceConstraints, constrains, nConstrains * sizeof(T)));
+		gpuErrchk(cudaMemcpy(dynamicDistanceConstraints, constrains, nConstrains * sizeof(T), cudaMemcpyDeviceToDevice));
 		
 	}
 	if (type == ConstrainType::SURFACE)
@@ -107,7 +107,7 @@ void ConstrainStorage::setDynamicConstraints(T* constrains, int nConstrains, Con
 			gpuErrchk(cudaFree(dynamicSurfaceConstraints));
 			gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, nConstrains * sizeof(T)));
 		}
-		gpuErrchk(cudaMemcpy(dynamicSurfaceConstraints, constrains, nConstrains * sizeof(T)));
+		gpuErrchk(cudaMemcpy(dynamicSurfaceConstraints, constrains, nConstrains * sizeof(T), cudaMemcpyDeviceToDevice));
 	}
 }
 

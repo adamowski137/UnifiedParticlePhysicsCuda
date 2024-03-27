@@ -77,8 +77,8 @@ void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, fl
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);
-
-	fillJacobiansWrapper(
+	
+	fillJacobiansWrapper<T>(
 		nConstraints, nParticles, 
 		x, y, z, vx, vy, vz, 
 		dev_jacobian, dev_velocity_jacobian,
@@ -88,3 +88,4 @@ void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, fl
 		constraints.first, type);
 
 }
+

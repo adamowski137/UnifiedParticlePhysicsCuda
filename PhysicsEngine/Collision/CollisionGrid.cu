@@ -227,10 +227,6 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(dev_counts);
 	thrust::inclusive_scan(p, p + nParticles, prefixSum);
 
-	if (prefixSum[nParticles - 1] > 0)
-	{
-		std::cout << "collisions: " << prefixSum[nParticles - 1] << "\n";
-	}
 }
 
 
