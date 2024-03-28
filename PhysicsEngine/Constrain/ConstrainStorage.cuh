@@ -6,6 +6,7 @@
 #include "../GpuErrorHandling.hpp"
 #include <utility>
 #include "../List/List.cuh"
+#include "thrust/device_ptr.h"
 
 #define MAX_CONSTRAINS 128
 #define DEFAULT_CONSTRAINS 64
@@ -48,6 +49,7 @@ public:
 	int getTotalConstraints();
 	void addCollisions(List* collisions, int* sums, ConstraintLimitType type, float d, int nParticles);
 	static ConstrainStorage Instance;
+	void clearConstraints();
 	void initInstance();
 	~ConstrainStorage();
 private:
@@ -146,10 +148,14 @@ std::pair<T*, int> ConstrainStorage::getConstraints(ConstrainType type)
 			gpuErrchk(cudaFree(distanceConstraints));
 			gpuErrchk(cudaMalloc((void**)&distanceConstraints, n * sizeof(T)));
 		}
-		if(nDynamicConstraints[(int)type] > 0)
+		if(nStaticConstraints[(int)type] > 0)
 			gpuErrchk(cudaMemcpyFromSymbol(distanceConstraints, CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type] * sizeof(T), 0, cudaMemcpyDeviceToDevice));
 		if (nDynamicConstraints[(int)type] > 0)
+		{
+			DistanceConstrain d;
+			gpuErrchk(cudaMemcpy(&d, dynamicDistanceConstraints, sizeof(DistanceConstrain), cudaMemcpyDeviceToHost));
 			gpuErrchk(cudaMemcpy(distanceConstraints + nStaticConstraints[(int)type], dynamicDistanceConstraints, nDynamicConstraints[(int)type] * sizeof(T), cudaMemcpyDeviceToDevice));
+		}
 		return std::pair<T*, int>((T*)distanceConstraints, nDynamicConstraints[(int)type] + nStaticConstraints[(int)type]);
 	}
 	if (type == ConstrainType::SURFACE)

@@ -6,7 +6,7 @@
 __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= nParticles - 1) return;
+	if (index >= nParticles) return;
 	Node* p = collisions[index].head;
 	int constrainIndex = counts[index] - 1;
 
@@ -22,6 +22,11 @@ __device__ __constant__ DistanceConstrain CUDAConstants::staticDistanceConstrain
 __device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraints[MAX_CONSTRAINS];
 
 ConstrainStorage ConstrainStorage::Instance;
+
+void ConstrainStorage::clearConstraints()
+{
+	memset(nDynamicConstraints, 0, sizeof(int) * CONSTRAINTYPESNUMBER);
+}
 
 void ConstrainStorage::initInstance()
 {
@@ -59,7 +64,7 @@ void ConstrainStorage::addCollisions(List* collisions, int* sums, ConstraintLimi
 	int nCollisions = counts[nParticles - 1];
 
 	if (nCollisions == 0) return;
-	
+	//printf("active collision\n");
 	nDynamicConstraints[(int)ConstrainType::DISTANCE] = nCollisions;
 	if (maxDynamicConstraints[(int)ConstrainType::DISTANCE] < nCollisions)
 	{
@@ -72,6 +77,7 @@ void ConstrainStorage::addCollisions(List* collisions, int* sums, ConstraintLimi
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
 	addCollisionsKern<<<particle_bound_blocks, threads>>> (collisions, sums, dynamicDistanceConstraints, ctype, d, nParticles);
+
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

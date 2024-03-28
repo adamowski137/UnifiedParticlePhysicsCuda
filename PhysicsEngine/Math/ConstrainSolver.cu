@@ -186,22 +186,10 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	auto j = thrust::device_pointer_cast(jacobian_transposed);
-
-	if (type == ConstrainType::DISTANCE)
-	{
-		for (int i = 0; i < 3 * nParticles * nConstraints; i++)
-			std::cout << j[i] << " ";
-
-		std::cout << "\n";	
-	}
-
-	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, 1);
+	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, 10);
 
 	applyForce <<<particlex3_bound_blocks, threads>>> (new_lambda, jacobian_transposed, fc, nParticles, nConstraints);
 
-	//auto f = thrust::device_pointer_cast(fc);
-	//std::cout << f[0] << "\n";
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -245,6 +233,8 @@ void ConstrainSolver::calculateForces(
 {
 	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE);
 	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE);
+
+	ConstrainStorage::Instance.clearConstraints();
 }
 
 void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)

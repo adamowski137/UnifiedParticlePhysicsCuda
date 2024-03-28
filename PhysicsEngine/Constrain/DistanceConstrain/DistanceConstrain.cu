@@ -5,8 +5,8 @@
 __host__ __device__ DistanceConstrain DistanceConstrain::init(float d, int p1, int p2, ConstraintLimitType type)
 {
 	((Constrain*)this)->init(2, 1.0f, type);
-	this->p[0] = p[0];
-	this->p[1] = p[1];
+	this->p[0] = p1;
+	this->p[1] = p2;
 	this->d = d;
 	return *this;
 }
