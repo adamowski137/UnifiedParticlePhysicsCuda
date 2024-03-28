@@ -309,6 +309,14 @@ void ConstrainSolver::allocateArrays(int nConstraints)
 		gpuErrchk(cudaMemset(dev_c_max, 0, nConstraints * sizeof(float)));
 
 	}
+	else this->clearArrays(nConstraints);
 }
 
+void ConstrainSolver::clearArrays(int nConstraints)
+{
+	gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_b, 0, nConstraints * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
 
+}

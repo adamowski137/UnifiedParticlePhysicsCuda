@@ -64,7 +64,7 @@ private:
 	
 	template<typename T>
 	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type);
-
+	void clearArrays(int nConstraints);
 };
 
 
@@ -87,5 +87,6 @@ void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, fl
 		dev_c_min, dev_c_max,
 		constraints.first, type);
 
+	clearArrays(nConstraints);
 }
 
