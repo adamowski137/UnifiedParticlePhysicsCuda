@@ -2,17 +2,21 @@
 #include <cmath>
 #include "../Constrain.cuh"
 
-__host__ __device__ DistanceConstrain::DistanceConstrain(float d, int p1, int p2, ConstraintLimitType type) : Constrain{ 2, 1.0f, type }, d{ d }, p1{ p1 }, p2 { p2 }
+__host__ __device__ DistanceConstrain DistanceConstrain::init(float d, int p1, int p2, ConstraintLimitType type)
 {
+	((Constrain*)this)->init(2, 1.0f, type);
+	this->p[0] = p1;
+	this->p[1] = p2;
+	this->d = d;
+	return *this;
 }
-
 
 __host__ __device__ float DistanceConstrain::operator()(float* x, float* y, float* z,
 	float* vx, float* vy, float* vz)
 {
-	float distX = (x[p1] - x[p2]) * (x[p1] - x[p2]);
-	float distY = (y[p1] - y[p2]) * (y[p1] - y[p2]);
-	float distZ = (z[p1] - z[p2]) * (z[p1] - z[p2]);
+	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
 	return sqrtf(distX + distY + distZ) - d;
 }
@@ -21,13 +25,13 @@ __host__ __device__ float DistanceConstrain::operator()(float* x, float* y, floa
 __host__ __device__ float DistanceConstrain::timeDerivative(float* x, float* y, float* z,
 	float* vx, float* vy, float* vz)
 {
-	float distX = (x[p1] - x[p2]) * (x[p1] - x[p2]);
-	float distY = (y[p1] - y[p2]) * (y[p1] - y[p2]);
-	float distZ = (z[p1] - z[p2]) * (z[p1] - z[p2]);
+	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
-	float nx = (x[p1] - x[p2]);
-	float ny = (y[p1] - y[p2]);
-	float nz = (z[p1] - z[p2]);
+	float nx = (x[p[0]] - x[p[1]]);
+	float ny = (y[p[0]] - y[p[1]]);
+	float nz = (z[p[0]] - z[p[1]]);
 
 	float len = sqrt(nx * nx + ny * ny + nz * nz);
 
@@ -35,15 +39,15 @@ __host__ __device__ float DistanceConstrain::timeDerivative(float* x, float* y, 
 	ny /= len;
 	nz /= len;
 
-	float diffvX = (vx[p1] - vx[p2]);
-	float diffvY = (vy[p1] - vy[p2]);
-	float diffvZ = (vz[p1] - vz[p2]);
+	float diffvX = (vx[p[0]] - vx[p[1]]);
+	float diffvY = (vy[p[0]] - vy[p[1]]);
+	float diffvZ = (vz[p[0]] - vz[p[1]]);
 
 	//return diffvX + diffvY + diffvZ;
 
 	//return sqrt(diffvX * diffvX + diffvY * diffvY + diffvZ * diffvZ);
 	float coeff = 1 / sqrtf(distX + distY + distZ);
-	return coeff * (nx * vx[p1] + ny * vy[p1] + nz * vz[p1] - nx * vx[p2] - ny * vy[p2] - nz * vz[p2]);
+	return coeff * (nx * vx[p[0]] + ny * vy[p[0]] + nz * vz[p[0]] - nx * vx[p[1]] - ny * vy[p[1]] - nz * vz[p[1]]);
 }
 
 
@@ -52,15 +56,15 @@ __host__ __device__ void DistanceConstrain::positionDerivative(float* x, float* 
 {
 	if (index == 0)
 	{
-		output[0] = x[p1] - x[p2];
-		output[1] = y[p1] - y[p2];
-		output[2] = z[p1] - z[p2];
+		output[0] = x[p[0]] - x[p[1]];
+		output[1] = y[p[0]] - y[p[1]];
+		output[2] = z[p[0]] - z[p[1]];
 	}
 	else
 	{
-		output[0] = x[p2] - x[p1];
-		output[1] = y[p2] - y[p1];
-		output[2] = z[p2] - z[p1];
+		output[0] = x[p[1]] - x[p[0]];
+		output[1] = y[p[1]] - y[p[0]];
+		output[2] = z[p[1]] - z[p[0]];
 	}
 }
 

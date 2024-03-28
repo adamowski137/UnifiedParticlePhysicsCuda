@@ -2,7 +2,7 @@
 #include <vector>
 #include <cuda_runtime.h>
 #include "../Constrain/SurfaceConstraint/SurfaceConstraint.cuh"
-#include "Surface.hpp"
+#include "Surface.cuh"
 
 
 class SurfaceCollisionFinder

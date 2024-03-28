@@ -47,7 +47,7 @@ __global__ void fillConstraints(int nParticles, int nSurfaces,
 		{
 			// offset by 1 because we index array starting from 0
 			int constraintIndex = hitsSum[index + i * nParticles] - 1;
-			constraints[constraintIndex] = SurfaceConstraint(r, index, surfaces[i]);
+			constraints[constraintIndex] = SurfaceConstraint().init(r, index, surfaces[i]);
 		}
 	}
 }

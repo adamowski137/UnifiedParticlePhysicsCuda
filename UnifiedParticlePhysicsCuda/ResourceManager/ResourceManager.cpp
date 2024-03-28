@@ -58,8 +58,8 @@ void ResourceManager::loadScenes(int amountOfPoints)
 		options.sceneData.push_back(data);
 	}
 
-	options.sceneData[0].isActive = true;
-	currentScene = scenes[options.sceneData[0].name];
+	options.sceneData[1].isActive = true;
+	currentScene = scenes[options.sceneData[1].name];
 }
 
 std::shared_ptr<Scene>& ResourceManager::getActiveScene()

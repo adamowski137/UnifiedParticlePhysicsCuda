@@ -1,14 +1,16 @@
-﻿cmake_minimum_required(VERSION 3.8)
+﻿cmake_minimum_required(VERSION 3.12)
 
 project(PhysicsEngine)
 
 add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/Constrain.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/ConstrainStorage.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/CollisionGrid.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/SurfaceConstraint/SurfaceConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/SurfaceCollisionFinder.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/DistanceConstrain/DistanceConstrain.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstrainSolver.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstrainSolver.cuh
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/LinearSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/Particle.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/ParticleData.cu
@@ -31,7 +33,6 @@ target_compile_options(PhysicsEngine PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
                        --use_fast_math
                        --relocatable-device-code=true
 					   --expt-extended-lambda
-					   -g -G
                        >)
 
 target_link_libraries(PhysicsEngine PUBLIC CUDA::cudart glad Thrust)

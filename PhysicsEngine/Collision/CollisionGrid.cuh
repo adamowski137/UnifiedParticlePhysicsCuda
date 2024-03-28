@@ -1,6 +1,7 @@
 #pragma once
 #include <thrust/device_ptr.h>
 #include "../List/List.cuh"
+#include "../Constrain/ConstrainStorage.cuh"
 
 class CollisionGrid 
 {
