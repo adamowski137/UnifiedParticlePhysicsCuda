@@ -7,7 +7,6 @@ void Camera::updateVectors(glm::vec3 direction)
     cameraUp = glm::normalize(glm::cross(cameraRight, cameraFront));
 }
 
-
 Camera::Camera(int width, int height) : 
     projection(glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.01f, 2000.0f))
 {

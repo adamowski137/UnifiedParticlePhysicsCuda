@@ -5,6 +5,7 @@ struct Node
 {
 	int value;
 	Node* next;
+	__host__ __device__ Node() {}
 };
 
 class List 

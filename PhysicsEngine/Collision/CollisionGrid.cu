@@ -47,7 +47,7 @@ __global__ void findCollisionsKern(
 		{
 			for (int k = minZ; k <= maxZ; k++)
 			{
-				int currentCube = i + CUBESPERDIMENSION * (j + CUBESPERDIMENSION * k);	
+				int currentCube = i + CUBESPERDIMENSION * (j + CUBESPERDIMENSION * k);
 				int first = gridCubeStart[currentCube];
 				int last = gridCubeEnd[currentCube];
 
@@ -55,7 +55,7 @@ __global__ void findCollisionsKern(
 				for (int it = first; it <= last; it++)
 				{
 					unsigned int particle = mapping[it];
-					
+
 					if (particle == index) continue;
 
 					float px = x[particle];
@@ -75,12 +75,11 @@ __global__ void findCollisionsKern(
 	}
 }
 
-
 __global__ void generateGridIndiciesKern(float* x, float* y, float* z, unsigned int* indicies, unsigned int* mapping, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
-	
+
 	float xCur = x[index];
 	float yCur = y[index];
 	float zCur = z[index];
@@ -200,7 +199,6 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
 	identifyGridCubeStartEndKern << <particle_bound_blocks, threads >> > (dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -215,9 +213,9 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
- 	gpuErrchk(cudaMemset(dev_counts, 0, sizeof(int) * nParticles));
+	gpuErrchk(cudaMemset(dev_counts, 0, sizeof(int) * nParticles));
 
-	findCollisionsKern<<<particle_bound_blocks, threads>>>(collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
+	findCollisionsKern << <particle_bound_blocks, threads >> > (collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
@@ -226,7 +224,6 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	thrust::device_ptr<int> prefixSum{ sums };
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(dev_counts);
 	thrust::inclusive_scan(p, p + nParticles, prefixSum);
-
 }
 
 
