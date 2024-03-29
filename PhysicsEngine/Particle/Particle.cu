@@ -227,7 +227,6 @@ void ParticleType::calculateNewPositions(float dt)
 	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
 		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z) 
 		: std::make_pair((SurfaceConstraint*)0, 0);
-	//std::cout << surfaceCollisionData.second << "\n";
 	// todo implement grid (predicted positions)
 
 	// stabilization iterations

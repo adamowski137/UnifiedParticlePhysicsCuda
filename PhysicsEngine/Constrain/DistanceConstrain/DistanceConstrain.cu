@@ -24,23 +24,16 @@ __host__ __device__ float DistanceConstrain::operator()(float* x, float* y, floa
 __host__ __device__ void DistanceConstrain::positionDerivative(float* x, float* y, float* z,
 	float* vx, float* vy, float* vz, int index, float* output)
 {
-
-	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
-	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
-	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
-
-	float l = sqrtf(distX + distY + distZ);
-
 	if (index == 0)
 	{
-		output[0] = (x[p[0]] - x[p[1]]) / l;
-		output[1] = (y[p[0]] - y[p[1]]) / l;
-		output[2] = (z[p[0]] - z[p[1]]) / l;
+		output[0] = (x[p[0]] - x[p[1]]);
+		output[1] = (y[p[0]] - y[p[1]]);
+		output[2] = (z[p[0]] - z[p[1]]);
 	}
 	else
 	{
-		output[0] = (x[p[1]] - x[p[0]]) / l;
-		output[1] = (y[p[1]] - y[p[0]]) / l;
-		output[2] = (z[p[1]] - z[p[0]]) / l;
+		output[0] = (x[p[1]] - x[p[0]]);
+		output[1] = (y[p[1]] - y[p[0]]);
+		output[2] = (z[p[1]] - z[p[0]]);
 	}
 }

@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	int n = 4;
+	int n = 10;
 	//std::cout << "Matrix size: " << n << std::endl;
 	//float* A = new float[n * n];
 	//float* b = new float[n];
@@ -45,7 +45,7 @@ int main()
 	// semi fixed time step
 	// https://gafferongames.com/post/fix_your_timestep/
 	float t = 0.f;
-	float dt = (1.f / 60.f) / 2.f;
+	float dt = (1.f / 60.f) / 4.f;
 	float accumulator = 0.f;
 	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())

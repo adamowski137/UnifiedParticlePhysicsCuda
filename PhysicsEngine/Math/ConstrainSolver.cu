@@ -43,7 +43,7 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -(constrains[index])(x, y, z, vx, vy, vz);
+	b[index] = -5 * (constrains[index])(x, y, z, vx, vy, vz);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
 }
@@ -153,12 +153,6 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
-	/*auto p = thrust::device_pointer_cast(jacobian);
-	for (int i = 0; i < nConstraints * nParticles * 3; i++)
-		std::cout << p[i] << " ";
-	std::cout << "\n";*/
-
 	fillResultVectorKern << <constraint_bound_blocks, threads >> > (nParticles, nConstraints, b,
 		x, y, z,
 		vx, vy, vz, jacobian,
@@ -189,9 +183,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 
 	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, 50);
 
-
 	applyForce << <particlex3_bound_blocks, threads >> > (new_lambda, jacobian_transposed, fc, nParticles, nConstraints);
-
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
