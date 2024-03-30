@@ -53,14 +53,10 @@ private:
 	// if number of constraints decreased between simulation steps we do not want to reallocate arrays
 	int nConstraintsMaxAllocated;
 
-	// mainly collision constraints
-
-	SurfaceConstraint* dev_surfaceConstraints;
-
 	void allocateArrays(int size);
 	
 	template<typename T>
-	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type);
+	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type, bool dynamic);
 	void clearArrays(int nConstraints);
 };
 
@@ -68,9 +64,9 @@ private:
 
 
 template<typename T>
-void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type)
+void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type, bool dynamic)
 {
-	std::pair<T*, int> constraints = ConstrainStorage::Instance.getConstraints<T>(type);
+	std::pair<T*, int> constraints = ConstrainStorage::Instance.getConstraints<T>(type, dynamic);
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);

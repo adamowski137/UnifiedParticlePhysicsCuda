@@ -223,8 +223,10 @@ void ConstrainSolver::calculateForces(
 	float* invmass, float* fc, float dt
 )
 {
-	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE);
-	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE);
+	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE, true);
+	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE, true);
+	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE, false);
+	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE, false);
 
 	ConstrainStorage::Instance.clearConstraints();
 }

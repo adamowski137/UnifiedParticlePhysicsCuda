@@ -41,7 +41,7 @@ public:
 	template<typename T>
 	std::pair<T*, int> getDynamicConstraints(ConstrainType type);
 	template<typename T>
-	std::pair<T*, int> getConstraints(ConstrainType type);
+	std::pair<T*, int> getConstraints(ConstrainType type, bool dynamic);
 
 	ConstrainStorage& operator=(const ConstrainStorage& other) = delete;
 	ConstrainStorage(const ConstrainStorage& w) = delete;
@@ -61,10 +61,6 @@ private:
 
 	DistanceConstrain* dynamicDistanceConstraints;
 	SurfaceConstraint* dynamicSurfaceConstraints;
-
-	DistanceConstrain* distanceConstraints;
-	SurfaceConstraint* surfaceConstraints;
-
 };
 
 template<typename T>
@@ -117,58 +113,26 @@ template<typename T>
 std::pair<T*, int> ConstrainStorage::getStaticConstraints(ConstrainType type)
 {
 	if (type == ConstrainType::DISTANCE)
-		return std::pair<T*, int>(CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type]);
+		return std::pair<T*, int>((T*)CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type]);
 	if (type == ConstrainType::SURFACE)
-		return std::pair<T*, int>(CUDAConstants::staticSurfaceConstraints, nStaticConstraints[(int)type]);
+		return std::pair<T*, int>((T*)CUDAConstants::staticSurfaceConstraints, nStaticConstraints[(int)type]);
 }
 
 template<typename T>
 std::pair<T*, int> ConstrainStorage::getDynamicConstraints(ConstrainType type)
 {
 	if(type == ConstrainType::DISTANCE)
-		return std::pair<T*, int>(dynamicDistanceConstraints, nDynamicConstraints[(int)type]);
+		return std::pair<T*, int>((T*)dynamicDistanceConstraints, nDynamicConstraints[(int)type]);
 	if (type == ConstrainType::SURFACE)
-		return std::pair<T*, int>(dynamicSurfaceConstraints, nDynamicConstraints[(int)type]);
+		return std::pair<T*, int>((T*)dynamicSurfaceConstraints, nDynamicConstraints[(int)type]);
 }
 
 template<typename T>
-std::pair<T*, int> ConstrainStorage::getConstraints(ConstrainType type)
+std::pair<T*, int> ConstrainStorage::getConstraints(ConstrainType type, bool dynamic)
 {
-	int n = nStaticConstraints[(int)type] + nDynamicConstraints[(int)type];
-	bool reallocate = false;
-	if(maxConstraints[(int)type] < n)
-	{
-		reallocate = true;
-		maxConstraints[(int)type] = n;
-	}
-	if (type == ConstrainType::DISTANCE)
-	{
-		if (reallocate)
-		{
-			gpuErrchk(cudaFree(distanceConstraints));
-			gpuErrchk(cudaMalloc((void**)&distanceConstraints, n * sizeof(T)));
-		}
-		if(nStaticConstraints[(int)type] > 0)
-			gpuErrchk(cudaMemcpyFromSymbol(distanceConstraints, CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type] * sizeof(T), 0, cudaMemcpyDeviceToDevice));
-		if (nDynamicConstraints[(int)type] > 0)
-		{
-			DistanceConstrain d;
-			gpuErrchk(cudaMemcpy(&d, dynamicDistanceConstraints, sizeof(DistanceConstrain), cudaMemcpyDeviceToHost));
-			gpuErrchk(cudaMemcpy(distanceConstraints + nStaticConstraints[(int)type], dynamicDistanceConstraints, nDynamicConstraints[(int)type] * sizeof(T), cudaMemcpyDeviceToDevice));
-		}
-		return std::pair<T*, int>((T*)distanceConstraints, nDynamicConstraints[(int)type] + nStaticConstraints[(int)type]);
-	}
-	if (type == ConstrainType::SURFACE)
-	{
-		if (reallocate)
-		{
-			gpuErrchk(cudaFree(surfaceConstraints));
-			gpuErrchk(cudaMalloc((void**)&surfaceConstraints, n * sizeof(T)));
-		}
-		gpuErrchk(cudaMemcpyFromSymbol(surfaceConstraints, CUDAConstants::staticSurfaceConstraints, nStaticConstraints[(int)type] * sizeof(T)));
-		gpuErrchk(cudaMemcpy(surfaceConstraints + nStaticConstraints[(int)type], dynamicSurfaceConstraints, nDynamicConstraints[(int)type] * sizeof(T), cudaMemcpyDeviceToDevice));
-		return std::pair<T*, int>((T*)surfaceConstraints, nDynamicConstraints[(int)type] + nStaticConstraints[(int)type]);
-	}
-
+	if(dynamic)
+		return getDynamicConstraints<T>(type);
+	else
+		return getStaticConstraints<T>(type);
 }
 
