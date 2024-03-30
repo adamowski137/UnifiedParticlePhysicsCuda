@@ -1,10 +1,10 @@
-#include "Constrain.cuh"
+#include "Constraint.cuh"
 #include <cuda_runtime.h>
 #include "../GpuErrorHandling.hpp"
 #include <iostream>
 #include <climits>
 
-__host__ __device__ void Constrain::init(int n, float k, ConstraintLimitType type)
+__host__ __device__ void Constraint::init(int n, float k, ConstraintLimitType type)
 {
 	this->n = n;
 	this->k = k;

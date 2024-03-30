@@ -1,17 +1,17 @@
-#include "DistanceConstrain.cuh"
+#include "DistanceConstraint.cuh"
 #include <cmath>
-#include "../Constrain.cuh"
+#include "../Constraint.cuh"
 
-__host__ __device__ DistanceConstrain DistanceConstrain::init(float d, int p1, int p2, ConstraintLimitType type)
+__host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1, int p2, ConstraintLimitType type)
 {
-	((Constrain*)this)->init(2, 1.0f, type);
+	((Constraint*)this)->init(2, 1.0f, type);
 	this->p[0] = p1;
 	this->p[1] = p2;
 	this->d = d;
 	return *this;
 }
 
-__host__ __device__ float DistanceConstrain::operator()(float* x, float* y, float* z,
+__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z,
 	float* vx, float* vy, float* vz)
 {
 	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
@@ -21,7 +21,7 @@ __host__ __device__ float DistanceConstrain::operator()(float* x, float* y, floa
 	return sqrtf(distX + distY + distZ) - d;
 }
 
-__host__ __device__ void DistanceConstrain::positionDerivative(float* x, float* y, float* z,
+__host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z,
 	float* vx, float* vy, float* vz, int index, float* output)
 {
 	if (index == 0)

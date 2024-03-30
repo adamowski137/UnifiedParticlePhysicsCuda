@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <cuda_runtime.h>
-#include "../Constrain/SurfaceConstraint/SurfaceConstraint.cuh"
+#include "../Constraint/SurfaceConstraint/SurfaceConstraint.cuh"
 #include "Surface.cuh"
 
 

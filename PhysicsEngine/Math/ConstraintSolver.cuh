@@ -3,9 +3,9 @@
 #include <vector>
 #include <memory>
 #include <thrust/device_ptr.h>
-#include "../Constrain/ConstrainStorage.cuh"
-#include "../Constrain/DistanceConstrain/DistanceConstrain.cuh"
-#include "../Constrain/SurfaceConstraint/SurfaceConstraint.cuh"
+#include "../Constraint/ConstraintStorage.cuh"
+#include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
+#include "../Constraint/SurfaceConstraint/SurfaceConstraint.cuh"
 #include "../List/List.cuh"
 #include "LinearSolver.cuh"
 
@@ -14,13 +14,13 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
 	float* jacobian,
-	T* constrains, ConstrainType type);
+	T* constrains, ConstraintType type);
 
 
-class ConstrainSolver {
+class ConstraintSolver {
 public:
-	ConstrainSolver(int particles);
-	~ConstrainSolver();
+	ConstraintSolver(int particles);
+	~ConstraintSolver();
 	void calculateForces(
 		float* x, float* y, float* z,
 		float* new_x, float* new_y, float* new_z,
@@ -56,7 +56,7 @@ private:
 	void allocateArrays(int size);
 	
 	template<typename T>
-	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type, bool dynamic);
+	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstraintType type, bool dynamic);
 	void clearArrays(int nConstraints);
 };
 
@@ -64,15 +64,15 @@ private:
 
 
 template<typename T>
-void ConstrainSolver::projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstrainType type, bool dynamic)
+void ConstraintSolver::projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstraintType type, bool dynamic)
 {
-	std::pair<T*, int> constraints = ConstrainStorage::Instance.getConstraints<T>(type, dynamic);
+	std::pair<T*, int> constraints = ConstraintStorage::Instance.getConstraints<T>(type, dynamic);
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);
 
-	DistanceConstrain c;
-	cudaMemcpy(&c, constraints.first, sizeof(DistanceConstrain), cudaMemcpyDeviceToHost);
+	DistanceConstraint c;
+	cudaMemcpy(&c, constraints.first, sizeof(DistanceConstraint), cudaMemcpyDeviceToHost);
 	
 	fillJacobiansWrapper<T>(
 		nConstraints, nParticles, 

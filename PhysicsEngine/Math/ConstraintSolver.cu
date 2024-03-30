@@ -1,4 +1,4 @@
-#include "ConstrainSolver.cuh"
+#include "ConstraintSolver.cuh"
 #include "../GpuErrorHandling.hpp"
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -17,16 +17,16 @@ __global__ void fillJacobiansKern(
 	float* x, float* y, float* z,
 	float* vx, float* vy, float* vz,
 	float* jacobian,
-	T* constrains, ConstrainType type)
+	T* constrains, ConstraintType type)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nConstraints) return;
-	if (type == ConstrainType::DISTANCE)
+	if (type == ConstraintType::DISTANCE)
 	{
 		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
 		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 1, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
 	}
-	if (type == ConstrainType::SURFACE)
+	if (type == ConstraintType::SURFACE)
 	{
 		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
 	}
@@ -124,7 +124,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	float* jacobian_transposed, float* A,
 	float* b, float dt,
 	float* invmass, float* fc, float* lambda, float* new_lambda, float* c_min, float* c_max,
-	T* constraints, ConstrainType type)
+	T* constraints, ConstraintType type)
 {
 	unsigned int threads = 32;
 
@@ -189,7 +189,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaDeviceSynchronize());
 }
 
-ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
+ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 {
 	// set pointers to 0 - this way it will be easy to distinguish whether they have already been allocated or not
 	dev_jacobian = 0;
@@ -201,10 +201,10 @@ ConstrainSolver::ConstrainSolver(int particles) : nParticles{ particles }
 	dev_c_min = 0;
 	dev_c_max = 0;
 
-	ConstrainStorage::Instance.initInstance();
+	ConstraintStorage::Instance.initInstance();
 }
 
-ConstrainSolver::~ConstrainSolver()
+ConstraintSolver::~ConstraintSolver()
 {
 	gpuErrchk(cudaFree(dev_jacobian));
 	gpuErrchk(cudaFree(dev_jacobian_transposed));
@@ -216,44 +216,44 @@ ConstrainSolver::~ConstrainSolver()
 	gpuErrchk(cudaFree(dev_c_max));
 }
 
-void ConstrainSolver::calculateForces(
+void ConstraintSolver::calculateForces(
 	float* x, float* y, float* z,
 	float* new_x, float* new_y, float* new_z,
 	float* vx, float* vy, float* vz,
 	float* invmass, float* fc, float dt
 )
 {
-	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE, true);
-	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE, true);
-	this->projectConstraints<DistanceConstrain>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::DISTANCE, false);
-	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstrainType::SURFACE, false);
+	this->projectConstraints<DistanceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
+	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::SURFACE, true);
+	this->projectConstraints<DistanceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
+	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::SURFACE, false);
 
-	ConstrainStorage::Instance.clearConstraints();
+	ConstraintStorage::Instance.clearConstraints();
 }
 
-void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
+void ConstraintSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
 {
-	std::vector<DistanceConstrain> cpu_constraints;
+	std::vector<DistanceConstraint> cpu_constraints;
 	for (const auto& pair : pairs)
 	{
-		cpu_constraints.push_back(DistanceConstrain().init(d, pair.first, pair.second, ConstraintLimitType::EQ));
+		cpu_constraints.push_back(DistanceConstraint().init(d, pair.first, pair.second, ConstraintLimitType::EQ));
 	}
 
-	ConstrainStorage::Instance.setStaticConstraints<DistanceConstrain>(cpu_constraints.data(), cpu_constraints.size(), ConstrainType::DISTANCE);
+	ConstraintStorage::Instance.setStaticConstraints<DistanceConstraint>(cpu_constraints.data(), cpu_constraints.size(), ConstraintType::DISTANCE);
 
 }
 
-void ConstrainSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
+void ConstraintSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
 {
-	ConstrainStorage::Instance.addCollisions(collisions, sums, type, d, nParticles);
+	ConstraintStorage::Instance.addCollisions(collisions, sums, type, d, nParticles);
 }
 
-void ConstrainSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
+void ConstraintSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
 {
-	ConstrainStorage::Instance.setDynamicConstraints<SurfaceConstraint>(surfaceConstraints, nSurfaceConstraints, ConstrainType::SURFACE);
+	ConstraintStorage::Instance.setDynamicConstraints<SurfaceConstraint>(surfaceConstraints, nSurfaceConstraints, ConstraintType::SURFACE);
 }
 
-void ConstrainSolver::allocateArrays(int nConstraints)
+void ConstraintSolver::allocateArrays(int nConstraints)
 {
 	if (nConstraints > nConstraintsMaxAllocated)
 	{
@@ -301,7 +301,7 @@ void ConstrainSolver::allocateArrays(int nConstraints)
 	else this->clearArrays(nConstraints);
 }
 
-void ConstrainSolver::clearArrays(int nConstraints)
+void ConstraintSolver::clearArrays(int nConstraints)
 {
 	gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));
