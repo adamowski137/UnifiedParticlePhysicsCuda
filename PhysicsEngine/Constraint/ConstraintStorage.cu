@@ -1,9 +1,9 @@
-#include "ConstrainStorage.cuh"
+#include "ConstraintStorage.cuh"
 #include <device_launch_parameters.h>
 #include <cuda_runtime.h>
 #include <thrust/device_ptr.h>
 
-__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstrain* constraints, ConstraintLimitType type, float d, int nParticles)
+__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstraint* constraints, ConstraintLimitType type, float d, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
@@ -12,26 +12,26 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 
 	while (p != NULL)
 	{
-		constraints[constrainIndex] = DistanceConstrain().init(d, index, p->value, type);
+		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type);
 		p = p->next;
 		constrainIndex--;
 	}
 }
 
-__device__ __constant__ DistanceConstrain CUDAConstants::staticDistanceConstraints[MAX_CONSTRAINS];
+__device__ __constant__ DistanceConstraint CUDAConstants::staticDistanceConstraints[MAX_CONSTRAINS];
 __device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraints[MAX_CONSTRAINS];
 
-ConstrainStorage ConstrainStorage::Instance;
+ConstraintStorage ConstraintStorage::Instance;
 
-void ConstrainStorage::clearConstraints()
+void ConstraintStorage::clearConstraints()
 {
 	memset(nDynamicConstraints, 0, sizeof(int) * CONSTRAINTYPESNUMBER);
 }
 
-void ConstrainStorage::initInstance()
+void ConstraintStorage::initInstance()
 {
-	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
-	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
+	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstraint)));
+	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstraint)));
 	
 	for (int i = 0; i < CONSTRAINTYPESNUMBER; i++)
 	{
@@ -41,14 +41,14 @@ void ConstrainStorage::initInstance()
 	}
 }
 
-ConstrainStorage::~ConstrainStorage()
+ConstraintStorage::~ConstraintStorage()
 {
 	gpuErrchk(cudaFree(dynamicDistanceConstraints));
 	gpuErrchk(cudaFree(dynamicSurfaceConstraints));
 }
 
 
-int ConstrainStorage::getTotalConstraints()
+int ConstraintStorage::getTotalConstraints()
 {
 	int sum = 0;
 	for(int i = 0; i < CONSTRAINTYPESNUMBER; i++)
@@ -58,19 +58,19 @@ int ConstrainStorage::getTotalConstraints()
 	return sum;
 }
 
-void ConstrainStorage::addCollisions(List* collisions, int* sums, ConstraintLimitType ctype, float d, int nParticles)
+void ConstraintStorage::addCollisions(List* collisions, int* sums, ConstraintLimitType ctype, float d, int nParticles)
 {
 	thrust::device_ptr<int> counts(sums);
 	int nCollisions = counts[nParticles - 1];
 
 	if (nCollisions == 0) return;
 	//printf("active collision\n");
-	nDynamicConstraints[(int)ConstrainType::DISTANCE] = nCollisions;
-	if (maxDynamicConstraints[(int)ConstrainType::DISTANCE] < nCollisions)
+	nDynamicConstraints[(int)ConstraintType::DISTANCE] = nCollisions;
+	if (maxDynamicConstraints[(int)ConstraintType::DISTANCE] < nCollisions)
 	{
-		maxDynamicConstraints[(int)ConstrainType::DISTANCE] = nCollisions;
+		maxDynamicConstraints[(int)ConstraintType::DISTANCE] = nCollisions;
 		gpuErrchk(cudaFree(dynamicDistanceConstraints));
-		gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, nCollisions * sizeof(DistanceConstrain)));
+		gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, nCollisions * sizeof(DistanceConstraint)));
 	}
 
 	int threads = 32;

@@ -1,13 +1,13 @@
 #pragma once
 #define THREADS 512
+#include <memory>
+#include <vector>
 #include <curand.h>
 #include <curand_kernel.h>
-#include <memory>
-#include "../Constrain/Constrain.cuh"
-#include <vector>
+#include "../Constraint/Constraint.cuh"
 #include "../Collision/CollisionGrid.cuh"
 #include "../Collision/SurfaceCollisionFinder.cuh"
-#include "../Math/ConstrainSolver.cuh"
+#include "../Math/ConstraintSolver.cuh"
 
 
 #define ANY_CONSTRAINTS_ON 1
@@ -51,7 +51,7 @@ private:
 	
 	float fextx, fexty, fextz;
 
-	std::unique_ptr<ConstrainSolver> constrainSolver;
+	std::unique_ptr<ConstraintSolver> constraintSolver;
 	std::unique_ptr<CollisionGrid> collisionGrid;
 	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
 

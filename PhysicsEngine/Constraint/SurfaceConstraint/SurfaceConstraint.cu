@@ -3,7 +3,7 @@
 
 __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int particle, Surface s)
 {
-	((Constrain*)this)->init(1, 1.0f, ConstraintLimitType::GEQ);
+	((Constraint*)this)->init(1, 1.0f, ConstraintLimitType::GEQ);
 	this->r = d;
 	this->p[0] = particle;
 	this->s = s;

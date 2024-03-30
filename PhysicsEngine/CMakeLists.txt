@@ -3,14 +3,14 @@
 project(PhysicsEngine)
 
 add_library(PhysicsEngine STATIC
-	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/Constrain.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/ConstrainStorage.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/Constraint.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/ConstraintStorage.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/CollisionGrid.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/SurfaceConstraint/SurfaceConstraint.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/SurfaceConstraint/SurfaceConstraint.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/DistanceConstraint/DistanceConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/SurfaceCollisionFinder.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Constrain/DistanceConstrain/DistanceConstrain.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstrainSolver.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstrainSolver.cuh
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cuh
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/LinearSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/Particle.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/ParticleData.cu
