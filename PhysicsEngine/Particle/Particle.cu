@@ -58,15 +58,12 @@ __global__ void predictPositionsKern(int amount,
 __global__ void applyChangesKern(int amount,
 	float* x, float* y, float* z,
 	float* new_x, float* new_y, float* new_z,
-	float* vx, float* vy, float* vz, float* fc, float invdt, float dt)
+	float* vx, float* vy, float* vz, float invdt, float dt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 
 	if (index >= amount) return;
-	new_x[index] += fc[3 * index] * dt;
-	new_y[index] += fc[3 * index + 1] * dt;
-	new_z[index] += fc[3 * index + 2] * dt;
-
+	
 	float changeX = (new_x[index] - x[index]);
 	float changeY = (new_y[index] - y[index]);
 	float changeZ = (new_z[index] - z[index]);
@@ -164,6 +161,10 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_y, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_z, nParticles * sizeof(float)));
 
+	gpuErrchk(cudaMalloc((void**)&dev_dx, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_dy, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_dz, nParticles * sizeof(float)));
+
 	gpuErrchk(cudaMalloc((void**)&dev_new_x, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_new_y, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_new_z, nParticles * sizeof(float)));
@@ -175,11 +176,12 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
 	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
 
-
-
-	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));
-
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, nParticles * sizeof(float)));
+
+	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
+
 	thrust::device_ptr<float> massptr{ dev_invmass };
 	thrust::fill(massptr, massptr + nParticles, 1);
 
@@ -201,8 +203,6 @@ void ParticleType::renderData(unsigned int vbo)
 
 void ParticleType::calculateNewPositions(float dt)
 {
-	cudaMemset(dev_fc, 0, 3 * nParticles * sizeof(float));
-	// predict new positions and update velocities
 	
 	float dvx = fextx * dt;
 	float dvy = fexty * dt;
@@ -243,7 +243,7 @@ void ParticleType::calculateNewPositions(float dt)
 	if(mode & SURFACE_CHECKING_ON)
 		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
 	if(mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_vx, dev_vy, dev_vz, dev_invmass, dev_fc, dt);
+		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_dx, dev_dy, dev_dz, dev_vx, dev_vy, dev_vz, dev_invmass, dt);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -251,7 +251,7 @@ void ParticleType::calculateNewPositions(float dt)
 		nParticles,
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
-		dev_vx, dev_vy, dev_vz, dev_fc,
+		dev_vx, dev_vy, dev_vz,
 		1 / dt, dt
 		);
 	gpuErrchk(cudaGetLastError());

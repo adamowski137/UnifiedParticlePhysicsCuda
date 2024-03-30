@@ -36,6 +36,9 @@ private:
 	float* dev_x;
 	float* dev_y;
 	float* dev_z;
+	float* dev_dx;
+	float* dev_dy;
+	float* dev_dz;
 	float* dev_new_x;
 	float* dev_new_y;
 	float* dev_new_z;
@@ -43,7 +46,6 @@ private:
 	float* dev_vy;
 	float* dev_vz;
 	float* dev_invmass;
-	float* dev_fc;
 	
 	List* dev_collisions;
 	int* dev_sums;

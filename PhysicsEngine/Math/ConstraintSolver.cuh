@@ -23,9 +23,10 @@ public:
 	~ConstraintSolver();
 	void calculateForces(
 		float* x, float* y, float* z,
+		float* dx, float* dy, float* dz,
 		float* new_x, float* new_y, float* new_z,
 		float* vx, float* vy, float* vz,
-		float* invmass, float* fc, float dt
+		float* invmass, float dt
 	);
 
 	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
@@ -56,7 +57,11 @@ private:
 	void allocateArrays(int size);
 	
 	template<typename T>
-	void projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstraintType type, bool dynamic);
+	void projectConstraints(float* invmass, 
+		float* x, float* y, float* z,
+		float* dx, float* dy, float* dz,
+		float* vx, float* vy, float* vz,
+		float dt, ConstraintType type, bool dynamic);
 	void clearArrays(int nConstraints);
 };
 
@@ -64,7 +69,11 @@ private:
 
 
 template<typename T>
-void ConstraintSolver::projectConstraints(float* fc, float* invmass, float* x, float* y, float* z, float* vx, float* vy, float* vz, float dt, ConstraintType type, bool dynamic)
+void ConstraintSolver::projectConstraints(float* invmass,
+	float* x, float* y, float* z, 
+	float* dx, float* dy, float* dz,
+	float* vx, float* vy, float* vz,
+	float dt, ConstraintType type, bool dynamic)
 {
 	std::pair<T*, int> constraints = ConstraintStorage::Instance.getConstraints<T>(type, dynamic);
 	int nConstraints = constraints.second;
@@ -76,10 +85,12 @@ void ConstraintSolver::projectConstraints(float* fc, float* invmass, float* x, f
 	
 	fillJacobiansWrapper<T>(
 		nConstraints, nParticles, 
-		x, y, z, vx, vy, vz, 
+		x, y, z,
+		dx, dy, dz,
+		vx, vy, vz, 
 		dev_jacobian,
 		dev_jacobian_transposed, dev_A, dev_b, dt,
-		invmass, fc, dev_lambda, dev_new_lambda,
+		invmass, dev_lambda, dev_new_lambda,
 		dev_c_min, dev_c_max,
 		constraints.first, type);
 
