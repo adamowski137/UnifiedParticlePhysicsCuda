@@ -31,7 +31,7 @@ void ConstrainStorage::clearConstraints()
 void ConstrainStorage::initInstance()
 {
 	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
-	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstrain)));
+	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(SurfaceConstraint)));
 	
 	for (int i = 0; i < CONSTRAINTYPESNUMBER; i++)
 	{

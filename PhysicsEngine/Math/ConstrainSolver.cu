@@ -240,7 +240,6 @@ void ConstrainSolver::setStaticConstraints(std::vector<std::pair<int, int>> pair
 	}
 
 	ConstrainStorage::Instance.setStaticConstraints<DistanceConstrain>(cpu_constraints.data(), cpu_constraints.size(), ConstrainType::DISTANCE);
-
 }
 
 void ConstrainSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
@@ -307,5 +306,4 @@ void ConstrainSolver::clearArrays(int nConstraints)
 	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_b, 0, nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
-
 }
