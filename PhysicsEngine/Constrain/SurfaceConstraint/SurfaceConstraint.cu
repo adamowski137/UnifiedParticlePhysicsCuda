@@ -13,7 +13,7 @@ __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int parti
 __host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z, float* vx, float* vy, float* vz)
 {
 	//return (s.normal[0] * x[p] + s.normal[1] * y[p] + s.normal[2] * z[p]) - r;
-	return abs(x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d) / s.abc_root - r;
+	return (x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d) / s.abc_root - r;
 
 }
 

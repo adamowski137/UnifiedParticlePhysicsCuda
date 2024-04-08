@@ -8,7 +8,7 @@
 class SurfaceCollisionFinder
 {
 	Surface* dev_surface;
-	int* dev_hit;
+	int* dev_hit, *dev_hit_sign;
 	int nSurfaces;
 public:
 	SurfaceCollisionFinder(std::vector<Surface> surfaces, int nParticles);
@@ -18,6 +18,7 @@ public:
 
 	std::pair<SurfaceConstraint*, int> findAndUpdateCollisions(
 		int nParticles,
-		float* x, float* y, float* z);
+		float* x, float* y, float* z,
+		float* new_x, float* new_y, float* new_z);
 };
 
