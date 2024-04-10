@@ -254,6 +254,13 @@ void ParticleType::calculateNewPositions(float dt)
 		dev_vx, dev_vy, dev_vz,
 		1 / dt, dt
 		);
+
+	static int frame = 1;
+	auto vx = thrust::device_pointer_cast(dev_vx);
+	auto vy = thrust::device_pointer_cast(dev_vy);
+	auto vz = thrust::device_pointer_cast(dev_vz);
+
+	std::cout << "[" << frame++ << "] " << std::sqrt(vx[0] * vx[0] + vy[0] * vy[0] + vz[0] * vz[0]) << "\n";
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

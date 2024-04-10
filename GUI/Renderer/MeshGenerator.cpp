@@ -70,3 +70,35 @@ RenderInfo getSphereData(int stackCount, int sectorCount)
 	sphere.generate(vertexData, indicies, { {3, GL_FLOAT} });
 	return sphere;
 }
+
+RenderInfo getCubeData()
+{
+	RenderInfo cube;
+
+	std::vector<float> verticies = {
+		// front face
+		0.f, 0.f, 0.f, 0.f, 0.f, -1.f,
+		1.f, 0.f, 0.f, 0.f, 0.f, -1.f,
+		1.f, 1.f, 0.f, 0.f, 0.f, -1.f,
+		0.f, 1.f, 0.f, 0.f, 0.f, -1.f,
+
+		// back face
+		0.f, 0.f, 1.f, 0.f, 0.f, -1.f,
+		1.f, 0.f, 1.f, 0.f, 0.f, -1.f,
+		1.f, 1.f, 1.f, 0.f, 0.f, -1.f,
+		0.f, 1.f, 1.f, 0.f, 0.f, -1.f,
+
+		// left face
+		0.f, 0.f, 0.f, 0.f, 0.f, -1.f,
+		0.f, 1.f, 0.f, 0.f, 0.f, -1.f,
+		0.f, 1.f, 1.f, 0.f, 0.f, -1.f,
+		0.f, 0.f, 1.f, 0.f, 0.f, -1.f,
+
+		// right face
+		1.f, 0.f, 0.f, 0.f, 0.f, -1.f,
+		1.f, 0.f, 1.f, 0.f, 0.f, -1.f,
+		1.f, 1.f, 1.f, 0.f, 0.f, -1.f,
+		1.f, 1.f, 0.f, 0.f, 0.f, -1.f,
+	};
+	return cube;
+}
