@@ -43,7 +43,7 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -5 * (constrains[index])(x, y, z, vx, vy, vz);
+	b[index] = -1 * (constrains[index])(x, y, z, vx, vy, vz);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
 }
@@ -270,15 +270,15 @@ void ConstraintSolver::calculateForces(
 	gpuErrchk(cudaMemset(dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dz, 0, nParticles * sizeof(float)));
 
-	//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
-	//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
-	//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
-	//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
+	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
+	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
+	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
+	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
 
-	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
-	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
-	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
-	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
+	//this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
+	//this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
+	//this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
+	//this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
 
 	thrust::transform(nx_ptr, nx_ptr + nParticles, dx_ptr, nx_ptr, thrust::plus<float>());
 	thrust::transform(ny_ptr, ny_ptr + nParticles, dy_ptr, ny_ptr, thrust::plus<float>());

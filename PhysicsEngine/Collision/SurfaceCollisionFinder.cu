@@ -24,24 +24,29 @@ __global__ void findSurfaceCollisions(
 	for (int i = 0; i < nSurfaces; i++)
 	{
 		Surface s = surfaces[i];
-		float v1 = s.a * x[index] + s.b * y[index] + s.c * z[index] + s.d;
+		float v1 = s.a * new_x[index] + s.b * new_y[index] + s.c * new_z[index] + s.d;
 		float sign_v1 = v1 < 0 ? 1 : -1;
-		float v2 = s.a * (new_x[index] + sign_v1 * s.normal[0] * r) + s.b * (new_y[index] + sign_v1 * s.normal[1] * r) + s.c * (new_z[index] + sign_v1 * s.normal[2] * r) + s.d;
-		float sign_v2 = v2 < 0 ? 1 : -1;
+		float direction = hit_sign[i * nParticles + index] == 0 ? sign_v1 : hit_sign[i * nParticles + index];
+
+		float v1_off_r = s.a * (new_x[index] + direction * s.normal[0] * r) + s.b * (new_y[index] + direction * s.normal[1] * r) + s.c * (new_z[index] + direction * s.normal[2] * r) + s.d;
+		float sign_v1_r = v1_off_r < 0 ? 1 : -1;
+
 		if (hit[i * nParticles + index] == 1)
 		{ 
-			if(hit_sign[i * nParticles + index] == sign_v2)
+			if (hit_sign[i * nParticles + index] == -sign_v1_r)
+			{
 				hit[i * nParticles + index] = 0;
+				hit_sign[i * nParticles + index] = 0;
+			}
 		}
 		else
 		{
-			//float v2 = s.a * new_x[index] + s.b * new_y[index] + s.c * new_z[index] + s.d;
-			//float v2 = s.a * (x[index] + sign * s.normal[0] * r) + s.b * (y[index] + sign * s.normal[1] * r) + s.c * (z[index] + sign * s.normal[2] * r) + s.d;
+			float v2 = s.a * (new_x[index] + direction * s.normal[0] * r) + s.b * (new_y[index] + direction * s.normal[1] * r) + s.c * (new_z[index] + direction * s.normal[2] * r) + s.d;
 
 			if (v1 * v2 < 0) // hit
 			{
 				hit[i * nParticles + index] = 1;
-				hit_sign[i * nParticles + index] = -sign_v1;
+				hit_sign[i * nParticles + index] = sign_v1;
 			}
 		}
 	}
@@ -136,7 +141,7 @@ std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisio
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_constraints,
-		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS / 2);
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS);
 
 	//gpuErrchk(cudaMemset(dev_hit, 0, sizeof(int) * nParticles * nSurfaces));
 
