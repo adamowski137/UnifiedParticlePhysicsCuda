@@ -94,8 +94,6 @@ ParticleType::ParticleType(int amount, int mode,
 {
 	blocks = ceilf((float)nParticles / THREADS);
 	constraintSolver = std::unique_ptr<ConstraintSolver>{ new ConstraintSolver{amount} };
-	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
-	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
 	allocateDeviceData();
 	setupDeviceData(setDataFunction);
 }
@@ -173,9 +171,6 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
 
-	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
-	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
-
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, nParticles * sizeof(float)));
 
 	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
@@ -221,13 +216,6 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// find neighboring particles and solid contacts ??
 
-	if(mode & GRID_CHECKING_ON)
-		collisionGrid->findCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles, dev_sums, dev_collisions);
-	
-	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
-		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z) 
-		: std::make_pair((SurfaceConstraint*)0, 0);
-	// todo implement grid (predicted positions)
 
 	// stabilization iterations
 
@@ -238,12 +226,8 @@ void ParticleType::calculateNewPositions(float dt)
 	// update predicted position and current positions
 
 	// solve iterations
-	if(mode & GRID_CHECKING_ON)
-		constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
-	if(mode & SURFACE_CHECKING_ON)
-		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
 	if(mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_dx, dev_dy, dev_dz, dev_vx, dev_vy, dev_vz, dev_invmass, dt);
+		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_dx, dev_dy, dev_dz, dev_vx, dev_vy, dev_vz, dev_invmass, dt, mode);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -255,12 +239,6 @@ void ParticleType::calculateNewPositions(float dt)
 		1 / dt, dt
 		);
 
-	static int frame = 1;
-	auto vx = thrust::device_pointer_cast(dev_vx);
-	auto vy = thrust::device_pointer_cast(dev_vy);
-	auto vz = thrust::device_pointer_cast(dev_vz);
-
-	std::cout << "[" << frame++ << "] " << std::sqrt(vx[0] * vx[0] + vy[0] * vy[0] + vz[0] * vz[0]) << "\n";
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
@@ -272,7 +250,7 @@ void ParticleType::setConstraints(std::vector<std::pair<int, int>> pairs, float 
 
 void ParticleType::setSurfaces(std::vector<Surface> surfaces)
 {
-	this->surfaceCollisionFinder->setSurfaces(surfaces, nParticles);
+	this->constraintSolver->setSurfaces(surfaces, nParticles);
 }
 
 void ParticleType::setExternalForces(float fx, float fy, float fz)

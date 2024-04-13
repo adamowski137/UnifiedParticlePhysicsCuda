@@ -6,8 +6,14 @@
 #include "../Constraint/ConstraintStorage.cuh"
 #include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 #include "../Constraint/SurfaceConstraint/SurfaceConstraint.cuh"
+#include "../Collision/CollisionGrid.cuh"
+#include "../Collision/SurfaceCollisionFinder.cuh"
 #include "../List/List.cuh"
 #include "LinearSolver.cuh"
+
+#define ANY_CONSTRAINTS_ON 1
+#define GRID_CHECKING_ON 2
+#define SURFACE_CHECKING_ON 4
 
 template<typename T>
 void fillJacobiansWrapper(int nConstraints, int nParticles,
@@ -26,14 +32,21 @@ public:
 		float* dx, float* dy, float* dz,
 		float* new_x, float* new_y, float* new_z,
 		float* vx, float* vy, float* vz,
-		float* invmass, float dt
+		float* invmass, float dt,
+		int mode
 	);
 
 	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
-	void addDynamicConstraints(List* collisions, int* counts, float d, ConstraintLimitType type);
+	void addDynamicConstraints(float d, ConstraintLimitType type);
 	void addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints);
+	void setSurfaces(std::vector<Surface> surfaces, int nSurfaces);	
 
 private:
+	std::unique_ptr<CollisionGrid> collisionGrid;
+	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
+	List* dev_collisions;
+	int* dev_sums;
+
 	// J matrix, dynamically created in every iteration
 	float* dev_jacobian;
 	float* dev_jacobian_transposed;

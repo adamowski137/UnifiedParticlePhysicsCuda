@@ -5,15 +5,7 @@
 #include <curand.h>
 #include <curand_kernel.h>
 #include "../Constraint/Constraint.cuh"
-#include "../Collision/CollisionGrid.cuh"
-#include "../Collision/SurfaceCollisionFinder.cuh"
 #include "../Math/ConstraintSolver.cuh"
-
-
-#define ANY_CONSTRAINTS_ON 1
-#define GRID_CHECKING_ON 2
-#define SURFACE_CHECKING_ON 4
-
 
 
 class ParticleType
@@ -46,16 +38,12 @@ private:
 	float* dev_vy;
 	float* dev_vz;
 	float* dev_invmass;
-	
-	List* dev_collisions;
-	int* dev_sums;
+
 	curandState* dev_curand;
 	
 	float fextx, fexty, fextz;
 
 	std::unique_ptr<ConstraintSolver> constraintSolver;
-	std::unique_ptr<CollisionGrid> collisionGrid;
-	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
 
 	int blocks;
 

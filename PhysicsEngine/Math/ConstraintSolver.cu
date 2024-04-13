@@ -8,6 +8,7 @@
 #include <thrust/device_vector.h>
 #include "../Constants.hpp"
 
+
 #define SHMEM_SIZE 1024
 
 
@@ -215,6 +216,11 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 	dev_c_min = 0;
 	dev_c_max = 0;
 
+	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{nParticles} };
+	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { }, nParticles} };
+	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
+	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
+
 	ConstraintStorage::Instance.initInstance();
 }
 
@@ -228,6 +234,7 @@ ConstraintSolver::~ConstraintSolver()
 	gpuErrchk(cudaFree(dev_new_lambda));
 	gpuErrchk(cudaFree(dev_c_min));
 	gpuErrchk(cudaFree(dev_c_max));
+
 }
 
 void ConstraintSolver::calculateForces(
@@ -235,9 +242,21 @@ void ConstraintSolver::calculateForces(
 	float* new_x, float* new_y, float* new_z,
 	float* dx, float* dy, float* dz,
 	float* vx, float* vy, float* vz,
-	float* invmass, float dt
+	float* invmass, float dt,
+	int mode
 )
 {
+	if (mode & GRID_CHECKING_ON)
+		collisionGrid->findCollisions(x, y, z, nParticles, dev_sums, dev_collisions);
+	if (mode & GRID_CHECKING_ON)
+		addDynamicConstraints(PARTICLERADIUS, ConstraintLimitType::GEQ);
+
+	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON)
+		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, x, y, z, new_x, new_y, new_z)
+		: std::make_pair((SurfaceConstraint*)0, 0);
+
+	addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
+
 	gpuErrchk(cudaMemset(dx, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dz, 0, nParticles * sizeof(float)));
@@ -254,31 +273,39 @@ void ConstraintSolver::calculateForces(
 	thrust::device_ptr<float> ny_ptr = thrust::device_pointer_cast(new_y);
 	thrust::device_ptr<float> nz_ptr = thrust::device_pointer_cast(new_z);
 
-	//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
-	//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
-	//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
-	//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
+	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
+	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
+	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
+	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
 
-	//thrust::transform(x_ptr, x_ptr + nParticles, dx_ptr, x_ptr, thrust::plus<float>());
-	//thrust::transform(y_ptr, y_ptr + nParticles, dy_ptr, y_ptr, thrust::plus<float>());
-	//thrust::transform(z_ptr, z_ptr + nParticles, dz_ptr, z_ptr, thrust::plus<float>());
-	//thrust::transform(nx_ptr, nx_ptr + nParticles, dx_ptr, nx_ptr, thrust::plus<float>());
-	//thrust::transform(ny_ptr, ny_ptr + nParticles, dy_ptr, ny_ptr, thrust::plus<float>());
-	//thrust::transform(nz_ptr, nz_ptr + nParticles, dz_ptr, nz_ptr, thrust::plus<float>());
+	thrust::transform(x_ptr, x_ptr + nParticles, dx_ptr, x_ptr, thrust::plus<float>());
+	thrust::transform(y_ptr, y_ptr + nParticles, dy_ptr, y_ptr, thrust::plus<float>());
+	thrust::transform(z_ptr, z_ptr + nParticles, dz_ptr, z_ptr, thrust::plus<float>());
+	thrust::transform(nx_ptr, nx_ptr + nParticles, dx_ptr, nx_ptr, thrust::plus<float>());
+	thrust::transform(ny_ptr, ny_ptr + nParticles, dy_ptr, ny_ptr, thrust::plus<float>());
+	thrust::transform(nz_ptr, nz_ptr + nParticles, dz_ptr, nz_ptr, thrust::plus<float>());
 
 	gpuErrchk(cudaMemset(dx, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dz, 0, nParticles * sizeof(float)));
 
+
+	if (mode & GRID_CHECKING_ON)
+	{
+		collisionGrid->findCollisions(x, y, z, nParticles, dev_sums, dev_collisions);
+		addDynamicConstraints(PARTICLERADIUS, ConstraintLimitType::GEQ);
+	}
+
+	surfaceCollisionData = (mode & SURFACE_CHECKING_ON)
+		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, x, y, z, new_x, new_y, new_z)
+		: std::make_pair((SurfaceConstraint*)0, 0);
+
+	addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
+
 	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
 	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
 	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
 	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
-
-	//this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, true);
-	//this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::SURFACE, false);
-	//this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
-	//this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dx, dy, dz, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
 
 	thrust::transform(nx_ptr, nx_ptr + nParticles, dx_ptr, nx_ptr, thrust::plus<float>());
 	thrust::transform(ny_ptr, ny_ptr + nParticles, dy_ptr, ny_ptr, thrust::plus<float>());
@@ -298,14 +325,19 @@ void ConstraintSolver::setStaticConstraints(std::vector<std::pair<int, int>> pai
 	ConstraintStorage::Instance.setStaticConstraints<DistanceConstraint>(cpu_constraints.data(), cpu_constraints.size(), ConstraintType::DISTANCE);
 }
 
-void ConstraintSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
+void ConstraintSolver::addDynamicConstraints(float d, ConstraintLimitType type)
 {
-	ConstraintStorage::Instance.addCollisions(collisions, sums, type, d, nParticles);
+	ConstraintStorage::Instance.addCollisions(dev_collisions, dev_sums, type, d, nParticles);
 }
 
 void ConstraintSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
 {
 	ConstraintStorage::Instance.setDynamicConstraints<SurfaceConstraint>(surfaceConstraints, nSurfaceConstraints, ConstraintType::SURFACE);
+}
+
+void ConstraintSolver::setSurfaces(std::vector<Surface> surfaces, int nSurfaces)
+{
+	surfaceCollisionFinder->setSurfaces(surfaces, nSurfaces);
 }
 
 void ConstraintSolver::allocateArrays(int nConstraints)
