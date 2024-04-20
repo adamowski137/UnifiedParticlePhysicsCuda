@@ -13,6 +13,7 @@ add_library(gui STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/RenderInfo.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Shader/Shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Window/Window.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Input/KeyInput.cpp
 	${imgui_source_files}
 )
 

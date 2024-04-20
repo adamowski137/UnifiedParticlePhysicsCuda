@@ -4,6 +4,7 @@
 #include "../imgui/backends/imgui_impl_glfw.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../Error/ErrorHandling.hpp"
+#include "../Input/KeyInput.h"
 
 Window Window::Instance;
 
@@ -29,6 +30,8 @@ void Window::initInstance(int width, int height)
     }
     gladLoadGL();
     enableImGui();
+
+    KeyInput::setupKeyCallback(glfw_window.get());
 
     Call(glEnable(GL_DEPTH_TEST));
     Call(glEnable(GL_CULL_FACE));
