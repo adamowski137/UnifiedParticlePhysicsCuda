@@ -11,18 +11,16 @@ __host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1,
 	return *this;
 }
 
-__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z,
-	float* vx, float* vy, float* vz)
+__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z)
 {
 	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
 	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
-	return sqrtf(distX + distY + distZ) - d;
+	return (sqrtf(distX + distY + distZ) - d);
 }
 
-__host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z,
-	float* vx, float* vy, float* vz, int index, float* output)
+__host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)
 {
 	if (index == 0)
 	{

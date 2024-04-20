@@ -15,7 +15,6 @@ template<typename T>
 __global__ void fillJacobiansKern(
 	int nConstraints, int nParticles,
 	float* x, float* y, float* z,
-	float* vx, float* vy, float* vz,
 	float* jacobian,
 	T* constrains, ConstraintType type)
 {
@@ -23,12 +22,12 @@ __global__ void fillJacobiansKern(
 	if (index >= nConstraints) return;
 	if (type == ConstraintType::DISTANCE)
 	{
-		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
-		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 1, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
+		(constrains[index]).positionDerivative(x, y, z, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+		(constrains[index]).positionDerivative(x, y, z, 1, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
 	}
 	if (type == ConstraintType::SURFACE)
 	{
-		(constrains[index]).positionDerivative(x, y, z, vx, vy, vz, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
+		(constrains[index]).positionDerivative(x, y, z, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
 	}
 }
 
@@ -36,14 +35,13 @@ __global__ void fillJacobiansKern(
 template <typename T>
 __global__ void fillResultVectorKern(int particles, int constrainsNumber, float* b,
 	float* x, float* y, float* z,
-	float* vx, float* vy, float* vz,
 	float* jacobian,
 	float* dev_c_min, float* dev_c_max,
 	T* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -5 * (constrains[index])(x, y, z, vx, vy, vz);
+	b[index] = -5 * (constrains[index])(x, y, z);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
 }
@@ -104,14 +102,30 @@ __global__ void transposeKern(int columns, int rows, float* A, float* AT)
 }
 
 
-__global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* fc, int nParticles, int nConstraints)
+__global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* dx, float* dy, float* dz, float dt, int nParticles, int nConstraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index < 3 * nParticles)
+	if (index <  nParticles)
 	{
 		for (int i = 0; i < nConstraints; i++)
 		{
-			fc[index] += new_lambda[i] * jacobi_transposed[index * nConstraints + i];
+			float sumX = 0, sumY = 0, sumZ = 0;
+			int sumC = 0;
+			for (int i = 0; i < nConstraints; i++)
+			{
+				if (jacobi_transposed[(3 * index + 0) * nConstraints + i] == 0 &&
+					jacobi_transposed[(3 * index + 1) * nConstraints + i] == 0 &&
+					jacobi_transposed[(3 * index + 2) * nConstraints + i] == 0) continue;
+
+				sumC++;
+				sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
+				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
+				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
+			}
+			if (sumC == 0) return;
+			dx[index] += 1.5f * sumX * dt / sumC;
+			dy[index] += 1.5f * sumY * dt / sumC;
+			dz[index] += 1.5f * sumZ * dt / sumC;
 		}
 	}
 }
@@ -119,12 +133,12 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* f
 template<typename T>
 void fillJacobiansWrapper(int nConstraints, int nParticles,
 	float* x, float* y, float* z,
-	float* vx, float* vy, float* vz,
+	float* dx, float* dy, float* dz,	
 	float* jacobian,
 	float* jacobian_transposed, float* A,
 	float* b, float dt,
-	float* invmass, float* fc, float* lambda, float* new_lambda, float* c_min, float* c_max,
-	T* constraints, ConstraintType type)
+	float* invmass, float* lambda, float* new_lambda, float* c_min, float* c_max,
+	T* constraints, ConstraintType type, int iterations)
 {
 	unsigned int threads = 32;
 
@@ -140,7 +154,6 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 
 	fillJacobiansKern << <constraint_bound_blocks, threads >> > (nConstraints, nParticles,
 		x, y, z,
-		vx, vy, vz,
 		jacobian,
 		constraints, type);
 
@@ -155,7 +168,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 
 	fillResultVectorKern << <constraint_bound_blocks, threads >> > (nParticles, nConstraints, b,
 		x, y, z,
-		vx, vy, vz, jacobian,
+		jacobian,
 		c_min, c_max,
 		constraints);
 
@@ -181,9 +194,9 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, 50);
+	jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 
-	applyForce << <particlex3_bound_blocks, threads >> > (new_lambda, jacobian_transposed, fc, nParticles, nConstraints);
+	applyForce << <particle_bound_blocks, threads >> > (new_lambda, jacobian_transposed, dx, dy, dz, dt, nParticles, nConstraints);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -201,6 +214,14 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 	dev_c_min = 0;
 	dev_c_max = 0;
 
+	gpuErrchk(cudaMalloc((void**)&dev_dx, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_dy, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_dz, nParticles * sizeof(float)));
+
+	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
+
 	ConstraintStorage::Instance.initInstance();
 }
 
@@ -214,19 +235,74 @@ ConstraintSolver::~ConstraintSolver()
 	gpuErrchk(cudaFree(dev_new_lambda));
 	gpuErrchk(cudaFree(dev_c_min));
 	gpuErrchk(cudaFree(dev_c_max));
+	gpuErrchk(cudaFree(dev_dx));
+	gpuErrchk(cudaFree(dev_dy));
+	gpuErrchk(cudaFree(dev_dz));
 }
 
 void ConstraintSolver::calculateForces(
-	float* x, float* y, float* z,
 	float* new_x, float* new_y, float* new_z,
-	float* vx, float* vy, float* vz,
-	float* invmass, float* fc, float dt
+	float* invmass, float dt, int iterations
 )
 {
-	this->projectConstraints<DistanceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::DISTANCE, true);
-	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::SURFACE, true);
-	this->projectConstraints<DistanceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::DISTANCE, false);
-	this->projectConstraints<SurfaceConstraint>(fc, invmass, x, y, z, vx, vy, vz, dt, ConstraintType::SURFACE, false);
+	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
+
+	thrust::device_ptr<float> thrust_x(new_x);
+	thrust::device_ptr<float> thrust_y(new_y);
+	thrust::device_ptr<float> thrust_z(new_z);
+
+	thrust::device_ptr<float> thrust_dx(dev_dx);
+	thrust::device_ptr<float> thrust_dy(dev_dy);
+	thrust::device_ptr<float> thrust_dz(dev_dz);
+
+	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dt, ConstraintType::SURFACE, true, iterations);
+	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dt, ConstraintType::SURFACE, false, iterations);
+	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dt, ConstraintType::DISTANCE, true, iterations);
+	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dt, ConstraintType::DISTANCE, false, iterations);
+
+
+	thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
+	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+
+	ConstraintStorage::Instance.clearConstraints();
+}
+
+void ConstraintSolver::calculateStabilisationForces(
+	float* x, float* y, float* z, 
+	float* new_x, float* new_y, float* new_z, 
+	float* invmass, float dt, int iterations)
+{
+	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
+	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
+
+	thrust::device_ptr<float> thrust_x(x);
+	thrust::device_ptr<float> thrust_y(y);
+	thrust::device_ptr<float> thrust_z(z);
+
+	thrust::device_ptr<float> thrust_new_x(new_x);
+	thrust::device_ptr<float> thrust_new_y(new_y);
+	thrust::device_ptr<float> thrust_new_z(new_z);
+
+	thrust::device_ptr<float> thrust_dx(dev_dx);
+	thrust::device_ptr<float> thrust_dy(dev_dy);
+	thrust::device_ptr<float> thrust_dz(dev_dz);
+
+	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dt, ConstraintType::DISTANCE, true, iterations);
+	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dt, ConstraintType::SURFACE, true, iterations);
+	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, dt, ConstraintType::DISTANCE, false, iterations);
+	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, dt, ConstraintType::SURFACE, false, iterations);
+
+	thrust::transform(thrust_new_x, thrust_new_x + nParticles, thrust_dx, thrust_new_x, thrust::plus<float>());
+	thrust::transform(thrust_new_y, thrust_new_y + nParticles, thrust_dy, thrust_new_y, thrust::plus<float>());
+	thrust::transform(thrust_new_z, thrust_new_z + nParticles, thrust_dz, thrust_new_z, thrust::plus<float>());
+
+	thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
+	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
 	ConstraintStorage::Instance.clearConstraints();
 }
