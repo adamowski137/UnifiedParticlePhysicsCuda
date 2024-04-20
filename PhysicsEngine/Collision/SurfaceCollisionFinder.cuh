@@ -8,8 +8,9 @@
 class SurfaceCollisionFinder
 {
 	Surface* dev_surface;
+	SurfaceConstraint* dev_foundCollisions;
 	int* dev_hit;
-	int nSurfaces;
+	int nSurfaces, nConstraintsMaxAllocated;
 public:
 	SurfaceCollisionFinder(std::vector<Surface> surfaces, int nParticles);
 	~SurfaceCollisionFinder();

@@ -77,9 +77,6 @@ void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, fl
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);
-
-	DistanceConstraint c;
-	cudaMemcpy(&c, constraints.first, sizeof(DistanceConstraint), cudaMemcpyDeviceToHost);
 	
 	fillJacobiansWrapper<T>(
 		nConstraints, nParticles, 
@@ -91,6 +88,6 @@ void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, fl
 		dev_c_min, dev_c_max,
 		constraints.first, type, iterations);
 
-	clearArrays(nConstraints);
+	//clearArrays(nConstraints);
 }
 
