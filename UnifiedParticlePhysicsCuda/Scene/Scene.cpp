@@ -8,7 +8,7 @@
 #include <fstream>
 
 
-Scene::Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*), int mode) :
+Scene::Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*), int mode) :
 	camera(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height, { 0, 0, -10 }),
 	particles(n, mode, setDataFunction),
 	input({ GLFW_KEY_A, GLFW_KEY_D }, {})

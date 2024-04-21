@@ -3,7 +3,7 @@
 
 __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int particle, Surface s)
 {
-	((Constraint*)this)->init(1, 1.0f, ConstraintLimitType::GEQ);
+	((Constraint*)this)->init(1, 5.0f, ConstraintLimitType::GEQ);
 	this->r = d;
 	this->p[0] = particle;
 	this->s = s;
@@ -13,7 +13,7 @@ __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int parti
 __host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z, float dt)
 {
 	float C = x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d / s.abc_root - r;
-	return C;
+	return k * C;
 }
 
 __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)

@@ -2,6 +2,7 @@
 
 #include "../Scene.hpp"
 
+
 class Cloth_Scene : public Scene
 {
 public:

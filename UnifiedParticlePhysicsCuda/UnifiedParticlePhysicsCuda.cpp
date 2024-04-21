@@ -27,7 +27,7 @@ int main()
 	// https://gafferongames.com/post/fix_your_timestep/
 	float t = 0.f;
 	//float dt = (1.f / 60.f) / 4.f;
-	float dt = 0.001f;
+	float dt = (1.f / 60.f);
 	float accumulator = 0.f;
 	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())

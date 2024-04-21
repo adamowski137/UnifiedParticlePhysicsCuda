@@ -19,7 +19,7 @@
 class ParticleType
 {
 public:
-	ParticleType(int amount, int mode, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*) );
+	ParticleType(int amount, int mode, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*) );
 	~ParticleType();
 
 
@@ -33,6 +33,7 @@ public:
 private:
 	const int nParticles;
 	int mode;
+	int* dev_mode;
 	float* dev_x;
 	float* dev_y;
 	float* dev_z;
@@ -57,6 +58,6 @@ private:
 
 	int blocks;
 
-	void setupDeviceData(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*));
+	void setupDeviceData(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*));
 	void allocateDeviceData();
 };

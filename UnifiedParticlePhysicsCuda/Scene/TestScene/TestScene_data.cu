@@ -6,7 +6,7 @@
 
 void initData_TestScene(int nParticles,
 	float* dev_x, float* dev_y, float* dev_z,
-	float* dev_vx, float* dev_vy, float* dev_vz)
+	float* dev_vx, float* dev_vy, float* dev_vz, int* mode)
 {
 	//gpuErrchk(cudaMemset(dev_x, 0, sizeof(float) * 3 * nParticles));
 	//gpuErrchk(cudaMemset(dev_y, 0, sizeof(float) * 3 * nParticles));

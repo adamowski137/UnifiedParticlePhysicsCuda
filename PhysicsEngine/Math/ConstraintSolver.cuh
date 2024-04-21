@@ -11,7 +11,7 @@
 
 template<typename T>
 void fillJacobiansWrapper(int nConstraints, int nParticles,
-	float* x, float* y, float* z,
+	float* x, float* y, float* z, int* mode,
 	float* dx, float* dy, float* dz,
 	float* jacobian,
 	T* constrains, ConstraintType type, int iterations);
@@ -23,10 +23,10 @@ public:
 	~ConstraintSolver();
 	void calculateForces(
 		float* new_x, float* new_y, float* new_z,
-		float* invmass, float dt, int iterations
+		float* invmass, int* dev_mode, float dt, int iterations
 	);
 	void calculateStabilisationForces(
-		float* x, float* y, float* z,
+		float* x, float* y, float* z, int* mode,
 		float* new_x, float* new_y, float* new_z,
 		float* invmass, float dt, int iterations
 	);
@@ -63,7 +63,7 @@ private:
 	void allocateArrays(int size);
 	
 	template<typename T>
-	void projectConstraints(float* invmass, float* x, float* y, float* z, float dt, ConstraintType type, bool dynamic, int iterations);
+	void projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, ConstraintType type, bool dynamic, int iterations);
 	void clearArrays(int nConstraints);
 };
 
@@ -71,7 +71,7 @@ private:
 
 
 template<typename T>
-void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, float* z, float dt, ConstraintType type, bool dynamic, int iterations)
+void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, ConstraintType type, bool dynamic, int iterations)
 {
 	std::pair<T*, int> constraints = ConstraintStorage::Instance.getConstraints<T>(type, dynamic);
 	int nConstraints = constraints.second;
@@ -80,12 +80,12 @@ void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, fl
 	
 	fillJacobiansWrapper<T>(
 		nConstraints, nParticles, 
-		x, y, z,
+		x, y, z, mode,
 		dev_dx, dev_dy, dev_dz,
 		dev_jacobian,
 		dev_jacobian_transposed, dev_A, dev_b, dt,
 		invmass,  dev_lambda, dev_new_lambda,
-		dev_c_min, dev_c_max,
+		dev_c_min, dev_c_max, 
 		constraints.first, type, iterations);
 
 	clearArrays(nConstraints);

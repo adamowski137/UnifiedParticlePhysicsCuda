@@ -18,7 +18,7 @@ __host__ __device__ float DistanceConstraint::operator()(float* x, float* y, flo
 	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
 	float C = (sqrtf(distX + distY + distZ) - d);
-	return C;
+	return k * C;
 }
 
 __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)

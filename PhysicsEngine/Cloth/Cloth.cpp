@@ -1,9 +1,10 @@
 #include "Cloth.hpp"
-#include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 #include <cmath>
 #include <vector>
 #include "../GpuErrorHandling.hpp"
-#include "../Constraint/ConstraintStorage.cuh"
+
+DistanceConstraint* Cloth::dev_constraints;
+int Cloth::nConstraints;
 
 void Cloth::initClothSimulation(int particleH, int particleW, float d, 
 	float x_top_left, float y_top_left, float z_top_left,
@@ -25,14 +26,14 @@ void Cloth::initClothSimulation(int particleH, int particleW, float d,
 			z_cpu[i * particleW + j] = z_top_left;
 
 			if (j < particleW - 1)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, 0.f));
+				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, 20.f));
 
 			if(i > 0)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, 0.f));
+				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, 20.f));
 
 			if (j < particleW - 1 && i > 0)
 			{
-				constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, 0.f));
+				constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, 20.f));
 			}
 		}
 	}
@@ -41,10 +42,13 @@ void Cloth::initClothSimulation(int particleH, int particleW, float d,
 	gpuErrchk(cudaMemcpy(y, y_cpu.data(), sizeof(float) * y_cpu.size(), cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(z, z_cpu.data(), sizeof(float) * z_cpu.size(), cudaMemcpyHostToDevice));
 
-	DistanceConstraint* dev_constraints;
 	cudaMalloc((void**)&dev_constraints, sizeof(DistanceConstraint) * constraints.size());
 	cudaMemcpy(dev_constraints, constraints.data(), sizeof(DistanceConstraint) * constraints.size(), cudaMemcpyHostToDevice);
 
-	ConstraintStorage::Instance.setDynamicConstraints(dev_constraints, constraints.size(), ConstraintType::DISTANCE);
+	nConstraints = constraints.size();
+}
+
+Cloth::~Cloth()
+{
 	cudaFree(dev_constraints);
 }

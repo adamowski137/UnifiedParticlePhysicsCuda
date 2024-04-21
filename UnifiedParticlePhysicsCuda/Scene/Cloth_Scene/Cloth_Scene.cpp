@@ -1,8 +1,9 @@
 #include "Cloth_Scene.hpp"
 #include "Cloth_Scene_data.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
+#include "../../PhysicsEngine/Cloth/Cloth.hpp"
 
-#define CLOTH_SIZE 12
+#define CLOTH_SIZE 120
 
 Cloth_Scene::Cloth_Scene() :
 	Scene(ResourceManager::Instance.Shaders["instancedphong"], CLOTH_SIZE, initData_ClothScene, ANY_CONSTRAINTS_ON)
@@ -14,7 +15,7 @@ Cloth_Scene::Cloth_Scene() :
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -0.5f, 0.f);
+	particles.setExternalForces(0.f, -9.81f, -20.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 }
@@ -25,6 +26,7 @@ Cloth_Scene::~Cloth_Scene()
 
 void Cloth_Scene::update(float dt)
 {
+	ConstraintStorage::Instance.setDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second, ConstraintType::DISTANCE);
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
 

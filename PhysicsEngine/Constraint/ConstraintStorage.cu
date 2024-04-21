@@ -12,7 +12,7 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 
 	while (p != NULL)
 	{
-		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type);
+		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type, 5.f);
 		p = p->next;
 		constrainIndex--;
 	}
