@@ -8,7 +8,7 @@
 #include "DistanceConstraint/DistanceConstraint.cuh"
 #include "SurfaceConstraint/SurfaceConstraint.cuh"
 
-#define MAX_CONSTRAINS 128
+#define MAX_CONSTRAINS 512 
 #define DEFAULT_CONSTRAINS 64
 // update when new constrain type added
 #define CONSTRAINTYPESNUMBER 2

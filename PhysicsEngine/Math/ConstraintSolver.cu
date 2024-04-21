@@ -37,11 +37,11 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	float* x, float* y, float* z,
 	float* jacobian,
 	float* dev_c_min, float* dev_c_max,
-	T* constrains)
+	T* constrains, float dt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -5 * (constrains[index])(x, y, z);
+	b[index] = -(constrains[index])(x, y, z, dt);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
 }
@@ -113,19 +113,20 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* d
 			int sumC = 0;
 			for (int i = 0; i < nConstraints; i++)
 			{
-				if (jacobi_transposed[(3 * index + 0) * nConstraints + i] == 0 &&
-					jacobi_transposed[(3 * index + 1) * nConstraints + i] == 0 &&
-					jacobi_transposed[(3 * index + 2) * nConstraints + i] == 0) continue;
-
 				sumC++;
 				sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
 				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
 				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
 			}
-			if (sumC == 0) return;
-			dx[index] += 1.5f * sumX * dt / sumC;
-			dy[index] += 1.5f * sumY * dt / sumC;
-			dz[index] += 1.5f * sumZ * dt / sumC;
+			if (sumC == 0 || index == 0 || index == 2) return;
+			//dx[index] += 1.5f * sumX * dt / sumC;
+			//dy[index] += 1.5f * sumY * dt / sumC;
+			//dz[index] += 1.5f * sumZ * dt / sumC;
+
+			dx[index] += sumX * dt;
+			dy[index] += sumY * dt;
+			dz[index] += sumZ * dt;
+
 		}
 	}
 }
@@ -157,20 +158,21 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 		jacobian,
 		constraints, type);
 
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
 	transposeKern << <jacobian_bound_blocks, threads >> > (
 		3 * nParticles,
 		nConstraints,
 		jacobian,
 		jacobian_transposed);
 
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
 
 	fillResultVectorKern << <constraint_bound_blocks, threads >> > (nParticles, nConstraints, b,
 		x, y, z,
 		jacobian,
 		c_min, c_max,
-		constraints);
+		constraints, dt);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -248,7 +250,7 @@ void ConstraintSolver::calculateForces(
 	float* invmass, float dt, int iterations
 )
 {
-	int num_iterations = 5;
+	int num_iterations = 1;
 	for (int i = 0; i < num_iterations; i++)
 	{
 
@@ -266,14 +268,19 @@ void ConstraintSolver::calculateForces(
 
 		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, dt / num_iterations, ConstraintType::SURFACE, true, iterations);
 		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dt / num_iterations, ConstraintType::DISTANCE, true, iterations);
+		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, dt / num_iterations, ConstraintType::DISTANCE, false, iterations);
 
 
 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
 		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+
+		for (int i = 0; i < nParticles; i++)
+			std::cout << "(" << thrust_dx[i] << ", " << thrust_dy[i] << ", " << thrust_dz[i] << "), ";
+		std::cout << "\n";
 	}
 
-	ConstraintStorage::Instance.clearConstraints();
+	//ConstraintStorage::Instance.clearConstraints(); 
 }
 
 void ConstraintSolver::calculateStabilisationForces(
@@ -308,7 +315,7 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
-	ConstraintStorage::Instance.clearConstraints();
+	//ConstraintStorage::Instance.clearConstraints();
 }
 
 void ConstraintSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)

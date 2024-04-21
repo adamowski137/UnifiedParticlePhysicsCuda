@@ -1,29 +1,29 @@
-#include "Scene_External.hpp"
-#include "Scene_External_data.cuh"
+#include "Cloth_Scene.hpp"
+#include "Cloth_Scene_data.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_External::Scene_External(int amountOfPoints) : Scene(
-	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, initData_SceneExternal, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
+#define CLOTH_SIZE 12
+
+Cloth_Scene::Cloth_Scene() :
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], CLOTH_SIZE, initData_ClothScene, ANY_CONSTRAINTS_ON)
 {
 	std::vector<float> offsets;
-	offsets.resize(amountOfPoints * 3, 0.0f);
+	offsets.resize(CLOTH_SIZE * 3, 0.0f);
 
 	renderer->setSphereScale(0.1f);
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setConstraints({ }, 2.f);
-	particles.setExternalForces(0.f, -9.81f, 0.f);
-	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
+	particles.setExternalForces(0.f, -0.5f, 0.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 }
 
-Scene_External::~Scene_External()
+Cloth_Scene::~Cloth_Scene()
 {
 }
 
-void Scene_External::update(float dt)
+void Cloth_Scene::update(float dt)
 {
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
@@ -31,10 +31,9 @@ void Scene_External::update(float dt)
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
 	renderer->setCameraPosition(camera.getPosition());
 	renderer->setLightSourcePosition(glm::vec3(0, 0, -10));
-
 }
 
-void Scene_External::draw()
+void Cloth_Scene::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());

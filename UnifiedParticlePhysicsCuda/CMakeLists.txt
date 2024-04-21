@@ -9,6 +9,8 @@ add_executable (UnifiedParticlePhysicsCuda
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Instancing/Scene_Instancing.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_External/Scene_External.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_External/Scene_External_data.cu
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Cloth_Scene/Cloth_Scene_data.cu
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Cloth_Scene/Cloth_Scene.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/ResourceManager/ResourceManager.cpp
 )
 enable_language("CUDA")

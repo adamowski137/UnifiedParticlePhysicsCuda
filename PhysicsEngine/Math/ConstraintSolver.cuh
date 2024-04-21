@@ -88,6 +88,6 @@ void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, fl
 		dev_c_min, dev_c_max,
 		constraints.first, type, iterations);
 
-	//clearArrays(nConstraints);
+	clearArrays(nConstraints);
 }
 

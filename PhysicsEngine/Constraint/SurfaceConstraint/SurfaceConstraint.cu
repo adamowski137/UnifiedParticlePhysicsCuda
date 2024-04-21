@@ -10,10 +10,10 @@ __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int parti
 	return *this;
 }
 
-__host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z)
+__host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z, float dt)
 {
-	return x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d / s.abc_root - r;
-
+	float C = x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d / s.abc_root - r;
+	return C;
 }
 
 __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)

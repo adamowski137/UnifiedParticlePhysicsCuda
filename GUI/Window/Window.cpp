@@ -31,7 +31,7 @@ void Window::initInstance(int width, int height)
     gladLoadGL();
     enableImGui();
 
-    KeyInput::setupKeyCallback(glfw_window.get());
+    //KeyInput::setupKeyCallback(glfw_window.get());
 
     Call(glEnable(GL_DEPTH_TEST));
     Call(glEnable(GL_CULL_FACE));
