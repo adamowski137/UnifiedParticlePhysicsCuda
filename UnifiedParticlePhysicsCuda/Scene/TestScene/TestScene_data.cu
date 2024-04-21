@@ -24,28 +24,33 @@ void initData_TestScene(int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -10.f, 10.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -5.f, 5.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 8.f, 28.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, -5.f, 5.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+	
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vz, dev_curand, -10.f, 10.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
 
 	//TEST FOR 2 PARTICLES
-	float tmp[2] = { 5.f, -10.f };
+	/*float tmp[2] = { 5.f, -10.f };
 	gpuErrchk(cudaMemcpy(dev_x, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(dev_y, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice));
 
@@ -58,6 +63,6 @@ void initData_TestScene(int nParticles,
 	cudaMemcpy(dev_vy, &tmp[0], sizeof(float) * 2, cudaMemcpyHostToDevice);
 
 	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaDeviceSynchronize());*/
 
 }

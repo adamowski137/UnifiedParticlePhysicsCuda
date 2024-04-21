@@ -5,7 +5,7 @@
 class TestScene : public Scene
 {
 public:
-	TestScene();
+	TestScene(int n);
 	virtual ~TestScene();
 	virtual void update(float dt);
 	virtual void draw();
