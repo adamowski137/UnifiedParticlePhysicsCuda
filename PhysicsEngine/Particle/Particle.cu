@@ -6,11 +6,13 @@
 #include <cuda_gl_interop.h>
 #include <thrust/device_ptr.h>
 #include <device_launch_parameters.h>
+#include <chrono>
 #include "Particle.cuh"
 #include "../Constants.hpp"
 #include "ParticleData.cuh"
 #include "../GpuErrorHandling.hpp"
 #include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
+#include "../RigidBody/RigidBody.cuh"
 
 #define EPS 0.00001
 
@@ -89,7 +91,7 @@ __global__ void applyChangesKern(int amount,
 
 }
 
-ParticleType::ParticleType(int amount, int mode, 
+ParticleType::ParticleType(int amount, int mode,
 	void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*)) : nParticles{ amount }, mode{ mode }
 {
 	blocks = ceilf((float)nParticles / THREADS);
@@ -98,6 +100,11 @@ ParticleType::ParticleType(int amount, int mode,
 	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
 	allocateDeviceData();
 	setupDeviceData(setDataFunction);
+
+	std::vector<int> points{};
+	points.push_back(0);
+	points.push_back(1);
+	RigidBody{ points, dev_x, dev_y, dev_z, dev_invmass };
 }
 
 ParticleType::~ParticleType()
@@ -172,8 +179,6 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
 	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
 
-
-
 	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));
 
 	gpuErrchk(cudaMalloc((void**)&dev_invmass, nParticles * sizeof(float)));
@@ -215,36 +220,38 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// find neighboring particles and solid contacts ??
 
-//	if(mode & GRID_CHECKING_ON)
-//		collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
-//	
-//	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
-//		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z) 
-//		: std::make_pair((SurfaceConstraint*)0, 0);
-//
-//	if (mode & GRID_CHECKING_ON)
-//		constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
-//	if (mode & SURFACE_CHECKING_ON)
-//		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
-//	
-//	// stabilization iterations
-//	if (mode & ANY_CONSTRAINTS_ON)
-//		constraintSolver->calculateStabilisationForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	if(mode & GRID_CHECKING_ON)
+		collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
+	
+	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
+		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z) 
+		: std::make_pair((SurfaceConstraint*)0, 0);
+	
+	if (mode & GRID_CHECKING_ON)
+		constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
+	if (mode & SURFACE_CHECKING_ON)
+		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
+	
+	// stabilization iterations
+	if (mode & ANY_CONSTRAINTS_ON)
+		constraintSolver->calculateStabilisationForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 5);
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)
 		collisionGrid->findCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles, dev_sums, dev_collisions);
-
-	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON)
+	
+	surfaceCollisionData = (mode & SURFACE_CHECKING_ON)
 		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z)
 		: std::make_pair((SurfaceConstraint*)0, 0);
-
+	
 	if(mode & GRID_CHECKING_ON)
 		constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
 	if(mode & SURFACE_CHECKING_ON)
 		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
 	if(mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 20);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 50);
+
+
 
 	// todo solve every constraint group 
 	// update predicted position

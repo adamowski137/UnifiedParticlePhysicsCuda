@@ -107,26 +107,23 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* d
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index < nParticles)
 	{
+		float sumX = 0, sumY = 0, sumZ = 0;
+		int sumC = 0;
 		for (int i = 0; i < nConstraints; i++)
 		{
-			float sumX = 0, sumY = 0, sumZ = 0;
-			int sumC = 0;
-			for (int i = 0; i < nConstraints; i++)
-			{
-				if (jacobi_transposed[(3 * index + 0) * nConstraints + i] == 0 &&
-					jacobi_transposed[(3 * index + 1) * nConstraints + i] == 0 &&
-					jacobi_transposed[(3 * index + 2) * nConstraints + i] == 0) continue;
+			if (jacobi_transposed[(3 * index + 0) * nConstraints + i] == 0 &&
+				jacobi_transposed[(3 * index + 1) * nConstraints + i] == 0 &&
+				jacobi_transposed[(3 * index + 2) * nConstraints + i] == 0) continue;
 
-				sumC++;
-				sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
-				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
-				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
-			}
-			if (sumC == 0) return;
-			dx[index] += 1.5f * sumX * dt / sumC;
-			dy[index] += 1.5f * sumY * dt / sumC;
-			dz[index] += 1.5f * sumZ * dt / sumC;
+			sumC++;
+			sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
+			sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
+			sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
 		}
+		if (sumC == 0) return;
+		dx[index] += 1.5f * sumX * dt / sumC;
+		dy[index] += 1.5f * sumY * dt / sumC;
+		dz[index] += 1.5f * sumZ * dt / sumC;
 	}
 }
 
@@ -248,7 +245,7 @@ void ConstraintSolver::calculateForces(
 	float* invmass, float dt, int iterations
 )
 {
-	int num_iterations = 5;
+	int num_iterations = 1;
 	for (int i = 0; i < num_iterations; i++)
 	{
 

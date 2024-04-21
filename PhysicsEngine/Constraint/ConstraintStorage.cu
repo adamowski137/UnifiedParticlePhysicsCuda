@@ -9,7 +9,6 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 	if (index >= nParticles) return;
 	Node* p = collisions[index].head;
 	int constrainIndex = counts[index] - 1;
-
 	while (p != NULL)
 	{
 		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type);
@@ -64,7 +63,7 @@ void ConstraintStorage::addCollisions(List* collisions, int* sums, ConstraintLim
 	int nCollisions = counts[nParticles - 1];
 
 	if (nCollisions == 0) return;
-	//printf("active collision\n");
+
 	nDynamicConstraints[(int)ConstraintType::DISTANCE] = nCollisions;
 	if (maxDynamicConstraints[(int)ConstraintType::DISTANCE] < nCollisions)
 	{

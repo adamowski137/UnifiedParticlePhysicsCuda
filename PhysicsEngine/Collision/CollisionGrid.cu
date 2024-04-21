@@ -39,6 +39,8 @@ __global__ void findCollisionsKern(
 	unsigned int maxY = min(yIdx + 1, (int)(CUBESPERDIMENSION - 1));
 	unsigned int maxZ = min(zIdx + 1, (int)(CUBESPERDIMENSION - 1));
 
+
+
 	for (int i = minX; i <= maxX; i++)
 	{
 		for (int j = minY; j <= maxY; j++)
@@ -157,7 +159,6 @@ CollisionGrid::~CollisionGrid()
 
 void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles, int* sums, List* collisions)
 {
-
 	int threads = 32;
 	int grid_bound_blocks = (TOTALCUBES + threads - 1) / threads;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
@@ -185,7 +186,6 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	identifyGridCubeStartEndKern << <particle_bound_blocks, threads >> > (dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-
 
 	findCollisionsKern << <particle_bound_blocks, threads >> > (collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
 	gpuErrchk(cudaGetLastError());

@@ -37,7 +37,7 @@ int main()
 
 		accumulator += frameTime;
 
-		while (accumulator > dt)
+		if (accumulator > dt)
 		{
 			ResourceManager::Instance.getActiveScene()->update(dt);
 			accumulator -= dt;
