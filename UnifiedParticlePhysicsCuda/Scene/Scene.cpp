@@ -32,7 +32,7 @@ void Scene::update(float dt)
 void Scene::handleKeys()
 {
 	glm::vec3 currCameraPosition = camera.getPosition();
-	float dA = 0.01, dR = 0.5;
+	float dA = 0.04, dR = 0.5;
 	if (input.getKeyDown(GLFW_KEY_A))
 		cameraAngle += dA;
 	if (input.getKeyDown(GLFW_KEY_D))
