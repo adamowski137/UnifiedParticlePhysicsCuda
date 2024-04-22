@@ -5,7 +5,7 @@
 #define MINDIMENSION -50.0f
 
 // particle constants
-#define PARTICLERADIUS 2.f
+#define PARTICLERADIUS 1.f
 
 // grid constants
 #define CUBESIZE (PARTICLERADIUS * 5)

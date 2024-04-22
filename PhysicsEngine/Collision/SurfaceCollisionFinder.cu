@@ -9,6 +9,7 @@
 #include "thrust/device_vector.h"
 #include "thrust/scan.h"
 #include "../Constants.hpp"
+#include "../Constraint/ConstraintStorage.cuh"
 
 
 __global__ void findSurfaceCollisions(
@@ -87,11 +88,8 @@ void SurfaceCollisionFinder::setSurfaces(std::vector<Surface> surfaces, int nPar
 
 }
 
-std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, float* y, float* z)
+void SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, float* y, float* z)
 {
-	if (nSurfaces == 0)
-		return std::make_pair((SurfaceConstraint*)0, 0);
-
 	int threads = 32;
 	int blocks = (nParticles + threads - 1) / threads;
 
@@ -120,12 +118,13 @@ std::pair<SurfaceConstraint*, int> SurfaceCollisionFinder::findAndUpdateCollisio
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_foundCollisions,
-		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS / 2);
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS);
 
 	gpuErrchk(cudaMemset(dev_hit, 0, sizeof(int) * nParticles * nSurfaces));
-
-	return std::make_pair(dev_foundCollisions, nCollisions);
 	
+	if(nCollisions > 0)
+		ConstraintStorage<SurfaceConstraint>::Instance.setDynamicConstraints(dev_foundCollisions, nCollisions);
+
 }
 
 

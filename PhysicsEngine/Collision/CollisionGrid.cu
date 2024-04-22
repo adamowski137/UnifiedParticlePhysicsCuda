@@ -61,7 +61,7 @@ __global__ void findCollisionsKern(
 					float pz = z[particle];
 
 					float distanceSq = DistanceSquared(x[index], y[index], z[index], px, py, pz);
-					if (distanceSq < PARTICLERADIUS * PARTICLERADIUS)
+					if (distanceSq < 4 * PARTICLERADIUS * PARTICLERADIUS)
 					{
 						if (i == xIdx && j == yIdx && k == zIdx && particle < index) continue;
 						collisionList[index].addNode(particle);
@@ -127,6 +127,21 @@ __global__ void clearCollisionsKern(List* collisions, int nParticles)
 	collisions[index].clearList();
 }
 
+__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstraint* constraints, float d, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	Node* p = collisions[index].head;
+	int constrainIndex = counts[index] - 1;
+
+	while (p != NULL)
+	{
+		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, ConstraintLimitType::GEQ, 5.f);
+		p = p->next;
+		constrainIndex--;
+	}
+}
+
 CollisionGrid::CollisionGrid(int nParticles)
 {
 
@@ -137,11 +152,16 @@ CollisionGrid::CollisionGrid(int nParticles)
 	gpuErrchk(cudaMalloc((void**)&dev_grid_cube_end, TOTALCUBES * sizeof(unsigned int)));
 
 	gpuErrchk(cudaMalloc((void**)&dev_counts, nParticles * sizeof(int)));
+	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
 
 	thrust_grid = thrust::device_pointer_cast<unsigned int>(dev_grid_index);
 	thrust_mapping = thrust::device_pointer_cast<unsigned int>(dev_mapping);
 	thrust_grid_cube_start = thrust::device_pointer_cast<int>(dev_grid_cube_start);
 	thrust_grid_cube_end = thrust::device_pointer_cast<int>(dev_grid_cube_end);
+
+
+	nConstraintsMaxAllocated = 128;
+	gpuErrchk(cudaMalloc((void**)&dev_foundCollisions, nConstraintsMaxAllocated * sizeof(DistanceConstraint)));
 
 }
 
@@ -152,17 +172,21 @@ CollisionGrid::~CollisionGrid()
 	gpuErrchk(cudaFree(dev_grid_index));
 	gpuErrchk(cudaFree(dev_mapping));
 	gpuErrchk(cudaFree(dev_counts));
+	gpuErrchk(cudaFree(dev_collisions));
 
 }
 
-void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles, int* sums, List* collisions)
+void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int nParticles)
 {
 
 	int threads = 32;
 	int grid_bound_blocks = (TOTALCUBES + threads - 1) / threads;
 	int particle_bound_blocks = (nParticles + threads - 1) / threads;
 
-	clearCollisionsKern << <particle_bound_blocks, threads >> > (collisions, nParticles);
+	// 1.
+	// CLEAR COLLISIONS AND SET UP GRID
+
+	clearCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, nParticles);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
@@ -186,16 +210,39 @@ void CollisionGrid::findCollisions(float* x, float* y, float* z, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	// 2.
+	// FIND COLLISIONS IN THE GRID
 
-	findCollisionsKern << <particle_bound_blocks, threads >> > (collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
+	findCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	gpuErrchk(cudaMemset(sums, 0, nParticles * sizeof(int)));
-
-	thrust::device_ptr<int> prefixSum{ sums };
+	//gpuErrchk(cudaMemset(sums, 0, nParticles * sizeof(int)));
+	//
+	//thrust::device_ptr<int> prefixSum{ sums };
 	thrust::device_ptr<int> p = thrust::device_pointer_cast<int>(dev_counts);
-	thrust::inclusive_scan(p, p + nParticles, prefixSum);
+	thrust::inclusive_scan(p, p + nParticles, p);
+
+	// 3.
+	// CREATE COLLISION CONSTRAINTS
+
+	int nCollisions = p[nParticles - 1];
+	if (nCollisions > nConstraintsMaxAllocated)
+	{
+		while (nCollisions > nConstraintsMaxAllocated)
+			nConstraintsMaxAllocated *= 2;
+
+		gpuErrchk(cudaFree(dev_foundCollisions));
+		gpuErrchk(cudaMalloc((void**)&dev_foundCollisions, sizeof(DistanceConstraint) * nConstraintsMaxAllocated));
+	}
+
+	addCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, dev_counts, dev_foundCollisions, 2 * PARTICLERADIUS, nParticles);
+
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	if (nCollisions > 0)
+		ConstraintStorage<DistanceConstraint>::Instance.setDynamicConstraints(dev_foundCollisions, nCollisions);
 }
 
 

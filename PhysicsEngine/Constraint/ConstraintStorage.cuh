@@ -11,13 +11,6 @@
 #define MAX_CONSTRAINS 512 
 #define DEFAULT_CONSTRAINS 64
 // update when new constrain type added
-#define CONSTRAINTYPESNUMBER 2
-
-enum class ConstraintType
-{
-	DISTANCE,
-	SURFACE
-};
 
 namespace CUDAConstants
 {
@@ -25,114 +18,115 @@ namespace CUDAConstants
 	extern __device__ __constant__ SurfaceConstraint staticSurfaceConstraints[MAX_CONSTRAINS];
 }
 
-
-
+template<typename T>
 class ConstraintStorage 
 {
 public:
-	
-
-	template<typename T>
-	void setStaticConstraints(T* constrains, int nConstrains, ConstraintType type);
-	template<typename T>
-	void setDynamicConstraints(T* constrains, int nConstrains, ConstraintType type);	
-	template<typename T>
-	std::pair<T*, int> getStaticConstraints(ConstraintType type);
-	template<typename T>
-	std::pair<T*, int> getDynamicConstraints(ConstraintType type);
-	template<typename T>
-	std::pair<T*, int> getConstraints(ConstraintType type, bool dynamic);
+	//void setStaticConstraints(T* constrains, int nConstrains);
+	void setDynamicConstraints(T* constrains, int nConstrains);	
+	//std::pair<T*, int> getStaticConstraints();
+	std::pair<T*, int> getDynamicConstraints();
+	std::pair<T*, int> getConstraints(bool dynamic);
 
 	ConstraintStorage& operator=(const ConstraintStorage& other) = delete;
 	ConstraintStorage(const ConstraintStorage& w) = delete;
 
 	int getTotalConstraints();
-	void addCollisions(List* collisions, int* sums, ConstraintLimitType type, float d, int nParticles);
-	static ConstraintStorage Instance;
+	static ConstraintStorage<T> Instance;
 	void clearConstraints();
 	void initInstance();
 	~ConstraintStorage();
 private:
 	ConstraintStorage() {};
-	int nStaticConstraints[CONSTRAINTYPESNUMBER];
-	int nDynamicConstraints[CONSTRAINTYPESNUMBER];
-	int maxDynamicConstraints[CONSTRAINTYPESNUMBER];
-	int maxConstraints[CONSTRAINTYPESNUMBER];
+	int nStaticConstraints;
+	int nDynamicConstraints;
+	int maxDynamicConstraints;
+	int maxConstraints;
 
-	DistanceConstraint* dynamicDistanceConstraints;
-	SurfaceConstraint* dynamicSurfaceConstraints;
+	T* dynamicConstraints;
 };
 
-template<typename T>
-void ConstraintStorage::setStaticConstraints(T* constrains, int nConstrains, ConstraintType type)
-{
-	nStaticConstraints[(int)type] = nConstrains;
-	if (type == ConstraintType::DISTANCE)
-	{
-		gpuErrchk(cudaMemcpyToSymbol(CUDAConstants::staticDistanceConstraints, constrains, nConstrains * sizeof(T)));
-	}
-	if (type == ConstraintType::SURFACE)
-	{
-		gpuErrchk(cudaMemcpyToSymbol(CUDAConstants::staticSurfaceConstraints, constrains, nConstrains * sizeof(T)));
-	}
-}
+//template<typename T>
+//void ConstraintStorage<T>::setStaticConstraints(T* constrains, int nConstraints)
+//{
+//	nStaticConstraints = nConstrains;
+//	if (type == ConstraintType::DISTANCE)
+//	{
+//		gpuErrchk(cudaMemcpyToSymbol(CUDAConstants::staticDistanceConstraints, constrains, nConstrains * sizeof(T)));
+//	}
+//	if (type == ConstraintType::SURFACE)
+//	{
+//		gpuErrchk(cudaMemcpyToSymbol(CUDAConstants::staticSurfaceConstraints, constrains, nConstrains * sizeof(T)));
+//	}
+//}
 
 template<typename T>
-void ConstraintStorage::setDynamicConstraints(T* constraints, int nConstraints, ConstraintType type)
+void ConstraintStorage<T>::setDynamicConstraints(T* constraints, int nConstraints)
 {
-	nDynamicConstraints[(int)type] = nConstraints;
+	nDynamicConstraints = nConstraints;
 	bool reallocate = false;
-	if (maxDynamicConstraints[(int)type] < nConstraints)
+	if (maxDynamicConstraints < nConstraints)
 	{
-		maxDynamicConstraints[(int)type] = nConstraints;
+		maxDynamicConstraints = nConstraints;
 		reallocate = true;
 	}
 
-	if (type == ConstraintType::DISTANCE)
+	if (reallocate)
 	{
-		if (reallocate)
-		{
-			gpuErrchk(cudaFree(dynamicDistanceConstraints));
-			gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, nConstraints * sizeof(T)));
-		}
-		gpuErrchk(cudaMemcpy(dynamicDistanceConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyDeviceToDevice));
-		
+		gpuErrchk(cudaFree(dynamicConstraints));
+		gpuErrchk(cudaMalloc((void**)&dynamicConstraints, nConstraints * sizeof(T)));
 	}
-	if (type == ConstraintType::SURFACE)
-	{
-		if (reallocate)
-		{
-			gpuErrchk(cudaFree(dynamicSurfaceConstraints));
-			gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, nConstraints * sizeof(T)));
-		}
-		gpuErrchk(cudaMemcpy(dynamicSurfaceConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyDeviceToDevice));
-	}
+	gpuErrchk(cudaMemcpy(dynamicConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyDeviceToDevice));
 }
 
+//template<typename T>
+//std::pair<T*, int> ConstraintStorage<T>::getStaticConstraints()
+//{
+//	if (type == ConstraintType::DISTANCE)
+//		return std::pair<T*, int>((T*)CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type]);
+//	if (type == ConstraintType::SURFACE)
+//		return std::pair<T*, int>((T*)CUDAConstants::staticSurfaceConstraints, nStaticConstraints[(int)type]);
+//}
+
 template<typename T>
-std::pair<T*, int> ConstraintStorage::getStaticConstraints(ConstraintType type)
+std::pair<T*, int> ConstraintStorage<T>::getDynamicConstraints()
 {
-	if (type == ConstraintType::DISTANCE)
-		return std::pair<T*, int>((T*)CUDAConstants::staticDistanceConstraints, nStaticConstraints[(int)type]);
-	if (type == ConstraintType::SURFACE)
-		return std::pair<T*, int>((T*)CUDAConstants::staticSurfaceConstraints, nStaticConstraints[(int)type]);
+	return std::pair<T*, int>(dynamicConstraints, nDynamicConstraints);
 }
 
 template<typename T>
-std::pair<T*, int> ConstraintStorage::getDynamicConstraints(ConstraintType type)
-{
-	if(type == ConstraintType::DISTANCE)
-		return std::pair<T*, int>((T*)dynamicDistanceConstraints, nDynamicConstraints[(int)type]);
-	if (type == ConstraintType::SURFACE)
-		return std::pair<T*, int>((T*)dynamicSurfaceConstraints, nDynamicConstraints[(int)type]);
-}
-
-template<typename T>
-std::pair<T*, int> ConstraintStorage::getConstraints(ConstraintType type, bool dynamic)
+std::pair<T*, int> ConstraintStorage<T>::getConstraints(bool dynamic)
 {
 	if(dynamic)
-		return getDynamicConstraints<T>(type);
-	else
-		return getStaticConstraints<T>(type);
+		return getDynamicConstraints();
+	/*else
+		return getStaticConstraints<T>(type);*/
 }
 
+template<typename T>
+void ConstraintStorage<T>::clearConstraints()
+{
+	nDynamicConstraints = 0;
+}
+
+template<typename T>
+void ConstraintStorage<T>::initInstance()
+{
+	gpuErrchk(cudaMalloc((void**)&dynamicConstraints, DEFAULT_CONSTRAINS * sizeof(T)));
+
+	nStaticConstraints = 0;
+	nDynamicConstraints = 0;
+	maxDynamicConstraints = DEFAULT_CONSTRAINS;
+}
+
+template<typename T>
+ConstraintStorage<T>::~ConstraintStorage()
+{
+	gpuErrchk(cudaFree(dynamicConstraints));
+}
+
+template<typename T>
+int ConstraintStorage<T>::getTotalConstraints()
+{
+	return nStaticConstraints + nDynamicConstraints;
+}

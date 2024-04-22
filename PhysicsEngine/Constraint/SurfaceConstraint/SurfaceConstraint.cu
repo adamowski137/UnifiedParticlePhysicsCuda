@@ -16,9 +16,11 @@ __host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, floa
 	return k * C;
 }
 
-__host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)
+__host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index)
 {
-	output[0] = s.normal[0];
-	output[1] = s.normal[1];
-	output[2] = s.normal[2];
+	int idx = index * 3 * nParticles + 3 * p[0];
+
+	jacobian[idx + 0] = s.normal[0];
+	jacobian[idx + 1] = s.normal[1];
+	jacobian[idx + 2] = s.normal[2];
 }

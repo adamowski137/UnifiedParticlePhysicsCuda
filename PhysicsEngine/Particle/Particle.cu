@@ -174,9 +174,6 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
 
-	gpuErrchk(cudaMalloc((void**)&dev_collisions, nParticles * sizeof(List)));
-	gpuErrchk(cudaMalloc((void**)&dev_sums, nParticles * sizeof(int)));
-
 	gpuErrchk(cudaMalloc((void**)&dev_mode, nParticles * sizeof(int)));
 	gpuErrchk(cudaMemset(dev_mode, 0, nParticles * sizeof(int)));
 
@@ -240,16 +237,11 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)
-		collisionGrid->findCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles, dev_sums, dev_collisions);
+		collisionGrid->findAndUpdateCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles);
 
-	auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON)
-		? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z)
-		: std::make_pair((SurfaceConstraint*)0, 0);
-
-	if(mode & GRID_CHECKING_ON)
-		constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
 	if(mode & SURFACE_CHECKING_ON)
-		constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
+		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
+
 	if(mode & ANY_CONSTRAINTS_ON)
 		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_mode, dt, 20);
 
@@ -268,7 +260,6 @@ void ParticleType::calculateNewPositions(float dt)
 
 void ParticleType::setConstraints(std::vector<std::pair<int, int>> pairs, float d)
 {
-	this->constraintSolver->setStaticConstraints(pairs, d);
 }
 
 void ParticleType::setSurfaces(std::vector<Surface> surfaces)
