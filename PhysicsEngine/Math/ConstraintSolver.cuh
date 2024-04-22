@@ -14,7 +14,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	float* x, float* y, float* z, int* mode,
 	float* dx, float* dy, float* dz,
 	float* jacobian,
-	T* constrains, ConstraintType type, int iterations);
+	T* constrains, int iterations);
 
 
 class ConstraintSolver {
@@ -31,9 +31,10 @@ public:
 		float* invmass, float dt, int iterations
 	);
 
-	void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
+	//void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
 	void addDynamicConstraints(List* collisions, int* counts, float d, ConstraintLimitType type);
 	void addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints);
+	void clearAllConstraints();
 
 private:
 	float* dev_dx;
@@ -63,7 +64,7 @@ private:
 	void allocateArrays(int size);
 	
 	template<typename T>
-	void projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, ConstraintType type, bool dynamic, int iterations);
+	void projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt,  bool dynamic, int iterations);
 	void clearArrays(int nConstraints);
 };
 
@@ -71,9 +72,9 @@ private:
 
 
 template<typename T>
-void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, ConstraintType type, bool dynamic, int iterations)
+void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, bool dynamic, int iterations)
 {
-	std::pair<T*, int> constraints = ConstraintStorage::Instance.getConstraints<T>(type, dynamic);
+	std::pair<T*, int> constraints = ConstraintStorage<T>::Instance.getConstraints(dynamic);
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);
@@ -86,7 +87,7 @@ void ConstraintSolver::projectConstraints(float* invmass, float* x, float* y, fl
 		dev_jacobian_transposed, dev_A, dev_b, dt,
 		invmass,  dev_lambda, dev_new_lambda,
 		dev_c_min, dev_c_max, 
-		constraints.first, type, iterations);
+		constraints.first, iterations);
 
 	clearArrays(nConstraints);
 }

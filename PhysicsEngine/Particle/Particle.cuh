@@ -46,8 +46,6 @@ private:
 	float* dev_invmass;
 	float* dev_fc;
 	
-	List* dev_collisions;
-	int* dev_sums;
 	curandState* dev_curand;
 	
 	float fextx, fexty, fextz;

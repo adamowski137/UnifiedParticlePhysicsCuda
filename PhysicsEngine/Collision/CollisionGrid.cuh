@@ -11,6 +11,11 @@ class CollisionGrid
 	int* dev_grid_cube_end;
 	int* dev_counts;
 
+	List* dev_collisions;
+
+	int nConstraintsMaxAllocated;
+	DistanceConstraint* dev_foundCollisions;
+
 	thrust::device_ptr<unsigned int> thrust_grid;
 	thrust::device_ptr<unsigned int> thrust_mapping;
 	thrust::device_ptr<int> thrust_grid_cube_start;
@@ -19,6 +24,6 @@ class CollisionGrid
 public:
 	CollisionGrid(int nParticles);
 	~CollisionGrid();
-	void findCollisions(float* x, float* y, float* z, int nParticles, int* sums, List* collisions);
+	void findAndUpdateCollisions(float* x, float* y, float* z, int nParticles);
 };
 

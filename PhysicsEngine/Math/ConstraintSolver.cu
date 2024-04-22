@@ -16,19 +16,11 @@ __global__ void fillJacobiansKern(
 	int nConstraints, int nParticles,
 	float* x, float* y, float* z,
 	float* jacobian,
-	T* constrains, ConstraintType type)
+	T* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nConstraints) return;
-	if (type == ConstraintType::DISTANCE)
-	{
-		(constrains[index]).positionDerivative(x, y, z, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
-		(constrains[index]).positionDerivative(x, y, z, 1, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[1]]);
-	}
-	if (type == ConstraintType::SURFACE)
-	{
-		(constrains[index]).positionDerivative(x, y, z, 0, &jacobian[index * 3 * nParticles + 3 * (constrains[index]).p[0]]);
-	}
+	constrains[index].positionDerivative(x, y, z, jacobian, nParticles, index);
 }
 
 
@@ -139,7 +131,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	float* jacobian_transposed, float* A,
 	float* b, float dt,
 	float* invmass, float* lambda, float* new_lambda, float* c_min, float* c_max,
-	T* constraints, ConstraintType type, int iterations)
+	T* constraints, int iterations)
 {
 	unsigned int threads = 32;
 
@@ -156,7 +148,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	fillJacobiansKern << <constraint_bound_blocks, threads >> > (nConstraints, nParticles,
 		x, y, z,
 		jacobian,
-		constraints, type);
+		constraints);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -228,7 +220,8 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
 
-	ConstraintStorage::Instance.initInstance();
+	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
+	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
 }
 
 ConstraintSolver::~ConstraintSolver()
@@ -267,8 +260,8 @@ void ConstraintSolver::calculateForces(
 		thrust::device_ptr<float> thrust_dy(dev_dy);
 		thrust::device_ptr<float> thrust_dz(dev_dz);
 
-		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, ConstraintType::SURFACE, true, iterations);
-		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, ConstraintType::DISTANCE, true, iterations);
+		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
+		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
 
 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
@@ -277,7 +270,7 @@ void ConstraintSolver::calculateForces(
 
 	}
 
-	ConstraintStorage::Instance.clearConstraints(); 
+	this->clearAllConstraints();
 }
 
 void ConstraintSolver::calculateStabilisationForces(
@@ -301,8 +294,8 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::device_ptr<float> thrust_dy(dev_dy);
 	thrust::device_ptr<float> thrust_dz(dev_dz);
 
-	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, mode, dt, ConstraintType::DISTANCE, true, iterations);
-	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, mode, dt, ConstraintType::SURFACE, true, iterations);
+	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
+	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
 
 	thrust::transform(thrust_new_x, thrust_new_x + nParticles, thrust_dx, thrust_new_x, thrust::plus<float>());
 	thrust::transform(thrust_new_y, thrust_new_y + nParticles, thrust_dy, thrust_new_y, thrust::plus<float>());
@@ -312,29 +305,14 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
-	ConstraintStorage::Instance.clearConstraints();
+	this->clearAllConstraints();
 }
 
-void ConstraintSolver::setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d)
+void ConstraintSolver::clearAllConstraints()
 {
-	std::vector<DistanceConstraint> cpu_constraints;
-	for (const auto& pair : pairs)
-	{
-		cpu_constraints.push_back(DistanceConstraint().init(d, pair.first, pair.second, ConstraintLimitType::EQ, 5.f));
-	}
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
 
-	ConstraintStorage::Instance.setStaticConstraints<DistanceConstraint>(cpu_constraints.data(), cpu_constraints.size(), ConstraintType::DISTANCE);
-
-}
-
-void ConstraintSolver::addDynamicConstraints(List* collisions, int* sums, float d, ConstraintLimitType type)
-{
-	ConstraintStorage::Instance.addCollisions(collisions, sums, type, d, nParticles);
-}
-
-void ConstraintSolver::addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints)
-{
-	ConstraintStorage::Instance.setDynamicConstraints<SurfaceConstraint>(surfaceConstraints, nSurfaceConstraints, ConstraintType::SURFACE);
 }
 
 void ConstraintSolver::allocateArrays(int nConstraints)

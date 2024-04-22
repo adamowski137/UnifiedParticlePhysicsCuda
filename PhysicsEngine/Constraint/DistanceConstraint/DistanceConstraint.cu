@@ -21,7 +21,7 @@ __host__ __device__ float DistanceConstraint::operator()(float* x, float* y, flo
 	return k * C;
 }
 
-__host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, int index, float* output)
+__host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index)
 {
 	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
@@ -30,16 +30,18 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	float d = sqrtf(distX + distY + distZ);
 	//d = 1;
 
-	if (index == 0)
-	{
-		output[0] = (x[p[0]] - x[p[1]]) / d;
-		output[1] = (y[p[0]] - y[p[1]]) / d;
-		output[2] = (z[p[0]] - z[p[1]]) / d;
-	}
-	else
-	{
-		output[0] = (x[p[1]] - x[p[0]]) / d;
-		output[1] = (y[p[1]] - y[p[0]]) / d;
-		output[2] = (z[p[1]] - z[p[0]]) / d;
-	}
+	int idx1 = index * 3 * nParticles + 3 * p[0];
+	int idx2 = index * 3 * nParticles + 3 * p[1];
+
+	float dCx = (x[p[0]] - x[p[1]]) / d;
+	float dCy = (y[p[0]] - y[p[1]]) / d;
+	float dCz = (z[p[0]] - z[p[1]]) / d;
+
+	jacobian[idx1 + 0] = dCx;
+	jacobian[idx1 + 1] = dCy;
+	jacobian[idx1 + 2] = dCz;
+
+	jacobian[idx2 + 0] = -dCx;
+	jacobian[idx2 + 1] = -dCy;
+	jacobian[idx2 + 2] = -dCz;
 }

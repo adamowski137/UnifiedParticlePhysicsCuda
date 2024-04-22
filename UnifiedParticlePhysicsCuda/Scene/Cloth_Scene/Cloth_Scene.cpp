@@ -26,7 +26,7 @@ Cloth_Scene::~Cloth_Scene()
 
 void Cloth_Scene::update(float dt)
 {
-	ConstraintStorage::Instance.setDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second, ConstraintType::DISTANCE);
+	ConstraintStorage<DistanceConstraint>::Instance.setDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
 
