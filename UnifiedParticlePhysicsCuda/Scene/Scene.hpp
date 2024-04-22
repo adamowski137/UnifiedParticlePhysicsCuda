@@ -16,7 +16,7 @@ protected:
 	RenderInfo sceneSphere;
 	Camera camera;
 	KeyInput input;
-	float cameraRadius, cameraAngle;
+	float cameraRadius, cameraAngleHorizontal, cameraAngleVertical;
 public:
 	Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*), int mode = 0);
 	virtual ~Scene();

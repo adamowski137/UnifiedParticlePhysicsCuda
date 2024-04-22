@@ -233,10 +233,10 @@ void ParticleType::calculateNewPositions(float dt)
 	//	constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
 	//if (mode & SURFACE_CHECKING_ON)
 	//	constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
-	
-	// stabilization iterations
+	//
+	//// stabilization iterations
 	//if (mode & ANY_CONSTRAINTS_ON)
-	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y, dev_z, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y, dev_z, dev_mode, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)

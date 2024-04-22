@@ -20,7 +20,7 @@ void initData_ClothScene(int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 3;
+	float d = 2;
 	int W = 10;
 	int H = 12;
 	Cloth::initClothSimulation(H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z);

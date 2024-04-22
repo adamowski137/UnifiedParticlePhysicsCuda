@@ -34,7 +34,7 @@ void Window::initInstance(int width, int height)
 
 
     Call(glEnable(GL_DEPTH_TEST));
-    Call(glEnable(GL_CULL_FACE));
+    //Call(glEnable(GL_CULL_FACE));
     // TODO: naprawic 
     Call(glFrontFace(GL_CW));
     Call(glCullFace(GL_BACK));
