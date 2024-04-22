@@ -33,9 +33,19 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -(constrains[index])(x, y, z, dt);
+	b[index] = -(constrains[index])(x, y, z);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
+}
+
+template <typename T>
+__global__ void solveConstraintsDirectlyKern(int nConstraints,
+	float* x, float* y, float* z,
+	T* constraints)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nConstraints) return;
+	constraints[index].directSolve(x, y, z);
 }
 
 
@@ -190,6 +200,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 
 	//jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 	gauss_seidel_cpu(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
+	//jaccobi_chebyshev(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 
 	applyForce << <particle_bound_blocks, threads >> > (new_lambda, jacobian_transposed, dx, dy, dz, mode, dt, nParticles, nConstraints);
 
@@ -306,6 +317,24 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
 	this->clearAllConstraints();
+}
+
+void ConstraintSolver::direct_constraint_solve(float* x, float* y, float* z)
+{
+	auto distanceConstraintData = ConstraintStorage<DistanceConstraint>::Instance.getConstraints(true);
+
+	int threads = 32;
+	int blocks = (distanceConstraintData.second + threads - 1) / threads;
+	if(distanceConstraintData.second > 0)
+		solveConstraintsDirectlyKern << <blocks, threads >> > (distanceConstraintData.second, x, y, z, distanceConstraintData.first);
+
+	auto surfaceConstraintData = ConstraintStorage<SurfaceConstraint>::Instance.getConstraints(true);
+	blocks = (surfaceConstraintData.second + threads - 1) / threads;
+
+	if(surfaceConstraintData.second > 0)
+		solveConstraintsDirectlyKern << <blocks, threads >> > (surfaceConstraintData.second, x, y, z, surfaceConstraintData.first);
+
+	clearAllConstraints();
 }
 
 void ConstraintSolver::clearAllConstraints()

@@ -30,10 +30,9 @@ public:
 		float* new_x, float* new_y, float* new_z,
 		float* invmass, float dt, int iterations
 	);
+	void direct_constraint_solve(float* x, float* y, float* z);
 
 	//void setStaticConstraints(std::vector<std::pair<int, int>> pairs, float d);
-	void addDynamicConstraints(List* collisions, int* counts, float d, ConstraintLimitType type);
-	void addSurfaceConstraints(SurfaceConstraint* surfaceConstraints, int nSurfaceConstraints);
 	void clearAllConstraints();
 
 private:

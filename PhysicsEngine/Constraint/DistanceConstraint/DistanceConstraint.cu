@@ -11,7 +11,7 @@ __host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1,
 	return *this;
 }
 
-__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z, float dt)
+__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z)
 {
 	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
@@ -44,4 +44,22 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	jacobian[idx2 + 0] = -dCx;
 	jacobian[idx2 + 1] = -dCy;
 	jacobian[idx2 + 2] = -dCz;
+}
+
+__host__ __device__ void DistanceConstraint::directSolve(float* x, float* y, float* z)
+{
+	// assuming mass = 1
+	float distX = (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]);
+
+	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+	float C = 0.5f * (dist - d);
+	x[p[0]] += 0.5f * C * distX / dist;
+	y[p[0]] += 0.5f * C * distY / dist;
+	z[p[0]] += 0.5f * C * distZ / dist;
+
+	x[p[1]] += -0.5f * C * distX / dist;
+	y[p[1]] += -0.5f * C * distY / dist;
+	z[p[1]] += -0.5f * C * distZ / dist;
 }

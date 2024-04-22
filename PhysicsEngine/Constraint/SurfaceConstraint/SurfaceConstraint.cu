@@ -10,7 +10,7 @@ __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int parti
 	return *this;
 }
 
-__host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z, float dt)
+__host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z)
 {
 	float C = x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d / s.abc_root - r;
 	return k * C;
@@ -23,4 +23,12 @@ __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* 
 	jacobian[idx + 0] = s.normal[0];
 	jacobian[idx + 1] = s.normal[1];
 	jacobian[idx + 2] = s.normal[2];
+}
+
+__host__ __device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z)
+{
+	float C = (*this)(x, y, z) / k * 0.5f;
+	x[p[0]] += -C * s.normal[0];
+	y[p[0]] += -C * s.normal[1];
+	z[p[0]] += -C * s.normal[2];
 }

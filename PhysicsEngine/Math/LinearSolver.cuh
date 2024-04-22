@@ -4,4 +4,5 @@
 
 
 void jaccobi(int n, float* A, float* b, float* x, float* new_x, float* c_min, float* c_max, int iterations);
+void jaccobi_chebyshev(int n, float* A, float* b, float* x, float* new_x, float* c_min, float* c_max, int iterations);
 void gauss_seidel_cpu(int n, float* A, float* b, float* x, float* new_x, float* c_min, float* c_max, int iterations);
