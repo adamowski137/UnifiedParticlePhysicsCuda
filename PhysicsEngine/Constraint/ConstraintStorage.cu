@@ -12,7 +12,7 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 
 	while (p != NULL)
 	{
-		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type);
+		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, type, 5.f);
 		p = p->next;
 		constrainIndex--;
 	}
@@ -31,7 +31,7 @@ void ConstraintStorage::clearConstraints()
 void ConstraintStorage::initInstance()
 {
 	gpuErrchk(cudaMalloc((void**)&dynamicDistanceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstraint)));
-	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(DistanceConstraint)));
+	gpuErrchk(cudaMalloc((void**)&dynamicSurfaceConstraints, DEFAULT_CONSTRAINS * sizeof(SurfaceConstraint)));
 	
 	for (int i = 0; i < CONSTRAINTYPESNUMBER; i++)
 	{

@@ -4,6 +4,7 @@
 #include "../imgui/backends/imgui_impl_glfw.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../Error/ErrorHandling.hpp"
+#include "../Input/KeyInput.h"
 
 Window Window::Instance;
 
@@ -27,11 +28,13 @@ void Window::initInstance(int width, int height)
     {
         throw "Failed to initialize GLAD";
     }
+    KeyInput::setupKeyCallback(glfw_window.get());
     gladLoadGL();
     enableImGui();
 
+
     Call(glEnable(GL_DEPTH_TEST));
-    Call(glEnable(GL_CULL_FACE));
+    //Call(glEnable(GL_CULL_FACE));
     // TODO: naprawic 
     Call(glFrontFace(GL_CW));
     Call(glCullFace(GL_BACK));

@@ -13,7 +13,7 @@ Scene_NaiveDraw::~Scene_NaiveDraw()
 void Scene_NaiveDraw::update(float dt)
 {
 	glm::vec3 cameraPos = { 0.f, 0.f, -20.f };
-	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix(cameraPos));
+	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
 	renderer->setCameraPosition(cameraPos);
 	renderer->setLightSourcePosition(cameraPos);
 	camera.updateVectors({ 0.f, 0.f, 1.f });

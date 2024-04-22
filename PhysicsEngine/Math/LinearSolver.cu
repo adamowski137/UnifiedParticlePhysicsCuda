@@ -34,3 +34,48 @@ void jaccobi(int n, float* A, float* b, float* x, float* new_x, float* c_min, fl
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
+
+void gauss_seidel_cpu(int n, float* A, float* b, float* x, float* new_x, float* c_min, float* c_max, int iterations)
+{
+	float* cpu_A = new float[n * n];
+	float* cpu_b = new float[n];
+	float* cpu_x = new float[n];
+	float* cpu_new_x = new float[n];
+	float* cpu_cmin = new float[n];
+	float* cpu_cmax = new float[n];
+
+	cudaMemcpy(cpu_A, A, sizeof(float) * n * n, cudaMemcpyDeviceToHost);
+	cudaMemcpy(cpu_b, b, sizeof(float) * n, cudaMemcpyDeviceToHost);
+	cudaMemcpy(cpu_x, x, sizeof(float) * n, cudaMemcpyDeviceToHost);
+	cudaMemcpy(cpu_new_x, new_x, sizeof(float) * n, cudaMemcpyDeviceToHost);
+	cudaMemcpy(cpu_cmin, c_min, sizeof(float) * n, cudaMemcpyDeviceToHost);
+	cudaMemcpy(cpu_cmax, c_max, sizeof(float) * n, cudaMemcpyDeviceToHost);
+
+
+	for (int k = 0; k < iterations; k++)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			float delta = 0.0f;
+			for (int j = 0; j < n; j++)
+			{
+				if (i == j) continue;
+				delta += cpu_A[i * n + j] * cpu_new_x[j];
+			}
+			cpu_new_x[i] = (cpu_b[i] - delta) / cpu_A[i * n + i];
+
+			// projected gauss seidel
+			cpu_new_x[i] = std::min(std::max(cpu_new_x[i], cpu_cmin[i]), cpu_cmax[i]);
+		}
+	}
+
+
+
+	cudaMemcpy(A, cpu_A, sizeof(float) * n * n, cudaMemcpyHostToDevice);
+	cudaMemcpy(b, cpu_b, sizeof(float) * n, cudaMemcpyHostToDevice);
+	cudaMemcpy(x, cpu_x, sizeof(float) * n, cudaMemcpyHostToDevice);
+	cudaMemcpy(new_x, cpu_new_x, sizeof(float) * n, cudaMemcpyHostToDevice);
+
+
+	delete[] cpu_A, cpu_b, cpu_x, cpu_new_x, cpu_cmin, cpu_cmax;
+}

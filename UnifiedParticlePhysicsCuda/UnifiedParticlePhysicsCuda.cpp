@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	int n = 100;
+	int n = 30;
 
 	// init glfw, glad
 	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);
@@ -26,7 +26,8 @@ int main()
 	// semi fixed time step
 	// https://gafferongames.com/post/fix_your_timestep/
 	float t = 0.f;
-	float dt = (1.f / 60.f) / 4.f;
+	//float dt = (1.f / 60.f) / 4.f;
+	float dt = (1.f / 60.f);
 	float accumulator = 0.f;
 	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())
@@ -37,7 +38,7 @@ int main()
 
 		accumulator += frameTime;
 
-		while (accumulator > dt)
+		if (accumulator > dt)
 		{
 			ResourceManager::Instance.getActiveScene()->update(dt);
 			accumulator -= dt;
@@ -48,5 +49,6 @@ int main()
 		ResourceManager::Instance.getActiveScene()->draw();
 		Window::Instance.finishRendering(ResourceManager::Instance.options);
 	}
+
 	return 0;
 }

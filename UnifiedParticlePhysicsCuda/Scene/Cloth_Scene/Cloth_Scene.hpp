@@ -2,11 +2,12 @@
 
 #include "../Scene.hpp"
 
-class TestScene : public Scene
+
+class Cloth_Scene : public Scene
 {
 public:
-	TestScene(int n);
-	virtual ~TestScene();
+	Cloth_Scene();
+	virtual ~Cloth_Scene();
 	virtual void update(float dt);
 	virtual void draw();
 };
