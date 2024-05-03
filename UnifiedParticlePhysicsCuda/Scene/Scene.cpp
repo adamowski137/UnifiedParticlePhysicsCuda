@@ -8,9 +8,9 @@
 #include <fstream>
 
 
-Scene::Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*), int mode) :
+Scene::Scene(std::shared_ptr<Shader>& shader, int n, int mode) :
 	camera(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height, { 0, 0, -10 }),
-	particles(n, mode, setDataFunction),
+	particles(n, mode),
 	input({ GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D }, {})
 {
 	renderer = std::make_unique<Renderer>(shader);
@@ -70,4 +70,12 @@ void Scene::handleKeys()
 void Scene::draw()
 {
 
+}
+
+void Scene::applySceneSetup(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*))
+{
+	setDataFunction(particles.nParticles,
+		particles.dev_x, particles.dev_y, particles.dev_z,
+		particles.dev_vx, particles.dev_vy, particles.dev_vz,
+		particles.dev_phase);
 }

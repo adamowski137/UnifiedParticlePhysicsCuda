@@ -2,7 +2,7 @@
 //
 
 #include "UnifiedParticlePhysicsCuda.h"
-#include "Scene/TestScene/TestScene.hpp"
+#include "Scene/TestScene/TestScene.cuh"
 #include "../GUI/Window/Window.hpp"
 #include "ResourceManager/ResourceManager.hpp"
 #include <device_launch_parameters.h>

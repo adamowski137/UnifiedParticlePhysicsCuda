@@ -166,6 +166,9 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 		c_min, c_max,
 		constraints, dt);
 
+	thrust::device_ptr<float> b_ptr = thrust::device_pointer_cast(b);
+	std::cout << b_ptr[10] << "\n";
+
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	massVectorMultpilyKern << <jacobian_bound_blocks, threads >> > (
@@ -190,6 +193,9 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 
 	//jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 	gauss_seidel_cpu(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
+
+	//thrust::device_ptr<float> lbd = thrust::device_pointer_cast(new_lambda);
+	//std::cout << lbd[10] << "\n";
 
 	applyForce << <particle_bound_blocks, threads >> > (new_lambda, jacobian_transposed, dx, dy, dz, mode, dt, nParticles, nConstraints);
 
