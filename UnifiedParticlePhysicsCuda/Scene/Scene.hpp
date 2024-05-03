@@ -24,5 +24,9 @@ public:
 	void handleKeys();
 	virtual void draw();
 protected:
-	void applySceneSetup(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*));
+	void applySceneSetup();
+	virtual void initData(int nParticles,
+		float* dev_x, float* dev_y, float* dev_z,
+		float* dev_vx, float* dev_vy, float* dev_vz,
+		int* phase, float* invmass) = 0;
 };

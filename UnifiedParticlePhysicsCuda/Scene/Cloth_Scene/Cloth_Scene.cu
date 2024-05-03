@@ -8,23 +8,24 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_SIZE 20
+#define CLOTH_W 10
+#define CLOTH_H 12
 
 Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], CLOTH_SIZE, ANY_CONSTRAINTS_ON)
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], CLOTH_W * CLOTH_H, ANY_CONSTRAINTS_ON)
 {
 	std::vector<float> offsets;
-	offsets.resize(CLOTH_SIZE * 3, 0.0f);
+	offsets.resize(CLOTH_W * CLOTH_H * 3, 0.0f);
 
 	renderer->setSphereScale(0.1f);
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -9.81f, 20.f);
+	particles.setExternalForces(0.f, -9.81f, -20.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
-	applySceneSetup(initData_ClothScene);
+	applySceneSetup();
 }
 
 Cloth_Scene::~Cloth_Scene()
@@ -48,7 +49,7 @@ void Cloth_Scene::draw()
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
-void Cloth_Scene::initData_ClothScene(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* mode)
+void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -61,27 +62,29 @@ void Cloth_Scene::initData_ClothScene(int nParticles, float* dev_x, float* dev_y
 	gpuErrchk(cudaDeviceSynchronize());
 
 	float d = 2;
-	int W = 10;
-	int H = 2;
+	int W = CLOTH_W;
+	int H = CLOTH_H;
 	Cloth::initClothSimulation(H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z);
 
-	std::vector<int> modes(nParticles, 0);
-	//for (int i = 0; i < W; i++)
-	//	modes[i] = 1;
-	modes[0] = 1;
-	modes[W - 1] = 1;
-	gpuErrchk(cudaMemcpy(mode, modes.data(), modes.size() * sizeof(int), cudaMemcpyHostToDevice));
+	std::vector<float> invmass(nParticles, 1.f);
+	invmass[0] = 0.f;
+	invmass[W - 1] = 0.f;
+	gpuErrchk(cudaMemcpy(dev_invmass, invmass.data(), invmass.size() * sizeof(float), cudaMemcpyHostToDevice));
 
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, -0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vz, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

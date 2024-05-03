@@ -22,7 +22,7 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
-	applySceneSetup(initData_SceneExternal);
+	applySceneSetup();
 }
 
 Scene_External::~Scene_External()
@@ -46,7 +46,7 @@ void Scene_External::draw()
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
-void Scene_External::initData_SceneExternal(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* mode)
+void Scene_External::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;

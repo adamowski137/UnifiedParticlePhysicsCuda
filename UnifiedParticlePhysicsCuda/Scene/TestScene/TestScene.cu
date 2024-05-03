@@ -23,7 +23,7 @@ TestScene::TestScene(int n) : Scene(ResourceManager::Instance.Shaders["instanced
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
-	applySceneSetup(initData_TestScene);
+	applySceneSetup();
 }
 
 TestScene::~TestScene()
@@ -44,7 +44,7 @@ void TestScene::draw()
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
-void TestScene::initData_TestScene(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* mode)
+void TestScene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	//gpuErrchk(cudaMemset(dev_x, 0, sizeof(float) * 3 * nParticles));
 	//gpuErrchk(cudaMemset(dev_y, 0, sizeof(float) * 3 * nParticles));

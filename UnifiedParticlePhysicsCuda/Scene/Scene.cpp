@@ -72,10 +72,10 @@ void Scene::draw()
 
 }
 
-void Scene::applySceneSetup(void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*))
+void Scene::applySceneSetup()
 {
-	setDataFunction(particles.nParticles,
-		particles.dev_x, particles.dev_y, particles.dev_z,
-		particles.dev_vx, particles.dev_vy, particles.dev_vz,
-		particles.dev_phase);
+	initData(particles.nParticles,
+	particles.dev_x, particles.dev_y, particles.dev_z,
+	particles.dev_vx, particles.dev_vy, particles.dev_vz,
+	particles.dev_phase, particles.dev_invmass);
 }

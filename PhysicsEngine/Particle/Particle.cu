@@ -36,16 +36,16 @@ __global__ void predictPositionsKern(int amount,
 	float* new_x, float* new_y, float* new_z,
 	float* vx, float* vy, float* vz,
 	float dvx, float dvy, float dvz,
-	float dt
+	float dt, float* invmass
 )
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= amount) return;
 
 	// update velocities
-	vx[index] += dvx;
-	vy[index] += dvy;
-	vz[index] += dvz;
+	vx[index] += invmass[index] * dvx;
+	vy[index] += invmass[index] * dvy;
+	vz[index] += invmass[index] * dvz;
 
 	// predict new position - not the actual new positions
 	new_x[index] = x[index] + dt * vx[index];
@@ -82,13 +82,9 @@ __global__ void applyChangesKern(int amount,
 	float changeSQ = changeX * changeX + changeY * changeY + changeZ * changeZ;
 	if (changeSQ > EPS)
 	{
-		if (!mode[index])
-		{
-
-			x[index] = new_x[index];
-			y[index] = new_y[index];
-			z[index] = new_z[index];
-		}
+		x[index] = new_x[index];
+		y[index] = new_y[index];
+		z[index] = new_z[index];
 	}
 
 }
@@ -203,7 +199,7 @@ void ParticleType::calculateNewPositions(float dt)
 		dev_x, dev_y, dev_z,
 		dev_new_x, dev_new_y, dev_new_z,
 		dev_vx, dev_vy, dev_vz,
-		dvx, dvy, dvz, dt
+		dvx, dvy, dvz, dt, dev_invmass
 		);
 
 	gpuErrchk(cudaGetLastError());

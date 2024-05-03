@@ -110,7 +110,7 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* d
 				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
 				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
 			}
-			if (sumC == 0 || mode[index]) return;
+			if (sumC == 0) return;
 			dx[index] += 1.5f * sumX * dt / sumC;
 			dy[index] += 1.5f * sumY * dt / sumC;
 			dz[index] += 1.5f * sumZ * dt / sumC;
@@ -153,21 +153,14 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	transposeKern << <jacobian_bound_blocks, threads >> > (
-		3 * nParticles,
-		nConstraints,
-		jacobian,
-		jacobian_transposed);
-
-
 	fillResultVectorKern << <constraint_bound_blocks, threads >> > (nParticles, nConstraints, b,
 		x, y, z,
 		jacobian,
 		c_min, c_max,
 		constraints, dt);
 
-	thrust::device_ptr<float> b_ptr = thrust::device_pointer_cast(b);
-	std::cout << b_ptr[10] << "\n";
+	/*thrust::device_ptr<float> b_ptr = thrust::device_pointer_cast(b);
+	std::cout << b_ptr[10] << "\n";*/
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -176,6 +169,15 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 		nConstraints,
 		invmass,
 		jacobian);
+
+
+	transposeKern << <jacobian_bound_blocks, threads >> > (
+		3 * nParticles,
+		nConstraints,
+		jacobian,
+		jacobian_transposed);
+
+
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -194,8 +196,8 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	//jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 	gauss_seidel_cpu(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 
-	//thrust::device_ptr<float> lbd = thrust::device_pointer_cast(new_lambda);
-	//std::cout << lbd[10] << "\n";
+	/*thrust::device_ptr<float> lbd = thrust::device_pointer_cast(new_lambda);
+	std::cout << lbd[10] << "\n";*/
 
 	applyForce << <particle_bound_blocks, threads >> > (new_lambda, jacobian_transposed, dx, dy, dz, mode, dt, nParticles, nConstraints);
 
