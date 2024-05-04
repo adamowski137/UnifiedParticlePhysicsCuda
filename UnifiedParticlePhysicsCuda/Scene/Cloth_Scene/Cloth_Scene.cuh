@@ -10,6 +10,7 @@ public:
 	virtual ~Cloth_Scene();
 	virtual void update(float dt);
 	virtual void draw();
+	virtual void reset();
 protected:
 	void initData(int nParticles,
 		float* dev_x, float* dev_y, float* dev_z,

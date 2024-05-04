@@ -12,9 +12,9 @@ __global__ void calculateShapeCovarianceKern(float* A, float* x, float* y, float
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 
-	float tmp0 = x[index] - cx;
-	float tmp1 = y[index] - cy;
-	float tmp2 = z[index] - cz;
+	float tmp0 = x[p[index]] - cx;
+	float tmp1 = y[p[index]] - cy;
+	float tmp2 = z[p[index]] - cz;
 
 	float coef[9] = { tmp0 * rx[index], tmp0 * ry[index], tmp0 * rz[index],
 					  tmp1 * rx[index], tmp1 * ry[index], tmp1 * rz[index],
@@ -106,26 +106,33 @@ void RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z)
 
 	cudaFree(tmp);
 	
-	polar::polar_decomposition(Q, H, A);
+	try {
+
+		polar::polar_decomposition(Q, H, A);
+	}
+	catch (const std::exception& e)
+	{
+		printf("Error: %s\n", e.what());
+	}
 
 	gpuErrchk(cudaMemcpy(decompostion, Q, 9 * sizeof(float), cudaMemcpyHostToDevice));
 }
 
-__global__ void calculatePositionChangeKern(float* x, float* y, float* z, int* p, int n, float* rx, float* ry, float* rz, float cx, float cy, float cz, float* decompostion, float* dx, float* dy, float* dz)
+__global__ void calculatePositionChangeKern(float* x, float* y, float* z, int* p, int n, float* rx, float* ry, float* rz, float cx, float cy, float cz, float* decompostion, float* dx, float* dy, float* dz, float invdt)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 
-	dx[index] += (decompostion[0] * rx[index] + decompostion[1] * ry[index] + decompostion[2] * rz[index]) + cx - x[index];
-	dy[index] += (decompostion[3] * rx[index] + decompostion[4] * ry[index] + decompostion[5] * rz[index]) + cy - y[index];
-	dz[index] += (decompostion[6] * rx[index] + decompostion[7] * ry[index] + decompostion[8] * rz[index]) + cz - z[index];
+	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[1] * ry[index] + decompostion[2] * rz[index]) + cx - x[p[index]]) * invdt;
+	dy[p[index]] += ((decompostion[3] * rx[index] + decompostion[4] * ry[index] + decompostion[5] * rz[index]) + cy - y[p[index]]) * invdt;
+	dz[p[index]] += ((decompostion[6] * rx[index] + decompostion[7] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]) * invdt;
 }	
 
-void RigidBodyConstraint::calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz)
+void RigidBodyConstraint::calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt)
 {
 	int threads_per_block = 32;
 	int blocks = (n + threads_per_block - 1) / threads_per_block;
-	calculatePositionChangeKern << <blocks, threads_per_block >> > (x, y, z, p, n, rx, ry, rz, cx, cy, cz, decompostion, dx, dy, dz);
+	calculatePositionChangeKern << <blocks, threads_per_block >> > (x, y, z, p, n, rx, ry, rz, cx, cy, cz, decompostion, dx, dy, dz, 1/dt);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }

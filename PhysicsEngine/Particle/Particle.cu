@@ -274,7 +274,7 @@ void ParticleType::setRigidBodyConstraint(std::vector<int> points)
 {
 	auto a = new RigidBodyConstraint();
 	a->init(dev_x, dev_y, dev_z, dev_invmass, points.data(), points.size(), ConstraintLimitType::EQ, 1.0f);
-	ConstraintStorage<RigidBodyConstraint>::Instance.addStaticConstraints(a, 1);
+	ConstraintStorage<RigidBodyConstraint>::Instance.addStaticConstraints(a, points.size() == 0 ? 0 : 1);
 }
 
 

@@ -9,6 +9,7 @@ public:
 	virtual ~Scene_RigidBody();
 	virtual void update(float dt);
 	virtual void draw();
+	virtual void reset();
 private:
 	void initData(int nParticles,
 		float* dev_x, float* dev_y, float* dev_z,

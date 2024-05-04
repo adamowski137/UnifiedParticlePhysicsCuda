@@ -74,6 +74,7 @@ std::shared_ptr<Scene>& ResourceManager::getActiveScene()
 			if (options.sceneData[i].isActive)
 			{
 				currentScene = scenes[options.sceneData[i].name];
+				scenes[options.sceneData[i].name].get()->reset();
 				break;
 			}
 		}

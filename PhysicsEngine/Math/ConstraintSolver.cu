@@ -227,6 +227,7 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 
 	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
 	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
+	ConstraintStorage<RigidBodyConstraint>::Instance.initInstance();
 }
 
 ConstraintSolver::~ConstraintSolver()
@@ -271,7 +272,7 @@ void ConstraintSolver::calculateForces(
 		for (int i = 0; i < constraints.second; i++)
 		{
 			constraints.first[i].calculateShapeCovariance(new_x, new_y, new_z);
-			constraints.first[i].calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz);
+			constraints.first[i].calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt/num_iterations);
 		}
 
 

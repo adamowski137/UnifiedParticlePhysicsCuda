@@ -9,7 +9,7 @@ public:
 	~RigidBodyConstraint();
 
 	void calculateShapeCovariance(float* x, float* y, float* z);
-	void calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz);
+	void calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt);
 private:
 	float* rx;
 	float* ry;

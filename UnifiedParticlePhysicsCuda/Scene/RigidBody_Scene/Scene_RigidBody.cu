@@ -7,7 +7,7 @@
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
-#define amountOfPoints 64
+#define amountOfPoints 65
 
 Scene_RigidBody::Scene_RigidBody() : Scene(
 	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
@@ -22,6 +22,7 @@ Scene_RigidBody::Scene_RigidBody() : Scene(
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
+	applySceneSetup();
 	std::vector<int> points;
 	for (int i = 0; i < 64; i++)
 	{
@@ -51,6 +52,28 @@ void Scene_RigidBody::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
+}
+
+void Scene_RigidBody::reset()
+{
+	std::vector<float> offsets;
+	offsets.resize(amountOfPoints * 3, 0.0f);
+
+	renderer->setSphereScale(0.1f);
+
+	sceneSphere.addInstancing(offsets);
+	particles.mapCudaVBO(sceneSphere.instancingVBO);
+	particles.setConstraints({ }, 2.f);
+	particles.setExternalForces(0.f, -9.81f, 0.f);
+	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20) });
+	std::vector<int> points;
+	for (int i = 0; i < 64; i++)
+	{
+		points.push_back(i);
+	}
+	particles.setRigidBodyConstraint(points);
+
+	camera.setPosition(glm::vec3(0, 0, -10));
 }
 
 __global__ void initializePositionsKern(int nParticles, float* x, float* y, float* z, int dim)
@@ -92,7 +115,8 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, -1.f, -1.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 }
+

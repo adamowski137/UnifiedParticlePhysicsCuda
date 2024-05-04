@@ -23,6 +23,7 @@ Cloth_Scene::Cloth_Scene() :
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setExternalForces(0.f, -9.81f, -10.f);
+	particles.setRigidBodyConstraint({});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
@@ -48,6 +49,23 @@ void Cloth_Scene::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
+}
+
+void Cloth_Scene::reset()
+{
+	std::vector<float> offsets;
+	offsets.resize(NUM_PARTICLES * 3, 0.0f);
+
+	renderer->setSphereScale(0.1f);
+
+	sceneSphere.addInstancing(offsets);
+	particles.mapCudaVBO(sceneSphere.instancingVBO);
+	particles.setExternalForces(0.f, -9.81f, -10.f);
+	particles.setRigidBodyConstraint({});
+
+	camera.setPosition(glm::vec3(0, 0, -10));
+
+	applySceneSetup();
 }
 
 void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)

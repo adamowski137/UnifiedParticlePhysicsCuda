@@ -52,6 +52,8 @@ template<typename T>
 void ConstraintStorage<T>::addStaticConstraints(T* constrains, int nConstraints)
 {
 	nStaticConstraints = nConstraints;
+	if (nConstraints == 0)
+		return;
 	std::memcpy(staticConstraints, constrains, nConstraints * sizeof(T));
 }
 
