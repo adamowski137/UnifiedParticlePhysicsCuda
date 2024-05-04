@@ -1,7 +1,7 @@
-#include "Scene_NaiveDraw.hpp"
+#include "Scene_NaiveDraw.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"], 1, nullptr)
+Scene_NaiveDraw::Scene_NaiveDraw() : Scene(ResourceManager::Instance.Shaders["phong"], 1)
 {
 
 }
@@ -31,4 +31,10 @@ void Scene_NaiveDraw::draw()
 			}
 		}
 	}
+}
+
+void Scene_NaiveDraw::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, 
+	float* dev_vx, float* dev_vy, float* dev_vz, 
+	int* dev_phase, float* dev_invmass)
+{
 }

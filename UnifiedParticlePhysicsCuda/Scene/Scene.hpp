@@ -18,9 +18,15 @@ protected:
 	KeyInput input;
 	float cameraRadius, cameraAngleHorizontal, cameraAngleVertical;
 public:
-	Scene(std::shared_ptr<Shader>& shader, int n, void(*setDataFunction)(int, float*, float*, float*, float*, float*, float*, int*), int mode = 0);
+	Scene(std::shared_ptr<Shader>& shader, int n, int mode = 0);
 	virtual ~Scene();
 	virtual void update(float dt);
 	void handleKeys();
 	virtual void draw();
+protected:
+	void applySceneSetup();
+	virtual void initData(int nParticles,
+		float* dev_x, float* dev_y, float* dev_z,
+		float* dev_vx, float* dev_vy, float* dev_vz,
+		int* phase, float* invmass) = 0;
 };

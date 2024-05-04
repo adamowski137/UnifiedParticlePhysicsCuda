@@ -1,12 +1,50 @@
-#include "TestScene_data.cuh"
+#include "TestScene.cuh"
+#include "../../ResourceManager/ResourceManager.hpp"
+
 #include "../../PhysicsEngine/Particle/ParticleData.cuh"
 #include "../../PhysicsEngine/GpuErrorHandling.hpp"
-#include <cuda_runtime.h>
+#include <curand.h>
+#include <curand_kernel.h>
 
+TestScene::TestScene(int n) : Scene(ResourceManager::Instance.Shaders["instancedphong"], n,
+	ANY_CONSTRAINTS_ON | GRID_CHECKING_ON | SURFACE_CHECKING_ON)
+{
 
-void initData_TestScene(int nParticles,
-	float* dev_x, float* dev_y, float* dev_z,
-	float* dev_vx, float* dev_vy, float* dev_vz, int* mode)
+	std::vector<float> offsets;
+	offsets.resize(n * 3, 0.0f);
+
+	renderer->setSphereScale(0.1f);
+
+	sceneSphere.addInstancing(offsets);
+	particles.mapCudaVBO(sceneSphere.instancingVBO);
+	particles.setConstraints({ }, 2.f);
+	particles.setExternalForces(0.f, -9.81f, 0.f);
+	particles.setSurfaces({ Surface().init(0, 1, 0, 10), Surface().init(1, 0, 0, 10), Surface().init(-1, 0, 0, 10), Surface().init(0, 0, 1, 10), Surface().init(0, 0, -1, 10)});
+
+	camera.setPosition(glm::vec3(0, 0, -10));
+
+	applySceneSetup();
+}
+
+TestScene::~TestScene()
+{
+}
+
+void TestScene::update(float dt)
+{
+	particles.calculateNewPositions(dt);
+	this->handleKeys();
+	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
+	renderer->setLightSourcePosition({ 0.f, 0.f, -10.f });
+}
+
+void TestScene::draw()
+{
+	particles.renderData(sceneSphere.instancingVBO);
+	renderer->drawInstanced(sceneSphere, particles.particleCount());
+}
+
+void TestScene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	//gpuErrchk(cudaMemset(dev_x, 0, sizeof(float) * 3 * nParticles));
 	//gpuErrchk(cudaMemset(dev_y, 0, sizeof(float) * 3 * nParticles));
@@ -43,7 +81,7 @@ void initData_TestScene(int nParticles,
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-	
+
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vz, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -64,5 +102,5 @@ void initData_TestScene(int nParticles,
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());*/
-
+	cudaFree(dev_curand);
 }

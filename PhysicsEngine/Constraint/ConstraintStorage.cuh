@@ -23,7 +23,7 @@ class ConstraintStorage
 {
 public:
 	//void setStaticConstraints(T* constrains, int nConstrains);
-	void setDynamicConstraints(T* constrains, int nConstrains);	
+	void addDynamicConstraints(T* constrains, int nConstrains);
 	//std::pair<T*, int> getStaticConstraints();
 	std::pair<T*, int> getDynamicConstraints();
 	std::pair<T*, int> getConstraints(bool dynamic);
@@ -61,22 +61,19 @@ private:
 //}
 
 template<typename T>
-void ConstraintStorage<T>::setDynamicConstraints(T* constraints, int nConstraints)
+void ConstraintStorage<T>::addDynamicConstraints(T* constraints, int nConstraints)
 {
-	nDynamicConstraints = nConstraints;
-	bool reallocate = false;
-	if (maxDynamicConstraints < nConstraints)
+	if (maxDynamicConstraints < nDynamicConstraints + nConstraints)
 	{
-		maxDynamicConstraints = nConstraints;
-		reallocate = true;
-	}
+		int targetCapacity = nDynamicConstraints + nConstraints;
+		while (maxDynamicConstraints < targetCapacity)
+			maxDynamicConstraints <<= 1;
 
-	if (reallocate)
-	{
 		gpuErrchk(cudaFree(dynamicConstraints));
-		gpuErrchk(cudaMalloc((void**)&dynamicConstraints, nConstraints * sizeof(T)));
+		gpuErrchk(cudaMalloc((void**)&dynamicConstraints, maxDynamicConstraints * sizeof(T)));
 	}
-	gpuErrchk(cudaMemcpy(dynamicConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyDeviceToDevice));
+	gpuErrchk(cudaMemcpy(dynamicConstraints + nDynamicConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyDeviceToDevice));
+	nDynamicConstraints += nConstraints;
 }
 
 //template<typename T>

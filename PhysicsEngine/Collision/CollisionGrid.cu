@@ -242,7 +242,7 @@ void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int nP
 	gpuErrchk(cudaDeviceSynchronize());
 
 	if (nCollisions > 0)
-		ConstraintStorage<DistanceConstraint>::Instance.setDynamicConstraints(dev_foundCollisions, nCollisions);
+		ConstraintStorage<DistanceConstraint>::Instance.addDynamicConstraints(dev_foundCollisions, nCollisions);
 }
 
 

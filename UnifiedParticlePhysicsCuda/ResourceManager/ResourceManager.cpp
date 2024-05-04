@@ -3,11 +3,11 @@
 #include <fstream>
 
 #include "../../GUI/Renderer/MeshGenerator.hpp"
-#include "../Scene/TestScene/TestScene.hpp"
-#include "../Scene/Scene_NaiveDraw/Scene_NaiveDraw.hpp"
-#include "../Scene/Scene_Instancing/Scene_Instancing.hpp"
-#include "../Scene/Scene_External/Scene_External.hpp"
-#include "../Scene/Cloth_Scene/Cloth_Scene.hpp"
+#include "../Scene/TestScene/TestScene.cuh"
+#include "../Scene/Scene_NaiveDraw/Scene_NaiveDraw.cuh"
+#include "../Scene/Scene_Instancing/Scene_Instancing.cuh"
+#include "../Scene/Scene_External/Scene_External.cuh"
+#include "../Scene/Cloth_Scene/Cloth_Scene.cuh"
 
 ResourceManager ResourceManager::Instance;
 

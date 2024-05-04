@@ -1,7 +1,7 @@
-#include "Scene_Instancing.hpp"
+#include "Scene_Instancing.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
-Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"], 1, nullptr)
+Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["instancedphong"], 1)
 {
 	std::vector<float> offsets;
 	for (int i = -60; i < 60; i += 3)
@@ -38,4 +38,8 @@ void Scene_Instancing::update(float dt)
 void Scene_Instancing::draw()
 {
 	renderer->drawInstanced(sceneSphere, 32000);
+}
+
+void Scene_Instancing::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+{
 }
