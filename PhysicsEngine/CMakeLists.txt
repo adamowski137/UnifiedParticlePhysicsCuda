@@ -8,6 +8,7 @@ add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/CollisionGrid.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/SurfaceConstraint/SurfaceConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/DistanceConstraint/DistanceConstraint.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/RigidBodyConstraint/RigidBodyConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/SurfaceCollisionFinder.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cuh

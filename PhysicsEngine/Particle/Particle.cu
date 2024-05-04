@@ -6,6 +6,7 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <thrust/device_ptr.h>
+#include <thrust/host_vector.h>
 #include <device_launch_parameters.h>
 #include "Particle.cuh"
 #include "../Constants.hpp"
@@ -268,6 +269,14 @@ void ParticleType::setExternalForces(float fx, float fy, float fz)
 	fexty = fy;
 	fextz = fz;
 }
+
+void ParticleType::setRigidBodyConstraint(std::vector<int> points)
+{
+	auto a = new RigidBodyConstraint();
+	a->init(dev_x, dev_y, dev_z, dev_invmass, points.data(), points.size(), ConstraintLimitType::EQ, 1.0f);
+	ConstraintStorage<RigidBodyConstraint>::Instance.addStaticConstraints(a, 1);
+}
+
 
 void ParticleType::mapCudaVBO(unsigned int vbo)
 {

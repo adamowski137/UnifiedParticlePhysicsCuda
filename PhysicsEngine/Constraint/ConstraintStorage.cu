@@ -8,3 +8,5 @@ __device__ __constant__ SurfaceConstraint CUDAConstants::staticSurfaceConstraint
 
 ConstraintStorage<DistanceConstraint> ConstraintStorage<DistanceConstraint>::Instance;
 ConstraintStorage<SurfaceConstraint> ConstraintStorage<SurfaceConstraint>::Instance;
+ConstraintStorage<RigidBodyConstraint> ConstraintStorage<RigidBodyConstraint>::Instance;
+
