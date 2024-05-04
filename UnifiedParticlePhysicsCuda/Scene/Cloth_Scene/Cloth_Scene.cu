@@ -10,18 +10,19 @@
 
 #define CLOTH_W 10
 #define CLOTH_H 12
+#define NUM_PARTICLES (CLOTH_W * CLOTH_H + 1)
 
 Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], CLOTH_W * CLOTH_H, ANY_CONSTRAINTS_ON)
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
 {
 	std::vector<float> offsets;
-	offsets.resize(CLOTH_W * CLOTH_H * 3, 0.0f);
+	offsets.resize(NUM_PARTICLES * 3, 0.0f);
 
 	renderer->setSphereScale(0.1f);
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -9.81f, -20.f);
+	particles.setExternalForces(0.f, -9.81f, -10.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
@@ -34,7 +35,7 @@ Cloth_Scene::~Cloth_Scene()
 
 void Cloth_Scene::update(float dt)
 {
-	ConstraintStorage<DistanceConstraint>::Instance.setDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
+	ConstraintStorage<DistanceConstraint>::Instance.addDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
 
@@ -61,7 +62,7 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 2;
+	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
 	Cloth::initClothSimulation(H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z);
@@ -87,4 +88,19 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vz, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+
+	// set the colliding particle
+	auto xptr = thrust::device_pointer_cast(dev_x);
+	auto yptr = thrust::device_pointer_cast(dev_y);
+	auto zptr = thrust::device_pointer_cast(dev_z);
+
+	auto vzptr = thrust::device_pointer_cast(dev_vz);
+
+	xptr[NUM_PARTICLES - 1] = 0.f;
+	yptr[NUM_PARTICLES - 1] = -5.f;
+	zptr[NUM_PARTICLES - 1] = -50.f;
+	vzptr[NUM_PARTICLES - 1] = 50.f;
+
+	cudaFree(dev_curand);
 }

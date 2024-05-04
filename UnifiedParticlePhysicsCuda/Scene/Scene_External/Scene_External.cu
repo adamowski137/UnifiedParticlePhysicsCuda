@@ -78,4 +78,5 @@ void Scene_External::initData(int nParticles, float* dev_x, float* dev_y, float*
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	cudaFree(dev_curand);
 }

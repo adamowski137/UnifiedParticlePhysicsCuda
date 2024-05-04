@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <glad/glad.h>
 #include <thrust/fill.h>
+#include <thrust/sequence.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <thrust/device_ptr.h>
@@ -145,6 +146,8 @@ void ParticleType::setupDeviceData()
 	//fillRandomKern << <blocks, THREADS >> > (nParticles, dev_vz, dev_curand, -5.f, 5.f);
 	//gpuErrchk(cudaGetLastError());
 	//gpuErrchk(cudaDeviceSynchronize());
+
+	cudaFree(dev_curand);
 }
 
 void ParticleType::allocateDeviceData()
@@ -162,8 +165,12 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
 
+
 	gpuErrchk(cudaMalloc((void**)&dev_phase, nParticles * sizeof(int)));
-	gpuErrchk(cudaMemset(dev_phase, 0, nParticles * sizeof(int)));
+	// by default every particle is in a separate group
+	thrust::device_ptr<int> phaseptr{ dev_phase };
+	thrust::sequence(phaseptr, phaseptr + nParticles, 1);
+	
 
 
 	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));

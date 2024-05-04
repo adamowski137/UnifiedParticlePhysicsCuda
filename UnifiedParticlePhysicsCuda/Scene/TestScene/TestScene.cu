@@ -102,4 +102,5 @@ void TestScene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());*/
+	cudaFree(dev_curand);
 }

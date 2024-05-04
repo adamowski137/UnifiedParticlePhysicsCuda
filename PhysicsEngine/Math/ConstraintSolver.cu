@@ -383,5 +383,4 @@ void ConstraintSolver::clearArrays(int nConstraints)
 	gpuErrchk(cudaMemset(dev_b, 0, nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_new_lambda, 0, nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_lambda, 0, nConstraints * sizeof(float)));
-
 }

@@ -123,7 +123,7 @@ void SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, f
 	gpuErrchk(cudaMemset(dev_hit, 0, sizeof(int) * nParticles * nSurfaces));
 	
 	if(nCollisions > 0)
-		ConstraintStorage<SurfaceConstraint>::Instance.setDynamicConstraints(dev_foundCollisions, nCollisions);
+		ConstraintStorage<SurfaceConstraint>::Instance.addDynamicConstraints(dev_foundCollisions, nCollisions);
 
 }
 
