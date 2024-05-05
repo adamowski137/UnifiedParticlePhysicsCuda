@@ -239,7 +239,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 20);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 20, rigidBodyConstraint.get());
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -272,9 +272,7 @@ void ParticleType::setExternalForces(float fx, float fy, float fz)
 
 void ParticleType::setRigidBodyConstraint(std::vector<int> points)
 {
-	auto a = new RigidBodyConstraint();
-	a->init(dev_x, dev_y, dev_z, dev_invmass, points.data(), points.size(), ConstraintLimitType::EQ, 1.0f);
-	ConstraintStorage<RigidBodyConstraint>::Instance.addStaticConstraints(a, points.size() == 0 ? 0 : 1);
+	rigidBodyConstraint = std::unique_ptr<RigidBodyConstraint>{ new RigidBodyConstraint{ dev_x, dev_y, dev_z, dev_invmass, points.data(), (int)points.size(), ConstraintLimitType::EQ}};
 }
 
 

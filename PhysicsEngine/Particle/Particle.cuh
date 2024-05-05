@@ -53,6 +53,7 @@ private:
 	std::unique_ptr<ConstraintSolver> constraintSolver;
 	std::unique_ptr<CollisionGrid> collisionGrid;
 	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
+	std::unique_ptr<RigidBodyConstraint> rigidBodyConstraint;
 
 	int blocks;
 

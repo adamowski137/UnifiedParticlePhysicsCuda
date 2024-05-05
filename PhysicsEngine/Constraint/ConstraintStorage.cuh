@@ -23,7 +23,7 @@ template<typename T>
 class ConstraintStorage 
 {
 public:
-	void addStaticConstraints(T* constrains, int nConstrains);
+	void addStaticConstraints(std::shared_ptr<T> constraints, int nConstraints);
 	void addDynamicConstraints(T* constrains, int nConstrains);
 	std::pair<T*, int> getStaticConstraints();
 	std::pair<T*, int> getDynamicConstraints();
@@ -45,16 +45,14 @@ private:
 	int maxConstraints;
 
 	T* dynamicConstraints;
-	T staticConstraints[MAX_CONSTRAINS];
+	std::shared_ptr<T> staticConstraints;
 };
 
 template<typename T>
-void ConstraintStorage<T>::addStaticConstraints(T* constrains, int nConstraints)
+void ConstraintStorage<T>::addStaticConstraints(std::shared_ptr<T> constraints, int nConstraints)
 {
 	nStaticConstraints = nConstraints;
-	if (nConstraints == 0)
-		return;
-	std::memcpy(staticConstraints, constrains, nConstraints * sizeof(T));
+	staticConstraints = constraints;
 }
 
 template<typename T>
@@ -76,7 +74,7 @@ void ConstraintStorage<T>::addDynamicConstraints(T* constraints, int nConstraint
 template<typename T>
 std::pair<T*, int> ConstraintStorage<T>::getStaticConstraints()
 {
-	return std::pair<T*, int>(staticConstraints, nStaticConstraints);
+	return std::pair<T*, int>(staticConstraints.get(), nStaticConstraints);
 }
 
 template<typename T>

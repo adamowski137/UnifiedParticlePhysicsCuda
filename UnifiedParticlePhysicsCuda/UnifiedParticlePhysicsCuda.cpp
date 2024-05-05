@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	int n = 64;
+	int n = 128;
 
 	// init glfw, glad
 	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);

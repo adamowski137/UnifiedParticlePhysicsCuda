@@ -24,7 +24,7 @@ public:
 
 	void calculateForces(
 		float* new_x, float* new_y, float* new_z,
-		float* invmass, int* dev_phase, float dt, int iterations
+		float* invmass, int* dev_phase, float dt, int iterations, RigidBodyConstraint* rigidBodyConstraint
 	);
 	void calculateStabilisationForces(
 		float* x, float* y, float* z, int* mode,
