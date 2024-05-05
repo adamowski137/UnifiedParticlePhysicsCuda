@@ -269,21 +269,10 @@ void ConstraintSolver::calculateForces(
 		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
-		/*for (int i = 0; i < nParticles; i++)
-		{
-			std::cout << i << ": " << thrust_dx[i] << " " << thrust_dy[i] << " " << thrust_dz[i] << std::endl;
-		}*/
-
-		if (rigidBodyConstraint->calculateShapeCovariance(new_x, new_y, new_z))
+		if (rigidBodyConstraint->calculateShapeCovariance(new_x, new_y, new_z, invmass))
 		{
 			rigidBodyConstraint->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / num_iterations);
 		}
-
-		//for (int i = 0; i < nParticles; i++)
-		//{
-		//	std::cout << i << ": " << thrust_dx[i] << " " << thrust_dy[i] << " " << thrust_dz[i] << std::endl;
-		//}
-
 
  		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
 		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
