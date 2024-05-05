@@ -172,9 +172,9 @@ __global__ void calculatePositionChangeKern(float* x, float* y, float* z, int* p
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 	// decompostion is column major
-	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]) * dt;
-	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]) * dt;
-	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]) * dt;
+	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]);
+	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]);
+	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]);
 }	
 
 void RigidBodyConstraint::calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt)
