@@ -10,7 +10,7 @@
 #define amountOfPoints 64
 
 Scene_RigidBody::Scene_RigidBody() : Scene(
-	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
+	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON | SURFACE_CHECKING_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(amountOfPoints * 3, 0.0f);
@@ -20,7 +20,7 @@ Scene_RigidBody::Scene_RigidBody() : Scene(
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
-	particles.setExternalForces(0.f, 5.0f, 0.f);
+	particles.setExternalForces(0.f, -9.81f, 0.f);
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
 	applySceneSetup();
 	std::vector<int> points;
@@ -85,9 +85,9 @@ __global__ void initializePositionsKern(int nParticles, float* x, float* y, floa
 	int yIndex = 6 + (index / dim) % dim;
 	int zIndex = index / (dim * dim);
 
-	x[index] = xIndex * (PARTICLERADIUS) * 2;
-	y[index] = yIndex * (PARTICLERADIUS) * 2;
-	z[index] = zIndex * (PARTICLERADIUS) * 2;
+	x[index] = xIndex * ((PARTICLERADIUS + 0.01f) * 2);
+	y[index] = yIndex * ((PARTICLERADIUS + 0.01f) * 2);
+	z[index] = zIndex * ((PARTICLERADIUS + 0.01f) * 2);
 }
 
 void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)

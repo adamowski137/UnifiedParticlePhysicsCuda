@@ -101,24 +101,9 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* d
 	{
 		for (int i = 0; i < nConstraints; i++)
 		{
-			float sumX = 0, sumY = 0, sumZ = 0;
-			int sumC = 0;
-			for (int i = 0; i < nConstraints; i++)
-			{
-				sumC++;
-				sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
-				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
-				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
-			}
-			if (sumC == 0) return;
-			dx[index] += 1.5f * sumX * dt / sumC;
-			dy[index] += 1.5f * sumY * dt / sumC;
-			dz[index] += 1.5f * sumZ * dt / sumC;
-
-			//dx[index] += sumX * dt;
-			//dy[index] += sumY * dt;
-			//dz[index] += sumZ * dt;
-
+			dx[index] += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i] * dt;
+			dy[index] += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i] * dt;
+			dz[index] += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i] * dt;
 		}
 	}
 }

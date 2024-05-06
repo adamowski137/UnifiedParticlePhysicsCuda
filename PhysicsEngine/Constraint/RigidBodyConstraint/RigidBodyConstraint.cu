@@ -87,9 +87,9 @@ RigidBodyConstraint::RigidBodyConstraint(float* x, float* y, float* z, float* in
 
 	for (int i = 0; i < n; i++)
 	{
-		rx_ptr[i] = cx - x_ptr[p[i]];
-		ry_ptr[i] = cy - y_ptr[p[i]];
-		rz_ptr[i] = cz - z_ptr[p[i]];
+		rx_ptr[i] = x_ptr[p[i]] - cx;
+		ry_ptr[i] = y_ptr[p[i]] - cy;
+		rz_ptr[i] = z_ptr[p[i]] - cz;
 	}
 }
 
@@ -98,9 +98,9 @@ __global__ void calculateMassCenterKern(float* x, float* y, float* z, int* p, in
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 
-	atomicAdd(cx, x[p[index]] * invm[p[index]]);
-	atomicAdd(cy, y[p[index]] * invm[p[index]]);
-	atomicAdd(cz, z[p[index]] * invm[p[index]]);
+	atomicAdd(cx, x[p[index]] / invm[p[index]]);
+	atomicAdd(cy, y[p[index]] / invm[p[index]]);
+	atomicAdd(cz, z[p[index]] / invm[p[index]]);
 }
 
 bool RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z, float* invmass)
@@ -172,9 +172,9 @@ __global__ void calculatePositionChangeKern(float* x, float* y, float* z, int* p
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 	// decompostion is column major
-	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]);
-	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]);
-	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]);
+	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]) * dt;
+	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]) * dt;
+	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]) * dt;
 }	
 
 void RigidBodyConstraint::calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt)

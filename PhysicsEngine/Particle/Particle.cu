@@ -272,7 +272,7 @@ void ParticleType::setExternalForces(float fx, float fy, float fz)
 
 void ParticleType::setRigidBodyConstraint(std::vector<int> points)
 {
-	rigidBodyConstraint = std::unique_ptr<RigidBodyConstraint>{ new RigidBodyConstraint{ dev_x, dev_y, dev_z, dev_invmass, points.data(), (int)points.size(), ConstraintLimitType::EQ}};
+	rigidBodyConstraint = std::unique_ptr<RigidBodyConstraint>{ new RigidBodyConstraint{ dev_x, dev_y, dev_z, dev_invmass, points.data(), (int)points.size(), ConstraintLimitType::EQ, 1.0f}};
 }
 
 
