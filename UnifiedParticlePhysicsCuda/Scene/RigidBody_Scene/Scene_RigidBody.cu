@@ -7,7 +7,7 @@
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
-#define amountOfPoints 64
+#define amountOfPoints 128
 
 Scene_RigidBody::Scene_RigidBody() : Scene(
 	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON | SURFACE_CHECKING_ON)
@@ -20,7 +20,7 @@ Scene_RigidBody::Scene_RigidBody() : Scene(
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
-	particles.setExternalForces(0.f, -9.81f, 0.f);
+	particles.setExternalForces(0.f, -9.8f, 0.f);
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
 	applySceneSetup();
 	std::vector<int> points;
@@ -109,7 +109,7 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	fillRandomKern << <blocks, threads >> > (nParticles - 64, &dev_x[64], dev_curand, -8.f, 8.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
-	fillRandomKern << <blocks, threads >> > (nParticles - 64, &dev_y[64], dev_curand, 30.f, 32.f);
+	fillRandomKern << <blocks, threads >> > (nParticles - 64, &dev_y[64], dev_curand, 0.f, 30.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 	fillRandomKern << <blocks, threads >> > (nParticles - 64, &dev_z[64], dev_curand, 0.f, 0.f);
@@ -117,7 +117,7 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaDeviceSynchronize());
 
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

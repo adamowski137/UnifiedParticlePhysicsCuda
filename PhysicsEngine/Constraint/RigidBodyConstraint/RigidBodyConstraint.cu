@@ -67,7 +67,7 @@ RigidBodyConstraint::RigidBodyConstraint(float* x, float* y, float* z, float* in
 	thrust::device_ptr<float> ry_ptr = thrust::device_pointer_cast(ry);
 	thrust::device_ptr<float> rz_ptr = thrust::device_pointer_cast(rz);
 
-	float totalMass = 0.0f;
+	totalMass = 0.0f;
 
 	cx = 0;
 	cy = 0;
@@ -126,6 +126,9 @@ bool RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	//std::cout << "cx: " << cx << " cy: " << cy << " cz: " << cz << std::endl;
+
+
 	gpuErrchk(cudaMemcpy(&cx, tcx, sizeof(float), cudaMemcpyDeviceToHost));
 	gpuErrchk(cudaMemcpy(&cy, tcy, sizeof(float), cudaMemcpyDeviceToHost));
 	gpuErrchk(cudaMemcpy(&cz, tcz, sizeof(float), cudaMemcpyDeviceToHost));
@@ -134,9 +137,12 @@ bool RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z,
 	gpuErrchk(cudaFree(tcy));
 	gpuErrchk(cudaFree(tcz));
 
+
 	cx /= totalMass;
 	cy /= totalMass;
 	cz /= totalMass;
+
+	//std::cout << "cx: " << cx << " cy: " << cy << " cz: " << cz << std::endl;
 
 	calculateShapeCovarianceKern << <blocks, threads_per_block >> > (tmp, x, y, z, p, n, rx, ry, rz, cx, cy, cz);
 	gpuErrchk(cudaGetLastError());
@@ -172,9 +178,9 @@ __global__ void calculatePositionChangeKern(float* x, float* y, float* z, int* p
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= n) return;
 	// decompostion is column major
-	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]) * dt;
-	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]) * dt;
-	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]) * dt;
+	dx[p[index]] += ((decompostion[0] * rx[index] + decompostion[3] * ry[index] + decompostion[6] * rz[index]) + cx - x[p[index]]) * 0.6;
+	dy[p[index]] += ((decompostion[1] * rx[index] + decompostion[4] * ry[index] + decompostion[7] * rz[index]) + cy - y[p[index]]) * 0.6;
+	dz[p[index]] += ((decompostion[2] * rx[index] + decompostion[5] * ry[index] + decompostion[8] * rz[index]) + cz - z[p[index]]) * 0.6;
 }	
 
 void RigidBodyConstraint::calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt)
