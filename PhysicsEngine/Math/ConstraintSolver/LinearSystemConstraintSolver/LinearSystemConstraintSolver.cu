@@ -1,12 +1,12 @@
-#include "ConstraintSolver.cuh"
-#include "../GpuErrorHandling.hpp"
+#include "LinearSystemConstraintSolver.cuh"
+#include "../../../GpuErrorHandling.hpp"
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <thrust/transform.h>
 #include <thrust/sort.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
-#include "../Constants.hpp"
+#include "../../../Constants.hpp"
 
 #define SHMEM_SIZE 1024
 
@@ -29,11 +29,11 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 	float* x, float* y, float* z,
 	float* jacobian,
 	float* dev_c_min, float* dev_c_max,
-	T* constrains, float dt)
+	T* constrains)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= constrainsNumber) return;
-	b[index] = -(constrains[index])(x, y, z, dt);
+	b[index] = -(constrains[index])(x, y, z);
 	dev_c_max[index] = constrains[index].cMax;
 	dev_c_min[index] = constrains[index].cMin;
 }
@@ -157,7 +157,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 		x, y, z,
 		jacobian,
 		c_min, c_max,
-		constraints, dt);
+		constraints);
 
 	/*thrust::device_ptr<float> b_ptr = thrust::device_pointer_cast(b);
 	std::cout << b_ptr[10] << "\n";*/
@@ -205,7 +205,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	gpuErrchk(cudaDeviceSynchronize());
 }
 
-ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
+LinearSystemConstraintSolver::LinearSystemConstraintSolver(int particles) : ConstraintSolver(particles)
 {
 	// set pointers to 0 - this way it will be easy to distinguish whether they have already been allocated or not
 	dev_jacobian = 0;
@@ -220,19 +220,9 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 	nConstraintsMaxAllocated = 1;
 	this->allocateArrays(50);
 
-	gpuErrchk(cudaMalloc((void**)&dev_dx, nParticles * sizeof(float)));
-	gpuErrchk(cudaMalloc((void**)&dev_dy, nParticles * sizeof(float)));
-	gpuErrchk(cudaMalloc((void**)&dev_dz, nParticles * sizeof(float)));
-
-	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
-	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
-
-	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
-	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
 }
 
-ConstraintSolver::~ConstraintSolver()
+LinearSystemConstraintSolver::~LinearSystemConstraintSolver()
 {
 	gpuErrchk(cudaFree(dev_jacobian));
 	gpuErrchk(cudaFree(dev_jacobian_transposed));
@@ -242,12 +232,9 @@ ConstraintSolver::~ConstraintSolver()
 	gpuErrchk(cudaFree(dev_new_lambda));
 	gpuErrchk(cudaFree(dev_c_min));
 	gpuErrchk(cudaFree(dev_c_max));
-	gpuErrchk(cudaFree(dev_dx));
-	gpuErrchk(cudaFree(dev_dy));
-	gpuErrchk(cudaFree(dev_dz));
 }
 
-void ConstraintSolver::calculateForces(
+void LinearSystemConstraintSolver::calculateForces(
 	float* new_x, float* new_y, float* new_z,
 	float* invmass, int* mode, float dt, int iterations
 )
@@ -281,7 +268,7 @@ void ConstraintSolver::calculateForces(
 	this->clearAllConstraints();
 }
 
-void ConstraintSolver::calculateStabilisationForces(
+void LinearSystemConstraintSolver::calculateStabilisationForces(
 	float* x, float* y, float* z, int* mode,
 	float* new_x, float* new_y, float* new_z,
 	float* invmass, float dt, int iterations)
@@ -316,14 +303,7 @@ void ConstraintSolver::calculateStabilisationForces(
 	this->clearAllConstraints();
 }
 
-void ConstraintSolver::clearAllConstraints()
-{
-	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
-	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
-
-}
-
-void ConstraintSolver::allocateArrays(int nConstraints)
+void LinearSystemConstraintSolver::allocateArrays(int nConstraints)
 {
 	if (nConstraints > nConstraintsMaxAllocated)
 	{
@@ -376,7 +356,7 @@ void ConstraintSolver::allocateArrays(int nConstraints)
 	else this->clearArrays(nConstraints);
 }
 
-void ConstraintSolver::clearArrays(int nConstraints)
+void LinearSystemConstraintSolver::clearArrays(int nConstraints)
 {
 	gpuErrchk(cudaMemset(dev_jacobian, 0, 3 * nParticles * nConstraints * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_jacobian_transposed, 0, 3 * nParticles * nConstraints * sizeof(float)));

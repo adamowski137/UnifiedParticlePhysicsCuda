@@ -12,6 +12,8 @@
 #include "ParticleData.cuh"
 #include "../GpuErrorHandling.hpp"
 #include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
+#include "../Math/ConstraintSolver/LinearSystemConstraintSolver/LinearSystemConstraintSolver.cuh"
+#include "../Math/ConstraintSolver/DirectConstraintSolver/DirectConstraintSolver.cuh"
 
 #define EPS 0.0000001
 
@@ -93,7 +95,7 @@ __global__ void applyChangesKern(int amount,
 ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode}
 {
 	blocks = ceilf((float)nParticles / THREADS);
-	constraintSolver = std::unique_ptr<ConstraintSolver>{ new ConstraintSolver{amount} };
+	constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolver{amount} };
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
 	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
 	allocateDeviceData();
@@ -238,7 +240,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 20);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 50);
 
 	// todo solve every constraint group 
 	// update predicted position

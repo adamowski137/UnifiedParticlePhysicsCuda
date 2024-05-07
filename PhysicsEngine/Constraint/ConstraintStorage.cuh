@@ -19,7 +19,7 @@ namespace CUDAConstants
 }
 
 template<typename T>
-class ConstraintStorage 
+class ConstraintStorage
 {
 public:
 	//void setStaticConstraints(T* constrains, int nConstrains);
@@ -42,6 +42,7 @@ private:
 	int nDynamicConstraints;
 	int maxDynamicConstraints;
 	int maxConstraints;
+	bool initiated = false;
 
 	T* dynamicConstraints;
 };
@@ -94,7 +95,7 @@ std::pair<T*, int> ConstraintStorage<T>::getDynamicConstraints()
 template<typename T>
 std::pair<T*, int> ConstraintStorage<T>::getConstraints(bool dynamic)
 {
-	if(dynamic)
+	if (dynamic)
 		return getDynamicConstraints();
 	/*else
 		return getStaticConstraints<T>(type);*/
@@ -109,11 +110,16 @@ void ConstraintStorage<T>::clearConstraints()
 template<typename T>
 void ConstraintStorage<T>::initInstance()
 {
-	gpuErrchk(cudaMalloc((void**)&dynamicConstraints, DEFAULT_CONSTRAINS * sizeof(T)));
+	if (!initiated)
+	{
+		gpuErrchk(cudaMalloc((void**)&dynamicConstraints, DEFAULT_CONSTRAINS * sizeof(T)));
 
-	nStaticConstraints = 0;
-	nDynamicConstraints = 0;
-	maxDynamicConstraints = DEFAULT_CONSTRAINS;
+		nStaticConstraints = 0;
+		nDynamicConstraints = 0;
+		maxDynamicConstraints = DEFAULT_CONSTRAINS;
+
+		initiated = true;
+	}
 }
 
 template<typename T>

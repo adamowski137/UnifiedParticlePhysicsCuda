@@ -7,7 +7,7 @@
 #include "../Constraint/Constraint.cuh"
 #include "../Collision/CollisionGrid.cuh"
 #include "../Collision/SurfaceCollisionFinder.cuh"
-#include "../Math/ConstraintSolver.cuh"
+#include "../Math/ConstraintSolver/ConstraintSolver.cuh"
 
 
 #define ANY_CONSTRAINTS_ON 1
