@@ -41,11 +41,29 @@ __global__ void fillResultVectorKern(int particles, int constrainsNumber, float*
 template <typename T>
 __global__ void solveConstraintsDirectlyKern(int nConstraints,
 	float* x, float* y, float* z,
+	float* dx, float* dy, float* dz,
+	int* nConstraintsPerParticle,
 	T* constraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nConstraints) return;
-	constraints[index].directSolve(x, y, z);
+	constraints[index].directSolve(x, y, z, dx, dy, dz, nConstraintsPerParticle);
+}
+
+__global__ void applyOffset(int nParticles,
+	float* x, float* y, float* z,
+	float* dx, float* dy, float* dz,
+	int* nConstraintsPerParticle)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	const float omega = 1.5f;
+	if (nConstraintsPerParticle[index] > 0)
+	{
+		x[index] += omega * dx[index] / nConstraintsPerParticle[index];
+		y[index] += omega * dy[index] / nConstraintsPerParticle[index];
+		z[index] += omega * dz[index] / nConstraintsPerParticle[index];
+	}
 }
 
 
@@ -227,10 +245,13 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 	gpuErrchk(cudaMalloc((void**)&dev_dy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_dz, nParticles * sizeof(float)));
 
+	gpuErrchk(cudaMalloc((void**)&dev_nConstraintsPerParticle, nParticles * sizeof(float)));
+
 	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
 
+	gpuErrchk(cudaMemset(dev_nConstraintsPerParticle, 0, nParticles * sizeof(float)));
 	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
 	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
 }
@@ -248,6 +269,7 @@ ConstraintSolver::~ConstraintSolver()
 	gpuErrchk(cudaFree(dev_dx));
 	gpuErrchk(cudaFree(dev_dy));
 	gpuErrchk(cudaFree(dev_dz));
+	gpuErrchk(cudaFree(dev_nConstraintsPerParticle));
 }
 
 void ConstraintSolver::calculateForces(
@@ -321,18 +343,48 @@ void ConstraintSolver::calculateStabilisationForces(
 
 void ConstraintSolver::direct_constraint_solve(float* x, float* y, float* z)
 {
+	cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles);
+
+	thrust::device_ptr<float> thrust_new_x(x);
+	thrust::device_ptr<float> thrust_new_y(y);
+	thrust::device_ptr<float> thrust_new_z(z);
+
+	thrust::device_ptr<float> thrust_dx(dev_dx);
+	thrust::device_ptr<float> thrust_dy(dev_dy);
+	thrust::device_ptr<float> thrust_dz(dev_dz);
+
+
 	auto distanceConstraintData = ConstraintStorage<DistanceConstraint>::Instance.getConstraints(true);
 
 	int threads = 32;
 	int blocks = (distanceConstraintData.second + threads - 1) / threads;
-	if(distanceConstraintData.second > 0)
-		solveConstraintsDirectlyKern << <blocks, threads >> > (distanceConstraintData.second, x, y, z, distanceConstraintData.first);
+	int particleBlocks = (nParticles + threads - 1) / threads;
+	if (distanceConstraintData.second > 0)
+	{
+		solveConstraintsDirectlyKern << <blocks, threads >> > (distanceConstraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle, distanceConstraintData.first);
+		applyOffset << <particleBlocks, threads >> > (nParticles, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle);
+	}
+
+
+	cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
+	cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles);
+
 
 	auto surfaceConstraintData = ConstraintStorage<SurfaceConstraint>::Instance.getConstraints(true);
 	blocks = (surfaceConstraintData.second + threads - 1) / threads;
 
-	if(surfaceConstraintData.second > 0)
-		solveConstraintsDirectlyKern << <blocks, threads >> > (surfaceConstraintData.second, x, y, z, surfaceConstraintData.first);
+	if (surfaceConstraintData.second > 0)
+	{
+		solveConstraintsDirectlyKern << <blocks, threads >> > (surfaceConstraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle, surfaceConstraintData.first);
+		applyOffset << <particleBlocks, threads >> > (nParticles, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle);
+	}
+
+	std::cout << distanceConstraintData.second + surfaceConstraintData.second << "\n";
 
 	clearAllConstraints();
 }

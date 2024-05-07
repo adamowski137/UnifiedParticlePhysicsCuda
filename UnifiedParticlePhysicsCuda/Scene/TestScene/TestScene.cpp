@@ -15,7 +15,7 @@ TestScene::TestScene(int n) : Scene(ResourceManager::Instance.Shaders["instanced
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
-	particles.setSurfaces({ Surface().init(0, 1, 0, 10), Surface().init(1, 0, 0, 10), Surface().init(-1, 0, 0, 10), Surface().init(0, 0, 1, 10), Surface().init(0, 0, -1, 10)});
+	particles.setSurfaces({ Surface().init(0, 1, 0, 30), Surface().init(1, 0, 0, 30), Surface().init(-1, 0, 0, 30), Surface().init(0, 0, 1, 30), Surface().init(0, 0, -1, 30)});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 }

@@ -28,7 +28,7 @@ void initData_TestScene(int nParticles,
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 8.f, 28.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 8.f, 258.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

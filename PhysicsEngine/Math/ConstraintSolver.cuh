@@ -51,6 +51,8 @@ private:
 	float* dev_c_min;
 	float* dev_c_max;
 
+	int* dev_nConstraintsPerParticle;
+
 	// coefficients, results of matrix equation, multiplied by J give force that has to be applied to particles
 	float* dev_lambda;
 	float* dev_new_lambda;

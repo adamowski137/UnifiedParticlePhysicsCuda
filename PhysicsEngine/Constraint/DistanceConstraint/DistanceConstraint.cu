@@ -46,7 +46,7 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	jacobian[idx2 + 2] = -dCz;
 }
 
-__host__ __device__ void DistanceConstraint::directSolve(float* x, float* y, float* z)
+__device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, int* nConstraintsPerParticle)
 {
 	// assuming mass = 1
 	float distX = (x[p[0]] - x[p[1]]);
@@ -55,11 +55,21 @@ __host__ __device__ void DistanceConstraint::directSolve(float* x, float* y, flo
 
 	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 	float C = 0.5f * (dist - d);
-	x[p[0]] += 0.5f * C * distX / dist;
-	y[p[0]] += 0.5f * C * distY / dist;
-	z[p[0]] += 0.5f * C * distZ / dist;
 
-	x[p[1]] += -0.5f * C * distX / dist;
-	y[p[1]] += -0.5f * C * distY / dist;
-	z[p[1]] += -0.5f * C * distZ / dist;
+	atomicAdd(dx + p[0], -0.5f * C * distX / dist);
+	atomicAdd(dy + p[0], -0.5f * C * distY / dist);
+	atomicAdd(dz + p[0], -0.5f * C * distZ / dist);
+	//dx[p[0]] += 0.5f * C * distX / dist;
+	//dy[p[0]] += 0.5f * C * distY / dist;
+	//dz[p[0]] += 0.5f * C * distZ / dist;
+
+	atomicAdd(dx + p[1], 0.5f * C * distX / dist);
+	atomicAdd(dy + p[1], 0.5f * C * distY / dist);
+	atomicAdd(dz + p[1], 0.5f * C * distZ / dist);
+	//dx[p[1]] += -0.5f * C * distX / dist;
+	//dy[p[1]] += -0.5f * C * distY / dist;
+	//dz[p[1]] += -0.5f * C * distZ / dist;
+
+	atomicAdd(nConstraintsPerParticle + p[0], 1);
+	atomicAdd(nConstraintsPerParticle + p[1], 1);
 }

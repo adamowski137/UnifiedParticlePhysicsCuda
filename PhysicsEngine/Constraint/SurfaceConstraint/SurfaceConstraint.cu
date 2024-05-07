@@ -25,10 +25,16 @@ __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* 
 	jacobian[idx + 2] = s.normal[2];
 }
 
-__host__ __device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z)
+__device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, int* nConstraintsPerParticle)
 {
 	float C = (*this)(x, y, z) / k * 0.5f;
-	x[p[0]] += -C * s.normal[0];
-	y[p[0]] += -C * s.normal[1];
-	z[p[0]] += -C * s.normal[2];
+	
+	atomicAdd(dx + p[0], -C * s.normal[0]);
+	atomicAdd(dy + p[0], -C * s.normal[1]);
+	atomicAdd(dz + p[0], -C * s.normal[2]);
+
+	atomicAdd(nConstraintsPerParticle + p[0], 1);
+	//dx[p[0]] += -C * s.normal[0];
+	//dy[p[0]] += -C * s.normal[1];
+	//dz[p[0]] += -C * s.normal[2];
 }
