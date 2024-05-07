@@ -40,6 +40,9 @@ RigidBodyConstraint::~RigidBodyConstraint()
 		gpuErrchk(cudaFree(decompostion));
 
 	gpuErrchk(cudaFree(tmp));
+	gpuErrchk(cudaFree(tcx));
+	gpuErrchk(cudaFree(tcy));
+	gpuErrchk(cudaFree(tcz));
 
 }
 
@@ -52,6 +55,9 @@ RigidBodyConstraint::RigidBodyConstraint(float* x, float* y, float* z, float* in
 	gpuErrchk(cudaMalloc((void**)&(this->ry), n * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&(this->rz), n * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&tmp, 9 * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&tcx, sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&tcy, sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&tcz, sizeof(float)));
 
 	gpuErrchk(cudaMemcpy(this->p, p, n * sizeof(int), cudaMemcpyHostToDevice));
 
@@ -110,14 +116,6 @@ bool RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z,
 
 	gpuErrchk(cudaMemset(tmp, 0, 9 * sizeof(float)));
 
-	float* tcx;
-	float* tcy;
-	float* tcz;
-
-	gpuErrchk(cudaMalloc((void**)&tcx, sizeof(float)));
-	gpuErrchk(cudaMalloc((void**)&tcy, sizeof(float)));
-	gpuErrchk(cudaMalloc((void**)&tcz, sizeof(float)));
-
 	gpuErrchk(cudaMemset(tcx, 0, sizeof(float)));
 	gpuErrchk(cudaMemset(tcy, 0, sizeof(float)));
 	gpuErrchk(cudaMemset(tcz, 0, sizeof(float)));
@@ -132,11 +130,6 @@ bool RigidBodyConstraint::calculateShapeCovariance(float* x, float* y, float* z,
 	gpuErrchk(cudaMemcpy(&cx, tcx, sizeof(float), cudaMemcpyDeviceToHost));
 	gpuErrchk(cudaMemcpy(&cy, tcy, sizeof(float), cudaMemcpyDeviceToHost));
 	gpuErrchk(cudaMemcpy(&cz, tcz, sizeof(float), cudaMemcpyDeviceToHost));
-
-	gpuErrchk(cudaFree(tcx));
-	gpuErrchk(cudaFree(tcy));
-	gpuErrchk(cudaFree(tcz));
-
 
 	cx /= totalMass;
 	cy /= totalMass;

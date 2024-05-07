@@ -214,21 +214,16 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// find neighboring particles and solid contacts ??
 
-	//if(mode & GRID_CHECKING_ON)
-	//	collisionGrid->findCollisions(dev_x, dev_y, dev_z, nParticles, dev_sums, dev_collisions);
-	//
-	//auto surfaceCollisionData = (mode & SURFACE_CHECKING_ON) 
-	//	? surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z) 
-	//	: std::make_pair((SurfaceConstraint*)0, 0);
-
 	//if (mode & GRID_CHECKING_ON)
-	//	constraintSolver->addDynamicConstraints(dev_collisions, dev_sums, PARTICLERADIUS, ConstraintLimitType::GEQ);
+	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
+
 	//if (mode & SURFACE_CHECKING_ON)
-	//	constraintSolver->addSurfaceConstraints(surfaceCollisionData.first, surfaceCollisionData.second);
-	//
-	//// stabilization iterations
+	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
+
 	//if (mode & ANY_CONSTRAINTS_ON)
-	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 20);
+
+	//constraintSolver->clearDynamicConstraints();
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)

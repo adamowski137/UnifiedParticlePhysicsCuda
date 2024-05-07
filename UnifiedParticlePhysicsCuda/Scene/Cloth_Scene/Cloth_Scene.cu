@@ -23,7 +23,6 @@ Cloth_Scene::Cloth_Scene() :
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setExternalForces(0.f, -9.81f, -10.f);
-	particles.setRigidBodyConstraint({});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 

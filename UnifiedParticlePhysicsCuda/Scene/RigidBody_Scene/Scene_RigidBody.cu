@@ -22,7 +22,7 @@ Scene_RigidBody::Scene_RigidBody() : Scene(
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.8f, 0.f);
-	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
+	particles.setSurfaces({ Surface().init(1, 3, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
 	applySceneSetup();
 
 	camera.setPosition(glm::vec3(0, 0, -10));
@@ -100,7 +100,7 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaDeviceSynchronize());
 
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 10.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, -20.f, 20.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

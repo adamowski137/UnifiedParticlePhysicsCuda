@@ -19,4 +19,7 @@ private:
 	float* decompostion;
 	float totalMass;
 	float cx, cy, cz;
+	float* tcx;
+	float* tcy;
+	float* tcz;
 };
