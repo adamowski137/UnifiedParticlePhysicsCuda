@@ -29,6 +29,11 @@ void Scene::update(float dt)
 
 }
 
+void Scene::reset()
+{
+	particles.clearConstraints();
+}	
+
 void Scene::handleKeys()
 {
 	glm::vec3 currCameraPosition = camera.getPosition();

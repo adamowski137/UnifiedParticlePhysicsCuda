@@ -13,6 +13,7 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{particles}
 
 	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
 	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
+	ConstraintStorage<RigidBodyConstraint>::Instance.initInstance();
 }
 
 ConstraintSolver::~ConstraintSolver()
@@ -24,6 +25,6 @@ ConstraintSolver::~ConstraintSolver()
 
 void ConstraintSolver::clearAllConstraints()
 {
-	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
-	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints(true);
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints(true);
 }

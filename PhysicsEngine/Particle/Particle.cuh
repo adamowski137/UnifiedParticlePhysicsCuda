@@ -9,7 +9,6 @@
 #include "../Collision/SurfaceCollisionFinder.cuh"
 #include "../Math/ConstraintSolver/ConstraintSolver.cuh"
 
-
 #define ANY_CONSTRAINTS_ON 1
 #define GRID_CHECKING_ON 2
 #define SURFACE_CHECKING_ON 4
@@ -22,14 +21,15 @@ public:
 	ParticleType(int amount, int mode);
 	~ParticleType();
 
-
 	void mapCudaVBO(unsigned int vbo);
 	void renderData(unsigned int vbo);
 	void calculateNewPositions(float dt);
 	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
 	void setSurfaces(std::vector<Surface> surfaces);
 	void setExternalForces(float fx, float fy, float fz);
+	void clearConstraints();
 	inline int particleCount() { return nParticles; }
+
 private:
 	const int nParticles;
 	int mode;
