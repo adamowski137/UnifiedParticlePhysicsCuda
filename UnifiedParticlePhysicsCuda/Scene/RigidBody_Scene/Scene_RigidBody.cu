@@ -1,5 +1,6 @@
 #include "Scene_RigidBody.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
+#include "../../PhysicsEngine/RigidBodies/RigidBody.hpp"
 #include "../../PhysicsEngine/Particle/ParticleData.cuh"
 #include "../../PhysicsEngine/GpuErrorHandling.hpp"
 #include "../../PhysicsEngine/Constants.hpp"
@@ -23,12 +24,6 @@ Scene_RigidBody::Scene_RigidBody() : Scene(
 	particles.setExternalForces(0.f, -9.8f, 0.f);
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
 	applySceneSetup();
-	std::vector<int> points;
-	for (int i = 0; i < 64; i++)
-	{
-		points.push_back(i);
-	}
-	particles.setRigidBodyConstraint(points);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 }
@@ -56,24 +51,13 @@ void Scene_RigidBody::draw()
 
 void Scene_RigidBody::reset()
 {
-	//std::vector<float> offsets;
-	//offsets.resize(amountOfPoints * 3, 0.0f);
-
-	//renderer->setSphereScale(0.1f);
-
-	//sceneSphere.addInstancing(offsets);
-	//particles.mapCudaVBO(sceneSphere.instancingVBO);
-	//particles.setConstraints({ }, 2.f);
-	//particles.setExternalForces(0.f, -9.81f, 0.f);
-	//particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20) });
-	//std::vector<int> points;
-	//for (int i = 0; i < 64; i++)
-	//{
-	//	points.push_back(i);
-	//}
-	//particles.setRigidBodyConstraint(points);
-
-	//camera.setPosition(glm::vec3(0, 0, -10));
+	particles.clearConstraints();
+	std::vector<int> points;
+	for (int i = 0; i < 64; i++)
+	{
+		points.push_back(i);
+	}
+	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(RigidBody::getConstraints());
 }
 
 __global__ void initializePositionsKern(int nParticles, float* x, float* y, float* z, int dim)
@@ -101,7 +85,6 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
 	initializePositionsKern << <blocks, threads >> > (nParticles, dev_x, dev_y, dev_z, 4);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -124,5 +107,13 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+	std::vector<int> points;
+	for (int i = 0; i < 64; i++)
+	{
+		points.push_back(i);
+	}
+
+	RigidBody::initRigidBodySimulation(dev_x, dev_y, dev_z, dev_invmass, points);
 }
 

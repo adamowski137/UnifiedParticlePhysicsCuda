@@ -9,25 +9,28 @@
 #include "SurfaceConstraint/SurfaceConstraint.cuh"
 #include "RigidBodyConstraint/RigidBodyConstraint.cuh"
 
-#define MAX_CONSTRAINS 512 
-#define DEFAULT_CONSTRAINS 64
+#define MAX_CONSTRAINTS 512 
+#define DEFAULT_CONSTRAINTS 64
 // update when new constrain type added
 
-namespace CUDAConstants
-{
-	extern __device__ __constant__ DistanceConstraint staticDistanceConstraints[MAX_CONSTRAINS];
-	extern __device__ __constant__ SurfaceConstraint staticSurfaceConstraints[MAX_CONSTRAINS];
-}
+//namespace CUDAConstants
+//{
+//	extern __device__ __constant__ DistanceConstraint staticDistanceConstraints[MAX_CONSTRAINTS];
+//	extern __device__ __constant__ SurfaceConstraint staticSurfaceConstraints[MAX_CONSTRAINTS];
+//}
 
 template<typename T>
 class ConstraintStorage 
 {
 public:
-	void addStaticConstraints(std::shared_ptr<T> constraints, int nConstraints);
+	void setStaticConstraints(T* constraints, int nConstraints);
+	void setCpuConstraints(std::vector<T*> constraints);
+
 	void addDynamicConstraints(T* constrains, int nConstrains);
 	std::pair<T*, int> getStaticConstraints();
 	std::pair<T*, int> getDynamicConstraints();
 	std::pair<T*, int> getConstraints(bool dynamic);
+	std::vector<T*> getCpuConstraints() { return cpuConstraints; }
 
 	ConstraintStorage& operator=(const ConstraintStorage& other) = delete;
 	ConstraintStorage(const ConstraintStorage& w) = delete;
@@ -35,6 +38,7 @@ public:
 	int getTotalConstraints();
 	static ConstraintStorage<T> Instance;
 	void clearConstraints();
+	void clearConstraints(bool dynamic);
 	void initInstance();
 	~ConstraintStorage();
 private:
@@ -42,17 +46,27 @@ private:
 	int nStaticConstraints;
 	int nDynamicConstraints;
 	int maxDynamicConstraints;
-	int maxConstraints;
 
 	T* dynamicConstraints;
-	std::shared_ptr<T> staticConstraints;
+	T* staticConstraints;
+	std::vector<T*> cpuConstraints;
 };
 
 template<typename T>
-void ConstraintStorage<T>::addStaticConstraints(std::shared_ptr<T> constraints, int nConstraints)
+void ConstraintStorage<T>::setStaticConstraints(T* constraints, int nConstraints)
 {
+	if (staticConstraints != 0)
+		gpuErrchk(cudaFree(staticConstraints));
+	gpuErrchk(cudaMalloc((void**)&staticConstraints, nConstraints * sizeof(T)));
+	gpuErrchk(cudaMemcpy(staticConstraints, constraints, nConstraints * sizeof(T), cudaMemcpyHostToDevice));
+
 	nStaticConstraints = nConstraints;
-	staticConstraints = constraints;
+}
+
+template<typename T>
+void ConstraintStorage<T>::setCpuConstraints(std::vector<T*> constraints)
+{
+	cpuConstraints = constraints;
 }
 
 template<typename T>
@@ -74,7 +88,7 @@ void ConstraintStorage<T>::addDynamicConstraints(T* constraints, int nConstraint
 template<typename T>
 std::pair<T*, int> ConstraintStorage<T>::getStaticConstraints()
 {
-	return std::pair<T*, int>(staticConstraints.get(), nStaticConstraints);
+	return std::pair<T*, int>(staticConstraints, nStaticConstraints);
 }
 
 template<typename T>
@@ -96,16 +110,30 @@ template<typename T>
 void ConstraintStorage<T>::clearConstraints()
 {
 	nDynamicConstraints = 0;
+	nStaticConstraints = 0;
+	cpuConstraints.clear();
+}
+
+template<typename T>
+void ConstraintStorage<T>::clearConstraints(bool dynamic)
+{
+	if (dynamic)
+		nDynamicConstraints = 0;
+	else
+		nStaticConstraints = 0;
 }
 
 template<typename T>
 void ConstraintStorage<T>::initInstance()
 {
-	gpuErrchk(cudaMalloc((void**)&dynamicConstraints, DEFAULT_CONSTRAINS * sizeof(T)));
+	gpuErrchk(cudaMalloc((void**)&dynamicConstraints, DEFAULT_CONSTRAINTS * sizeof(T)));
+
+	staticConstraints = 0;
 
 	nStaticConstraints = 0;
 	nDynamicConstraints = 0;
-	maxDynamicConstraints = DEFAULT_CONSTRAINS;
+	maxDynamicConstraints = DEFAULT_CONSTRAINTS;
+	cpuConstraints.clear();
 }
 
 template<typename T>

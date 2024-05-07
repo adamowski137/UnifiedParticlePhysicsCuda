@@ -232,8 +232,7 @@ ConstraintSolver::~ConstraintSolver()
 
 void ConstraintSolver::calculateForces(
 	float* new_x, float* new_y, float* new_z,
-	float* invmass, int* mode, float dt, int iterations,
-	RigidBodyConstraint* rigidBodyConstraint
+	float* invmass, int* mode, float dt, int iterations
 )
 {
 	int num_iterations = 1;
@@ -254,9 +253,15 @@ void ConstraintSolver::calculateForces(
 		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
-		if (rigidBodyConstraint->calculateShapeCovariance(new_x, new_y, new_z, invmass))
+		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+
+		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
+
+		for (int i = 0; i < rigidBodyConstraints.size(); i++)
 		{
-			rigidBodyConstraint->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / num_iterations);
+			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
+			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / num_iterations);
 		}
 
  		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
@@ -264,7 +269,7 @@ void ConstraintSolver::calculateForces(
 		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 	}
 
-	this->clearAllConstraints();
+	this->clearDynamicConstraints();
 }
 
 void ConstraintSolver::calculateStabilisationForces(
@@ -299,13 +304,13 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
-	this->clearAllConstraints();
+	this->clearDynamicConstraints();
 }
 
-void ConstraintSolver::clearAllConstraints()
+void ConstraintSolver::clearDynamicConstraints()
 {
-	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
-	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints(true);
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints(true);
 }
 
 void ConstraintSolver::allocateArrays(int nConstraints)

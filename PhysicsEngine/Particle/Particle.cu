@@ -12,7 +12,6 @@
 #include "../Constants.hpp"
 #include "ParticleData.cuh"
 #include "../GpuErrorHandling.hpp"
-#include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 
 #define EPS 0.0000001
 
@@ -239,7 +238,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 20, rigidBodyConstraint.get());
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 20);
 
 	// todo solve every constraint group 
 	// update predicted position
@@ -270,9 +269,11 @@ void ParticleType::setExternalForces(float fx, float fy, float fz)
 	fextz = fz;
 }
 
-void ParticleType::setRigidBodyConstraint(std::vector<int> points)
+void ParticleType::clearConstraints()
 {
-	rigidBodyConstraint = std::unique_ptr<RigidBodyConstraint>{ new RigidBodyConstraint{ dev_x, dev_y, dev_z, dev_invmass, points.data(), (int)points.size(), ConstraintLimitType::EQ, 1.0f}};
+	ConstraintStorage<RigidBodyConstraint>::Instance.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
 }
 
 

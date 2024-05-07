@@ -47,9 +47,9 @@ void ResourceManager::loadConfig(std::string configPath)
 
 void ResourceManager::loadScenes(int amountOfPoints)
 {
-	//scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External(amountOfPoints))));
-	//scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene(amountOfPoints * 8))));
-	//scenes.insert(std::make_pair("Cloth simulation", std::shared_ptr<Scene>(new Cloth_Scene())));
+	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External(amountOfPoints))));
+	scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene(amountOfPoints * 8))));
+	scenes.insert(std::make_pair("Cloth simulation", std::shared_ptr<Scene>(new Cloth_Scene())));
 	scenes.insert(std::make_pair("Rigid body simulation", std::shared_ptr<Scene>(new Scene_RigidBody())));
 	//scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
 
@@ -61,8 +61,9 @@ void ResourceManager::loadScenes(int amountOfPoints)
 		options.sceneData.push_back(data);
 	}
 
-	options.sceneData[0].isActive = true;
-	currentScene = scenes[options.sceneData[0].name];
+	options.sceneData[2].isActive = true;
+	currentScene = scenes[options.sceneData[2].name];
+	currentScene.get()->reset();
 }
 
 std::shared_ptr<Scene>& ResourceManager::getActiveScene()

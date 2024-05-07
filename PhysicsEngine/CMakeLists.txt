@@ -17,6 +17,7 @@ add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/ParticleData.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/List/List.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Cloth/Cloth.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/RigidBodies/RigidBody.cpp
 )
 
 

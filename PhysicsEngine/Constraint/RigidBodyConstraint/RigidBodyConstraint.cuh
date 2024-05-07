@@ -1,3 +1,4 @@
+#pragma once
 #include "../Constraint.cuh"
 
 class RigidBodyConstraint : public Constraint

@@ -27,7 +27,7 @@ public:
 	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
 	void setSurfaces(std::vector<Surface> surfaces);
 	void setExternalForces(float fx, float fy, float fz);
-	void setRigidBodyConstraint(std::vector<int> points);
+	void clearConstraints();
 	inline int particleCount() { return nParticles; }
 
 private:
@@ -53,7 +53,6 @@ private:
 	std::unique_ptr<ConstraintSolver> constraintSolver;
 	std::unique_ptr<CollisionGrid> collisionGrid;
 	std::unique_ptr<SurfaceCollisionFinder> surfaceCollisionFinder;
-	std::unique_ptr<RigidBodyConstraint> rigidBodyConstraint;
 
 	int blocks;
 

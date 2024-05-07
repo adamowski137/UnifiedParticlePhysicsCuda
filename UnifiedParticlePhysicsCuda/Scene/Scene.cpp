@@ -31,6 +31,7 @@ void Scene::update(float dt)
 
 void Scene::reset()
 {
+	particles.clearConstraints();
 }	
 
 void Scene::handleKeys()
