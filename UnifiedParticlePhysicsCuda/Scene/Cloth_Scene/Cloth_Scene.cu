@@ -23,10 +23,12 @@ Cloth_Scene::Cloth_Scene() :
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setExternalForces(0.f, -9.81f, -10.f);
+	particles.setRigidBodyConstraint({});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
 	applySceneSetup();
+	ConstraintStorage<DistanceConstraint>::Instance.setStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 }
 
 Cloth_Scene::~Cloth_Scene()
@@ -35,7 +37,6 @@ Cloth_Scene::~Cloth_Scene()
 
 void Cloth_Scene::update(float dt)
 {
-	ConstraintStorage<DistanceConstraint>::Instance.addDynamicConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
 
@@ -48,6 +49,12 @@ void Cloth_Scene::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
+}
+
+void Cloth_Scene::reset()
+{
+	particles.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.setStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 }
 
 void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)

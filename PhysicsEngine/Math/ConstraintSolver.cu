@@ -101,24 +101,9 @@ __global__ void applyForce(float* new_lambda, float* jacobi_transposed, float* d
 	{
 		for (int i = 0; i < nConstraints; i++)
 		{
-			float sumX = 0, sumY = 0, sumZ = 0;
-			int sumC = 0;
-			for (int i = 0; i < nConstraints; i++)
-			{
-				sumC++;
-				sumX += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i];
-				sumY += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i];
-				sumZ += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i];
-			}
-			if (sumC == 0) return;
-			dx[index] += 1.5f * sumX * dt / sumC;
-			dy[index] += 1.5f * sumY * dt / sumC;
-			dz[index] += 1.5f * sumZ * dt / sumC;
-
-			//dx[index] += sumX * dt;
-			//dy[index] += sumY * dt;
-			//dz[index] += sumZ * dt;
-
+			dx[index] += new_lambda[i] * jacobi_transposed[(3 * index + 0) * nConstraints + i] * dt;
+			dy[index] += new_lambda[i] * jacobi_transposed[(3 * index + 1) * nConstraints + i] * dt;
+			dz[index] += new_lambda[i] * jacobi_transposed[(3 * index + 2) * nConstraints + i] * dt;
 		}
 	}
 }
@@ -196,9 +181,6 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	//jaccobi(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 	gauss_seidel_cpu(nConstraints, A, b, lambda, new_lambda, c_min, c_max, iterations);
 
-	/*thrust::device_ptr<float> lbd = thrust::device_pointer_cast(new_lambda);
-	std::cout << lbd[10] << "\n";*/
-
 	applyForce << <particle_bound_blocks, threads >> > (new_lambda, jacobian_transposed, dx, dy, dz, mode, dt, nParticles, nConstraints);
 
 	gpuErrchk(cudaGetLastError());
@@ -230,6 +212,7 @@ ConstraintSolver::ConstraintSolver(int particles) : nParticles{ particles }
 
 	ConstraintStorage<DistanceConstraint>::Instance.initInstance();
 	ConstraintStorage<SurfaceConstraint>::Instance.initInstance();
+	ConstraintStorage<RigidBodyConstraint>::Instance.initInstance();
 }
 
 ConstraintSolver::~ConstraintSolver()
@@ -255,7 +238,6 @@ void ConstraintSolver::calculateForces(
 	int num_iterations = 1;
 	for (int i = 0; i < num_iterations; i++)
 	{
-
 		gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
 		gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
 		gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
@@ -271,14 +253,23 @@ void ConstraintSolver::calculateForces(
 		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
+		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
 
-		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
+
+		for (int i = 0; i < rigidBodyConstraints.size(); i++)
+		{
+			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
+			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / num_iterations);
+		}
+
+ 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
 		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
-
 	}
 
-	this->clearAllConstraints();
+	this->clearDynamicConstraints();
 }
 
 void ConstraintSolver::calculateStabilisationForces(
@@ -313,14 +304,13 @@ void ConstraintSolver::calculateStabilisationForces(
 	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
-	this->clearAllConstraints();
+	this->clearDynamicConstraints();
 }
 
-void ConstraintSolver::clearAllConstraints()
+void ConstraintSolver::clearDynamicConstraints()
 {
-	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
-	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
-
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints(true);
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints(true);
 }
 
 void ConstraintSolver::allocateArrays(int nConstraints)

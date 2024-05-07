@@ -5,14 +5,11 @@
 
 class Cloth
 {
-	static DistanceConstraint* dev_constraints;
-	static int nConstraints;
+	static std::vector<DistanceConstraint> constraints;
 public:
 	static void initClothSimulation(int particleH, int particleW, float d,
 		float x_top_left, float y_top_left, float z_top_left,
 		float* x, float* y, float* z);
 
-	~Cloth();
-
-	static inline std::pair<DistanceConstraint*, int> getConstraints() { return std::make_pair(dev_constraints, nConstraints); }
+	static inline std::pair<DistanceConstraint*, int> getConstraints() { return std::make_pair(constraints.data(), constraints.size()); }
 };

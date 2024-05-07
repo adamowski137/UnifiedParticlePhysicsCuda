@@ -8,6 +8,7 @@
 #include "../Scene/Scene_Instancing/Scene_Instancing.cuh"
 #include "../Scene/Scene_External/Scene_External.cuh"
 #include "../Scene/Cloth_Scene/Cloth_Scene.cuh"
+#include "../Scene/RigidBody_Scene/Scene_RigidBody.cuh"
 
 ResourceManager ResourceManager::Instance;
 
@@ -49,6 +50,7 @@ void ResourceManager::loadScenes(int amountOfPoints)
 	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External(amountOfPoints))));
 	scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene(amountOfPoints * 8))));
 	scenes.insert(std::make_pair("Cloth simulation", std::shared_ptr<Scene>(new Cloth_Scene())));
+	scenes.insert(std::make_pair("Rigid body simulation", std::shared_ptr<Scene>(new Scene_RigidBody())));
 	//scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
 
 	for (const auto& it : scenes)
@@ -61,6 +63,7 @@ void ResourceManager::loadScenes(int amountOfPoints)
 
 	options.sceneData[2].isActive = true;
 	currentScene = scenes[options.sceneData[2].name];
+	currentScene.get()->reset();
 }
 
 std::shared_ptr<Scene>& ResourceManager::getActiveScene()
@@ -72,6 +75,7 @@ std::shared_ptr<Scene>& ResourceManager::getActiveScene()
 			if (options.sceneData[i].isActive)
 			{
 				currentScene = scenes[options.sceneData[i].name];
+				scenes[options.sceneData[i].name].get()->reset();
 				break;
 			}
 		}

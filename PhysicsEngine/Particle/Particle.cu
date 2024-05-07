@@ -6,12 +6,12 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <thrust/device_ptr.h>
+#include <thrust/host_vector.h>
 #include <device_launch_parameters.h>
 #include "Particle.cuh"
 #include "../Constants.hpp"
 #include "ParticleData.cuh"
 #include "../GpuErrorHandling.hpp"
-#include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 
 #define EPS 0.0000001
 
@@ -268,6 +268,14 @@ void ParticleType::setExternalForces(float fx, float fy, float fz)
 	fexty = fy;
 	fextz = fz;
 }
+
+void ParticleType::clearConstraints()
+{
+	ConstraintStorage<RigidBodyConstraint>::Instance.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.clearConstraints();
+	ConstraintStorage<SurfaceConstraint>::Instance.clearConstraints();
+}
+
 
 void ParticleType::mapCudaVBO(unsigned int vbo)
 {

@@ -23,6 +23,7 @@ public:
 	virtual void update(float dt);
 	void handleKeys();
 	virtual void draw();
+	virtual void reset();
 protected:
 	void applySceneSetup();
 	virtual void initData(int nParticles,
