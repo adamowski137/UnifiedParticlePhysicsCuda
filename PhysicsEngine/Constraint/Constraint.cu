@@ -4,10 +4,10 @@
 #include <iostream>
 #include <climits>
 
-__host__ __device__ void Constraint::init(int n, float k, ConstraintLimitType type)
+__host__ __device__ void Constraint::init(int n, float compliance, ConstraintLimitType type)
 {
 	this->n = n;
-	this->k = k;
+	this->compliance = compliance;
 	const float max = 1e15;
 	const float min = -1e15;
 	switch (type)

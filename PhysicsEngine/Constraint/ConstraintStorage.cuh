@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 #include <cuda_runtime.h>
 #include "../List/List.cuh"
 #include "thrust/device_ptr.h"

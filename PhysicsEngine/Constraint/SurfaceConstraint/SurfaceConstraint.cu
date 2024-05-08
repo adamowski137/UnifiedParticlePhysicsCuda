@@ -3,7 +3,7 @@
 
 __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int particle, Surface s)
 {
-	((Constraint*)this)->init(1, 5.0f, ConstraintLimitType::GEQ);
+	((Constraint*)this)->init(1, 0.001f, ConstraintLimitType::GEQ);
 	this->r = d;
 	this->p[0] = particle;
 	this->s = s;
@@ -13,7 +13,7 @@ __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int parti
 __host__ __device__ float SurfaceConstraint::operator()(float* x, float* y, float* z)
 {
 	float C = x[p[0]] * s.a + y[p[0]] * s.b + z[p[0]] * s.c + s.d / s.abc_root - r;
-	return k * C;
+	return C;
 }
 
 __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index)
@@ -25,13 +25,16 @@ __host__ __device__ void SurfaceConstraint::positionDerivative(float* x, float* 
 	jacobian[idx + 2] = s.normal[2];
 }
 
-__device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle)
+__device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle, float dt)
 {
-	float C = (*this)(x, y, z) / k * 0.5f;
+	float C = (*this)(x, y, z);
 
-	atomicAdd(dx + p[0], -C * s.normal[0]);
-	atomicAdd(dy + p[0], -C * s.normal[1]);
-	atomicAdd(dz + p[0], -C * s.normal[2]);
+	float lambda = -C / (1 + compliance / (dt * dt));
+	lambda = min(max(lambda, cMin), cMax);
+
+	atomicAdd(dx + p[0], lambda * s.normal[0]);
+	atomicAdd(dy + p[0], lambda * s.normal[1]);
+	atomicAdd(dz + p[0], lambda * s.normal[2]);
 
 	atomicAdd(nConstraintsPerParticle + p[0], 1);
 	//dx[p[0]] += -C * s.normal[0];

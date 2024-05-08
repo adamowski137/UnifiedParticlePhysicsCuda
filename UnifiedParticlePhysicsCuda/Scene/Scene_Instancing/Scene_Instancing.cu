@@ -8,11 +8,11 @@ Scene_Instancing::Scene_Instancing() : Scene(ResourceManager::Instance.Shaders["
 	{
 		for (int j = -30; j < 30; j += 3)
 		{
-			for (int k = 0; k < 60; k += 3)
+			for (int compliance = 0; compliance < 60; compliance += 3)
 			{
 				offsets.push_back(i);
 				offsets.push_back(j);
-				offsets.push_back(k);
+				offsets.push_back(compliance);
 			}
 		}
 	}

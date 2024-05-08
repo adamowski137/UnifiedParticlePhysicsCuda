@@ -9,15 +9,15 @@ template <typename T>
 __global__ void solveConstraintsDirectlyKern(int nConstraints,
 	float* x, float* y, float* z,
 	float* dx, float* dy, float* dz,
-	float* invmass, int* nConstraintsPerParticle,
+	float* invmass, int* nConstraintsPerParticle, float dt,
 	T* constraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nConstraints) return;
-	constraints[index].directSolve(x, y, z, dx, dy, dz, invmass, nConstraintsPerParticle);
+	constraints[index].directSolve(x, y, z, dx, dy, dz, invmass, nConstraintsPerParticle, dt);
 }
 
-__global__ void applyOffset(int nParticles,
+__global__ void applyOffsetKern(int nParticles,
 	float* x, float* y, float* z,
 	float* dx, float* dy, float* dz,
 	int* nConstraintsPerParticle)
@@ -46,14 +46,36 @@ DirectConstraintSolver::~DirectConstraintSolver()
 
 void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* new_z, float* invmass, int* phase, float dt, int iterations)
 {
-	this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt, iterations);
-	this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt, iterations);
-	clearAllConstraints();
+
+	for (int i = 0; i < iterations; i++)
+	{
+		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		applyOffset(new_x, new_y, new_z);
+		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		applyOffset(new_x, new_y, new_z);
+		clearAllConstraints();
+	}
 }
 
-void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, float* z, int* mode, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
+void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, float* z, int* phase, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
 {
-	throw -1;
+	for (int i = 0; i < iterations; i++)
+	{
+		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		applyOffset(x, y, z);
+		applyOffset(new_x, new_y, new_z);
+		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		applyOffset(x, y, z);
+		applyOffset(new_x, new_y, new_z);
+		clearAllConstraints();
+	}
+}
+
+void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)
+{
+	int threads = 32;
+	int particleBlocks = (nParticles + threads - 1) / threads;
+	applyOffsetKern << <particleBlocks, threads >> > (nParticles, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle);
 }
 
 template<typename T>
@@ -64,16 +86,27 @@ void DirectConstraintSolver::projectConstraints(float* x, float* y, float* z, fl
 	cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
 	cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles);
 
-	auto constraintData = ConstraintStorage<T>::Instance.getConstraints(true);
+	auto constraintData = ConstraintStorage<T>::Instance.getConstraints(false);
 
-	int threads = 32;
-	int blocks = (constraintData.second + threads - 1) / threads;
-	int particleBlocks = (nParticles + threads - 1) / threads;
 	if (constraintData.second > 0)
 	{
-		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, constraintData.first);
-		applyOffset << <particleBlocks, threads >> > (nParticles, x, y, z, dev_dx, dev_dy, dev_dz, dev_nConstraintsPerParticle);
+		int threads = 32;
+		int blocks = (constraintData.second + threads - 1) / threads;
+		int particleBlocks = (nParticles + threads - 1) / threads;
+		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt, constraintData.first);
 	}
+
+
+	constraintData = ConstraintStorage<T>::Instance.getConstraints(true);
+
+	if (constraintData.second > 0)
+	{
+		int threads = 32;
+		int blocks = (constraintData.second + threads - 1) / threads;
+		int particleBlocks = (nParticles + threads - 1) / threads;
+		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt, constraintData.first);
+	}
+
 }
 
 

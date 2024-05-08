@@ -2,9 +2,8 @@
 #include "../ConstraintSolver.cuh"
 
 
-class DirectConstraintSolver : public ConstraintSolver 
+class DirectConstraintSolverCPU : public ConstraintSolver 
 {
-	int* dev_nConstraintsPerParticle;
 public:
 	DirectConstraintSolver(int nParticles);
 	virtual ~DirectConstraintSolver();

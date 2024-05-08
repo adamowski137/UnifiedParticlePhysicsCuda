@@ -25,9 +25,9 @@ void Scene_NaiveDraw::draw()
 	{
 		for (int j = -30; j < 30; j += 3)
 		{
-			for (int k = 0; k < 30; k += 3)
+			for (int compliance = 0; compliance < 30; compliance += 3)
 			{
-				renderer->draw(*ResourceManager::Instance.drawData["sphere"], { i, j, k }, { 1, 1, 0 });
+				renderer->draw(*ResourceManager::Instance.drawData["sphere"], { i, j, compliance }, { 1, 1, 0 });
 			}
 		}
 	}

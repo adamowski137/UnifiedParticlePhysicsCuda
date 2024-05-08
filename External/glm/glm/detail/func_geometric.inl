@@ -115,9 +115,9 @@ namespace detail
 		GLM_FUNC_QUALIFIER static vec<L, T, Q> call(vec<L, T, Q> const& I, vec<L, T, Q> const& N, T eta)
 		{
 			T const dotValue(dot(N, I));
-			T const k(static_cast<T>(1) - eta * eta * (static_cast<T>(1) - dotValue * dotValue));
+			T const compliance(static_cast<T>(1) - eta * eta * (static_cast<T>(1) - dotValue * dotValue));
 			vec<L, T, Q> const Result =
-                (k >= static_cast<T>(0)) ? (eta * I - (eta * dotValue + std::sqrt(k)) * N) : vec<L, T, Q>(0);
+                (compliance >= static_cast<T>(0)) ? (eta * I - (eta * dotValue + std::sqrt(compliance)) * N) : vec<L, T, Q>(0);
 			return Result;
 		}
 	};
@@ -226,8 +226,8 @@ namespace detail
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'refract' accepts only floating-point inputs");
 		genType const dotValue(dot(N, I));
-		genType const k(static_cast<genType>(1) - eta * eta * (static_cast<genType>(1) - dotValue * dotValue));
-		return (eta * I - (eta * dotValue + sqrt(k)) * N) * static_cast<genType>(k >= static_cast<genType>(0));
+		genType const compliance(static_cast<genType>(1) - eta * eta * (static_cast<genType>(1) - dotValue * dotValue));
+		return (eta * I - (eta * dotValue + sqrt(compliance)) * N) * static_cast<genType>(compliance >= static_cast<genType>(0));
 	}
 
 	template<length_t L, typename T, qualifier Q>

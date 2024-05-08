@@ -18,7 +18,7 @@ __host__ __device__ float DistanceConstraint::operator()(float* x, float* y, flo
 	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
 	float C = (sqrtf(distX + distY + distZ) - d);
-	return k * C;
+	return C;
 }
 
 __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index)
@@ -46,34 +46,31 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	jacobian[idx2 + 2] = -dCz;
 }
 
-__device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle)
+__device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle, float dt)
 {
-	// assuming mass = 1
 	float distX = (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]);
 	float distZ = (z[p[0]] - z[p[1]]);
 
 	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
-	float C = 0.5f * (dist - d);
-	float invw = 1.f / (invmass[p[0]] + invmass[p[1]]);
+	float C = (dist - d);
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]] + compliance / (dt * dt));
 
-	float coeff_p0 = -invmass[p[0]] * invw;
-	float coeff_p1 = invmass[p[1]] * invw;
+	float lambda = -C * invw;
+
+	lambda = min(max(lambda, cMin), cMax);
+
+	float coeff_p0 = invmass[p[0]] * lambda / dist;
+	float coeff_p1 = -invmass[p[1]] * lambda / dist;
 
 
-	atomicAdd(dx + p[0], coeff_p0 * C * distX / dist);
-	atomicAdd(dy + p[0], coeff_p0 * C * distY / dist);
-	atomicAdd(dz + p[0], coeff_p0 * C * distZ / dist);
-	//dx[p[0]] += 0.5f * C * distX / dist;
-	//dy[p[0]] += 0.5f * C * distY / dist;
-	//dz[p[0]] += 0.5f * C * distZ / dist;
+	atomicAdd(dx + p[0], coeff_p0 * distX);
+	atomicAdd(dy + p[0], coeff_p0 * distY);
+	atomicAdd(dz + p[0], coeff_p0 * distZ);
 
-	atomicAdd(dx + p[1], coeff_p1 * C * distX / dist);
-	atomicAdd(dy + p[1], coeff_p1 * C * distY / dist);
-	atomicAdd(dz + p[1], coeff_p1 * C * distZ / dist);
-	//dx[p[1]] += coeff_p1 * C * distX / dist;
-	//dy[p[1]] += -0.5f * C * distY / dist;
-	//dz[p[1]] += -0.5f * C * distZ / dist;
+	atomicAdd(dx + p[1], coeff_p1 * distX);
+	atomicAdd(dy + p[1], coeff_p1 * distY);
+	atomicAdd(dz + p[1], coeff_p1 * distZ);
 
 	atomicAdd(nConstraintsPerParticle + p[0], 1);
 	atomicAdd(nConstraintsPerParticle + p[1], 1);
