@@ -13,7 +13,7 @@
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + 1)
 
 Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(NUM_PARTICLES * 3, 0.0f);

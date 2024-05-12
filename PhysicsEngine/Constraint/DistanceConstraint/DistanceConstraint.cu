@@ -75,3 +75,29 @@ __device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, fl
 	atomicAdd(nConstraintsPerParticle + p[0], 1);
 	atomicAdd(nConstraintsPerParticle + p[1], 1);
 }
+
+__host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt)
+{
+	float distX = (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]);
+
+	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+	float C = (dist - d);
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]] + compliance / (dt * dt));
+
+	float lambda = -C * invw;
+
+	lambda = std::fmin(std::fmax(lambda, cMin), cMax);
+
+	float coeff_p0 = invmass[p[0]] * lambda / dist;
+	float coeff_p1 = -invmass[p[1]] * lambda / dist;
+
+	x[p[0]] += coeff_p0 * distX;
+	y[p[0]] += coeff_p0 * distY;
+	z[p[0]] += coeff_p0 * distZ;
+
+	x[p[1]] += coeff_p1 * distX;
+	y[p[1]] += coeff_p1 * distY;
+	z[p[1]] += coeff_p1 * distZ;
+}

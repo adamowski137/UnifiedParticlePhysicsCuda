@@ -15,6 +15,7 @@
 #include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 #include "../Math/ConstraintSolver/LinearSystemConstraintSolver/LinearSystemConstraintSolver.cuh"
 #include "../Math/ConstraintSolver/DirectConstraintSolver/DirectConstraintSolver.cuh"
+#include "../Math/ConstraintSolver/DirectConstraintSolverCPU/DirectConstraintSolverCPU.cuh"
 
 #define EPS 0.0000001
 
@@ -97,6 +98,7 @@ ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode
 {
 	blocks = ceilf((float)nParticles / THREADS);
 	constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolver{amount} };
+	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverCPU{amount} };
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
 	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
 	allocateDeviceData();
@@ -217,14 +219,14 @@ void ParticleType::calculateNewPositions(float dt)
 
 	 //find neighboring particles and solid contacts ??
 
-	if (mode & GRID_CHECKING_ON)
-		collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
+	//if (mode & GRID_CHECKING_ON)
+	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
 
-	if (mode & SURFACE_CHECKING_ON)
-		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
+	//if (mode & SURFACE_CHECKING_ON)
+	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
 
-	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	//if (mode & ANY_CONSTRAINTS_ON)
+	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)
@@ -234,7 +236,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 1);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 50);
 
 	// todo solve every constraint group 
 	// update predicted position

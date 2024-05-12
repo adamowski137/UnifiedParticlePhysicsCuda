@@ -25,6 +25,7 @@ __global__ void applyOffsetKern(int nParticles,
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
 	const float omega = 1.5f;
+	//const float omega = 1.f;
 	if (nConstraintsPerParticle[index] > 0)
 	{
 		x[index] += omega * dx[index] / nConstraintsPerParticle[index];
@@ -37,11 +38,14 @@ __global__ void applyOffsetKern(int nParticles,
 DirectConstraintSolver::DirectConstraintSolver(int nParticles) : ConstraintSolver(nParticles)
 {
 	gpuErrchk(cudaMalloc((void**)&dev_nConstraintsPerParticle, nParticles * sizeof(float)));
+	nConstraintsMaxAllocated = 100;
+	gpuErrchk(cudaMalloc((void**)&dev_delta_lambda, nConstraintsMaxAllocated * sizeof(float)));
 }
 
 DirectConstraintSolver::~DirectConstraintSolver()
 {
 	gpuErrchk(cudaFree(dev_nConstraintsPerParticle));
+	gpuErrchk(cudaFree(dev_delta_lambda));
 }
 
 void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* new_z, float* invmass, int* phase, float dt, int iterations)
@@ -53,8 +57,8 @@ void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* 
 		applyOffset(new_x, new_y, new_z);
 		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
 		applyOffset(new_x, new_y, new_z);
-		clearAllConstraints();
 	}
+	clearAllConstraints();
 }
 
 void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, float* z, int* phase, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
@@ -67,8 +71,8 @@ void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, fl
 		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
 		applyOffset(x, y, z);
 		applyOffset(new_x, new_y, new_z);
-		clearAllConstraints();
 	}
+	clearAllConstraints();
 }
 
 void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)

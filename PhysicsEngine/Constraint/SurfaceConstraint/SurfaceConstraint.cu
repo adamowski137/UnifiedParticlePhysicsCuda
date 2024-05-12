@@ -3,7 +3,7 @@
 
 __host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int particle, Surface s)
 {
-	((Constraint*)this)->init(1, 0.001f, ConstraintLimitType::GEQ);
+	((Constraint*)this)->init(1, 0.0001f, ConstraintLimitType::GEQ);
 	this->r = d;
 	this->p[0] = particle;
 	this->s = s;
@@ -40,4 +40,17 @@ __device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z, flo
 	//dx[p[0]] += -C * s.normal[0];
 	//dy[p[0]] += -C * s.normal[1];
 	//dz[p[0]] += -C * s.normal[2];
+}
+
+__host__ void SurfaceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt)
+{
+	float C = (*this)(x, y, z);
+
+	float lambda = -C / (1 + compliance / (dt * dt));
+	lambda = std::fmin(std::fmax(lambda, cMin), cMax);
+	
+
+	x[p[0]] += -C * s.normal[0];
+	y[p[0]] += -C * s.normal[1];
+	z[p[0]] += -C * s.normal[2];
 }

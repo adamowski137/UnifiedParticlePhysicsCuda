@@ -5,6 +5,8 @@
 class DirectConstraintSolver : public ConstraintSolver 
 {
 	int* dev_nConstraintsPerParticle;
+	float* dev_delta_lambda;
+	int nConstraintsMaxAllocated;
 public:
 	DirectConstraintSolver(int nParticles);
 	virtual ~DirectConstraintSolver();

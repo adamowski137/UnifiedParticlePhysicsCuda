@@ -4,9 +4,10 @@
 
 class DirectConstraintSolverCPU : public ConstraintSolver 
 {
+	float* x_cpu, * y_cpu, * z_cpu, * invmass_cpu;
 public:
-	DirectConstraintSolver(int nParticles);
-	virtual ~DirectConstraintSolver();
+	DirectConstraintSolverCPU(int nParticles);
+	virtual ~DirectConstraintSolverCPU();
 
 	virtual void calculateForces(
 		float* new_x, float* new_y, float* new_z,
@@ -21,6 +22,4 @@ public:
 
 	template<typename T>
 	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations);
-
-	void applyOffset(float* x, float* y, float* z);
 };
