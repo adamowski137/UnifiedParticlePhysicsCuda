@@ -239,8 +239,8 @@ void LinearSystemConstraintSolver::calculateForces(
 		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
-		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
-		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+		//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+		//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
 
 		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
 

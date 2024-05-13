@@ -5,6 +5,7 @@
 class DirectConstraintSolverCPU : public ConstraintSolver 
 {
 	float* x_cpu, * y_cpu, * z_cpu, * invmass_cpu;
+	float lambda[2000];
 public:
 	DirectConstraintSolverCPU(int nParticles);
 	virtual ~DirectConstraintSolverCPU();
@@ -21,5 +22,5 @@ public:
 	) override;
 
 	template<typename T>
-	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations);
+	int projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations, int lambda_offset);
 };

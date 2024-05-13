@@ -20,6 +20,7 @@ Scene_External::Scene_External(int amountOfPoints) : Scene(
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
 	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20)});
+	//particles.setSurfaces({ Surface().init(0, 1, 0, 0)});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 	applySceneSetup();

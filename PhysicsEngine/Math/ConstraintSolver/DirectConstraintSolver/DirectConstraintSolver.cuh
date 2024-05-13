@@ -23,7 +23,7 @@ public:
 	) override;
 
 	template<typename T>
-	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations);
+	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt);
 
 	void applyOffset(float* x, float* y, float* z);
 };

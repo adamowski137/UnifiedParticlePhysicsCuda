@@ -64,7 +64,7 @@ private:
 template<typename T>
 void LinearSystemConstraintSolver::projectConstraints(float* invmass, float* x, float* y, float* z, int* mode, float dt, bool dynamic, int iterations)
 {
-	std::pair<T*, int> constraints = ConstraintStorage<T>::Instance.getConstraints(dynamic);
+	std::pair<T*, int> constraints = ConstraintStorage<T>::Instance.getConstraints();
 	int nConstraints = constraints.second;
 	if (nConstraints == 0) return;
 	this->allocateArrays(nConstraints);

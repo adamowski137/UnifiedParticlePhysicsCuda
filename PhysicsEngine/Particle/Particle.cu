@@ -219,14 +219,14 @@ void ParticleType::calculateNewPositions(float dt)
 
 	 //find neighboring particles and solid contacts ??
 
-	//if (mode & GRID_CHECKING_ON)
-	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
+	if (mode & GRID_CHECKING_ON)
+		collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
 
-	//if (mode & SURFACE_CHECKING_ON)
-	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
+	if (mode & SURFACE_CHECKING_ON)
+		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
 
-	//if (mode & ANY_CONSTRAINTS_ON)
-	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	if (mode & ANY_CONSTRAINTS_ON)
+		constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)
@@ -236,7 +236,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 50);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 1);
 
 	// todo solve every constraint group 
 	// update predicted position
