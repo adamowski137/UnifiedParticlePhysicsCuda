@@ -54,11 +54,12 @@ __device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, fl
 
 	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 	float C = (dist - d);
-	float invw = 1.f / (invmass[p[0]] + invmass[p[1]] + compliance / (dt * dt));
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]]);
 
 	float lambda = -C * invw;
 
 	lambda = min(max(lambda, cMin), cMax);
+	lambda = lambda * 0.1f;
 
 	float coeff_p0 = invmass[p[0]] * lambda / dist;
 	float coeff_p1 = -invmass[p[1]] * lambda / dist;

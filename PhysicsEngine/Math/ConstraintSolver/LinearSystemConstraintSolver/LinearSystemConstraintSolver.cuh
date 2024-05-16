@@ -18,7 +18,7 @@ void fillJacobiansWrapper(int nConstraints, int nParticles,
 	T* constrains, int iterations);
 
 
-class LinearSystemConstraintSolver : ConstraintSolver {
+class LinearSystemConstraintSolver : public ConstraintSolver {
 public:
 	LinearSystemConstraintSolver(int particles);
 	virtual ~LinearSystemConstraintSolver();

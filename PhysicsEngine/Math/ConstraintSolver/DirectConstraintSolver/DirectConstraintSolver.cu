@@ -4,6 +4,8 @@
 #include <device_launch_parameters.h>
 #include "../../../Constants.hpp"
 #include "../../../Constraint/ConstraintStorage.cuh"
+#include <thrust/device_ptr.h>
+#include <thrust/transform.h>
 
 template <typename T>
 __global__ void solveConstraintsDirectlyKern(int nConstraints,
@@ -50,6 +52,13 @@ DirectConstraintSolver::~DirectConstraintSolver()
 
 void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* new_z, float* invmass, int* phase, float dt, int iterations)
 {
+	auto thrust_x = thrust::device_pointer_cast(new_x);
+	auto thrust_y = thrust::device_pointer_cast(new_y);
+	auto thrust_z = thrust::device_pointer_cast(new_z);
+
+	auto thrust_dx = thrust::device_pointer_cast(dev_dx);
+	auto thrust_dy = thrust::device_pointer_cast(dev_dy);
+	auto thrust_dz = thrust::device_pointer_cast(dev_dz);
 
 	for (int i = 0; i < iterations; i++)
 	{
@@ -57,6 +66,21 @@ void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* 
 		applyOffset(new_x, new_y, new_z);
 		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations);
 		applyOffset(new_x, new_y, new_z);
+		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
+
+		cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
+		cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
+		cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
+
+		for (int i = 0; i < rigidBodyConstraints.size(); i++)
+		{
+			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
+			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / iterations);
+		}
+
+		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
+		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>()); 
 	}
 	clearAllConstraints();
 }

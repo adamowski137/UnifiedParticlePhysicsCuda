@@ -29,7 +29,7 @@ __device__ void SurfaceConstraint::directSolve(float* x, float* y, float* z, flo
 {
 	float C = (*this)(x, y, z);
 
-	float lambda = -C / (1 + compliance / (dt * dt));
+	float lambda = -C * 0.1f / 3;
 	lambda = min(max(lambda, cMin), cMax);
 
 	atomicAdd(dx + p[0], lambda * s.normal[0]);

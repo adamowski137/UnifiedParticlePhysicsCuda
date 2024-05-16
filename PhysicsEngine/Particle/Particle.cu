@@ -97,6 +97,7 @@ __global__ void applyChangesKern(int amount,
 ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode}
 {
 	blocks = ceilf((float)nParticles / THREADS);
+	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new LinearSystemConstraintSolver{amount} };
 	constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolver{amount} };
 	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverCPU{amount} };
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
@@ -219,14 +220,14 @@ void ParticleType::calculateNewPositions(float dt)
 
 	 //find neighboring particles and solid contacts ??
 
-	if (mode & GRID_CHECKING_ON)
-		collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
+	//if (mode & GRID_CHECKING_ON)
+	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
 
-	if (mode & SURFACE_CHECKING_ON)
-		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
+	//if (mode & SURFACE_CHECKING_ON)
+	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
 
-	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+	//if (mode & ANY_CONSTRAINTS_ON)
+	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)

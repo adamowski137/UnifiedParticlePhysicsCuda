@@ -13,7 +13,7 @@
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + 1)
 
 Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON)
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(NUM_PARTICLES * 3, 0.0f);
@@ -52,8 +52,8 @@ void Cloth_Scene::draw()
 
 void Cloth_Scene::reset()
 {
-	//particles.clearConstraints();
-	//ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
+	particles.clearConstraints();
+	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 }
 
 void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
