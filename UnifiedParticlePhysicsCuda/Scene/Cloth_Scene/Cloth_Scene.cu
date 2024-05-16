@@ -27,7 +27,7 @@ Cloth_Scene::Cloth_Scene() :
 	camera.setPosition(glm::vec3(0, 0, -10));
 
 	applySceneSetup();
-	ConstraintStorage<DistanceConstraint>::Instance.setStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
+	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 }
 
 Cloth_Scene::~Cloth_Scene()
@@ -53,7 +53,7 @@ void Cloth_Scene::draw()
 void Cloth_Scene::reset()
 {
 	particles.clearConstraints();
-	ConstraintStorage<DistanceConstraint>::Instance.setStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
+	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(Cloth::getConstraints().first, Cloth::getConstraints().second);
 }
 
 void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)

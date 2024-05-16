@@ -10,8 +10,11 @@ add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/DistanceConstraint/DistanceConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/RigidBodyConstraint/RigidBodyConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/SurfaceCollisionFinder.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cu
-	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver.cuh
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver/DirectConstraintSolver/DirectConstraintSolver.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver/DirectConstraintSolverCPU/DirectConstraintSolverCPU.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver/LinearSystemConstraintSolver/LinearSystemConstraintSolver.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver/LinearSystemConstraintSolver/LinearSystemConstraintSolver.cuh
+	${CMAKE_CURRENT_SOURCE_DIR}/Math/ConstraintSolver/ConstraintSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Math/LinearSolver.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/Particle.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Particle/ParticleData.cu

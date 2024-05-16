@@ -11,14 +11,14 @@ __host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1,
 	return *this;
 }
 
-__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z, float dt)
+__host__ __device__ float DistanceConstraint::operator()(float* x, float* y, float* z)
 {
 	float distX = (x[p[0]] - x[p[1]]) * (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]) * (y[p[0]] - y[p[1]]);
 	float distZ = (z[p[0]] - z[p[1]]) * (z[p[0]] - z[p[1]]);
 
 	float C = (sqrtf(distX + distY + distZ) - d);
-	return k * C;
+	return C;
 }
 
 __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index)
@@ -44,4 +44,65 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	jacobian[idx2 + 0] = -dCx;
 	jacobian[idx2 + 1] = -dCy;
 	jacobian[idx2 + 2] = -dCz;
+}
+
+__device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle, float dt)
+{
+	float distX = (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]);
+
+	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+	float C = (dist - d);
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]]);
+
+	float lambda = -C * invw;
+
+	lambda = min(max(lambda, cMin), cMax);
+	lambda = lambda * 0.1f;
+
+	float coeff_p0 = invmass[p[0]] * lambda / dist;
+	float coeff_p1 = -invmass[p[1]] * lambda / dist;
+
+
+	atomicAdd(dx + p[0], coeff_p0 * distX);
+	atomicAdd(dy + p[0], coeff_p0 * distY);
+	atomicAdd(dz + p[0], coeff_p0 * distZ);
+
+	atomicAdd(dx + p[1], coeff_p1 * distX);
+	atomicAdd(dy + p[1], coeff_p1 * distY);
+	atomicAdd(dz + p[1], coeff_p1 * distZ);
+
+	atomicAdd(nConstraintsPerParticle + p[0], 1);
+	atomicAdd(nConstraintsPerParticle + p[1], 1);
+}
+
+__host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* lambda, int idx)
+{
+	float distX = (x[p[0]] - x[p[1]]);
+	float distY = (y[p[0]] - y[p[1]]);
+	float distZ = (z[p[0]] - z[p[1]]);
+
+	float alpha = compliance / (dt * dt);
+
+	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
+	float C = (dist - d);
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]] + alpha);
+
+	float delta_lambda = (- C - alpha * lambda[idx]) * invw;
+
+	delta_lambda = std::fmin(std::fmax(delta_lambda, cMin), cMax);
+
+	float coeff_p0 = invmass[p[0]] * delta_lambda / dist;
+	float coeff_p1 = -invmass[p[1]] * delta_lambda / dist;
+
+	x[p[0]] += coeff_p0 * distX;
+	y[p[0]] += coeff_p0 * distY;
+	z[p[0]] += coeff_p0 * distZ;
+
+	x[p[1]] += coeff_p1 * distX;
+	y[p[1]] += coeff_p1 * distY;
+	z[p[1]] += coeff_p1 * distZ;
+
+	lambda[idx] += delta_lambda;
 }

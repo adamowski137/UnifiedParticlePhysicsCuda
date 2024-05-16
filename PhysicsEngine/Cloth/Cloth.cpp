@@ -24,14 +24,14 @@ void Cloth::initClothSimulation(int particleH, int particleW, float d,
 			z_cpu[i * particleW + j] = z_top_left;
 
 			if (j < particleW - 1)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, 2.f));
+				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, 0.0001f));
 
 			if(i > 0)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, 2.f));
+				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, 0.001f));
 
 			if (j < particleW - 1 && i > 0)
 			{
-				constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, 2.f));
+				constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, 0.001f));
 			}
 		}
 	}
