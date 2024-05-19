@@ -65,23 +65,22 @@ void DirectConstraintSolver::calculateForces(
 
 	for (int i = 0; i < iterations; i++)
 	{
-
 		builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
+		builder.addOldPosition(x, y, z);
 		this->projectConstraints<DistanceConstraint>(builder.build());
 		applyOffset(new_x, new_y, new_z);
-		//builder.addOldPosition(x, y, z);
 		this->projectConstraints<SurfaceConstraint>(builder.build());
 		applyOffset(new_x, new_y, new_z);
 		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
 
-		cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
-		cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
-		cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
+		gpuErrchk(cudaMemset(dev_dx, 0, sizeof(float) * nParticles));
+		gpuErrchk(cudaMemset(dev_dy, 0, sizeof(float) * nParticles));
+		gpuErrchk(cudaMemset(dev_dz, 0, sizeof(float) * nParticles));
 
 		for (int i = 0; i < rigidBodyConstraints.size(); i++)
 		{
 			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
-			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / iterations);
+			rigidBodyConstraints[i]->calculatePositionChange(builder.build());
 		}
 
 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());

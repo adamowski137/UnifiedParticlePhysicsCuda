@@ -39,10 +39,10 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 
 	atomicAdd(args.nConstraintsPerParticle + p[0], 1);
 
-	if (args.additionalArgsSet)
+	if (args.additionalArgsSet && lambda > 0.001f)
 	{
-		float muS = 0.01f;
-		float muD = 0.005f;
+		float muS = 0.001f;
+		float muD = 0.0005f;
 
 		float dx = args.additionalArgs.oldPosition.x[p[0]] - args.x[p[0]];
 		float dy = args.additionalArgs.oldPosition.y[p[0]] - args.y[p[0]];

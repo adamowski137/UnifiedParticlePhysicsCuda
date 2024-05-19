@@ -76,6 +76,60 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 
 	atomicAdd(args.nConstraintsPerParticle + p[0], 1);
 	atomicAdd(args.nConstraintsPerParticle + p[1], 1);
+
+	if (args.additionalArgsSet && lambda > 0.001f)
+	{
+		float muS = 0.001f;
+		float muD = 0.0005f;
+
+		float dx = (args.additionalArgs.oldPosition.x[p[0]] - args.x[p[0]]) - (args.additionalArgs.oldPosition.x[p[1]] - args.x[p[1]]);
+		float dy = (args.additionalArgs.oldPosition.y[p[0]] - args.y[p[0]]) - (args.additionalArgs.oldPosition.y[p[1]] - args.y[p[1]]);
+		float dz = (args.additionalArgs.oldPosition.z[p[0]] - args.z[p[0]]) - (args.additionalArgs.oldPosition.z[p[1]] - args.z[p[1]]);
+
+		float len = sqrt(distX * distX + distY * distY + distZ * distZ);
+
+		float nx = distX / len;
+		float ny = distY / len;
+		float nz = distZ / len;
+
+		float w = dx * nx + dy * ny + dz * nz;
+
+		float tmpx = w * nx;
+		float tmpy = w * ny;
+		float tmpz = w * nz;
+
+		float p1 = dx - tmpx;
+		float p2 = dy - tmpy;
+		float p3 = dz - tmpz;
+
+		float lsq = p1 * p1 + p2 * p2 + p3 * p3;
+
+		float denom = 1 / (1 / (args.invmass[p[0]]) + 1 / (args.invmass[p[1]]));
+		float w1 = (1 / args.invmass[p[0]]) * denom;
+		float w2 = -(1 / args.invmass[p[1]]) * denom;
+
+		if (lsq < muS * muS * d * d)
+		{
+			atomicAdd(args.dx + p[0], w1 * p1);
+			atomicAdd(args.dy + p[0], w1 * p2);
+			atomicAdd(args.dz + p[0], w1 * p3);
+			atomicAdd(args.dx + p[1], w2 * p1);
+			atomicAdd(args.dy + p[1], w2 * p2);
+			atomicAdd(args.dz + p[1], w2 * p3);
+		}
+		else
+		{
+			float l = sqrt(lsq);
+			float coeff = fminf(muD * d / l, 1);
+
+			atomicAdd(args.dx + p[0], w1 * coeff * p1);
+			atomicAdd(args.dy + p[0], w1 * coeff * p2);
+			atomicAdd(args.dz + p[0], w1 * coeff * p3);
+			atomicAdd(args.dx + p[1], w2 * coeff * p1);
+			atomicAdd(args.dy + p[1], w2 * coeff * p2);
+			atomicAdd(args.dz + p[1], w2 * coeff * p3);
+		}
+	}
 }
 
 __host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* lambda, int idx)

@@ -1,5 +1,6 @@
 #pragma once
 #include "../Constraint.cuh"
+#include "../ConstraintArgs.hpp"
 
 class RigidBodyConstraint : public Constraint
 {
@@ -10,7 +11,7 @@ public:
 	~RigidBodyConstraint();
 
 	bool calculateShapeCovariance(float* x, float* y, float* z, float* invmass);
-	void calculatePositionChange(float* x, float* y, float* z, float* dx, float* dy, float* dz, float dt);
+	void calculatePositionChange(ConstraintArgs args);
 private:
 	float* rx;
 	float* ry;
