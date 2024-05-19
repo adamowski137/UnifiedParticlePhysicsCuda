@@ -217,8 +217,9 @@ LinearSystemConstraintSolver::~LinearSystemConstraintSolver()
 }
 
 void LinearSystemConstraintSolver::calculateForces(
+	float* x, float* y, float* z, int* mode,
 	float* new_x, float* new_y, float* new_z,
-	float* invmass, int* mode, float dt, int iterations
+	float* invmass, float dt, int iterations
 )
 {
 	int num_iterations = 1;

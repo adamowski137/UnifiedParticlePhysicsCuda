@@ -46,35 +46,36 @@ __host__ __device__ void DistanceConstraint::positionDerivative(float* x, float*
 	jacobian[idx2 + 2] = -dCz;
 }
 
-__device__ void DistanceConstraint::directSolve(float* x, float* y, float* z, float* dx, float* dy, float* dz, float* invmass, int* nConstraintsPerParticle, float dt)
+__device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 {
-	float distX = (x[p[0]] - x[p[1]]);
-	float distY = (y[p[0]] - y[p[1]]);
-	float distZ = (z[p[0]] - z[p[1]]);
+	float distX = (args.x[p[0]] - args.x[p[1]]);
+	float distY = (args.y[p[0]] - args.y[p[1]]);
+	float distZ = (args.z[p[0]] - args.z[p[1]]);
 
 	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 	float C = (dist - d);
-	float invw = 1.f / (invmass[p[0]] + invmass[p[1]]);
+	float invw = 1.f / (args.invmass[p[0]] + args.invmass[p[1]]);
 
 	float lambda = -C * invw;
 
 	lambda = min(max(lambda, cMin), cMax);
 	lambda = lambda * 0.1f;
 
-	float coeff_p0 = invmass[p[0]] * lambda / dist;
-	float coeff_p1 = -invmass[p[1]] * lambda / dist;
+	float coeff_p0 = args.invmass[p[0]] * lambda / dist;
+	float coeff_p1 = -args.invmass[p[1]] * lambda / dist;
 
+	
 
-	atomicAdd(dx + p[0], coeff_p0 * distX);
-	atomicAdd(dy + p[0], coeff_p0 * distY);
-	atomicAdd(dz + p[0], coeff_p0 * distZ);
+	atomicAdd(args.dx + p[0], coeff_p0 * distX);
+	atomicAdd(args.dy + p[0], coeff_p0 * distY);
+	atomicAdd(args.dz + p[0], coeff_p0 * distZ);
 
-	atomicAdd(dx + p[1], coeff_p1 * distX);
-	atomicAdd(dy + p[1], coeff_p1 * distY);
-	atomicAdd(dz + p[1], coeff_p1 * distZ);
+	atomicAdd(args.dx + p[1], coeff_p1 * distX);
+	atomicAdd(args.dy + p[1], coeff_p1 * distY);
+	atomicAdd(args.dz + p[1], coeff_p1 * distZ);
 
-	atomicAdd(nConstraintsPerParticle + p[0], 1);
-	atomicAdd(nConstraintsPerParticle + p[1], 1);
+	atomicAdd(args.nConstraintsPerParticle + p[0], 1);
+	atomicAdd(args.nConstraintsPerParticle + p[1], 1);
 }
 
 __host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* lambda, int idx)
