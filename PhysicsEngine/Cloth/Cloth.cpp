@@ -2,12 +2,11 @@
 #include <cmath>
 #include <vector>
 #include "../GpuErrorHandling.hpp"
+#include "../Config/Config.hpp"
 
-std::vector<DistanceConstraint> Cloth::constraints{};
-
-void Cloth::initClothSimulation(int particleH, int particleW, float d, 
+void Cloth::initClothSimulation(Cloth& cloth, int particleH, int particleW, float d, 
 	float x_top_left, float y_top_left, float z_top_left,
-	float* x, float* y, float* z)
+	float* x, float* y, float* z, ClothOrientation orientation)
 {
 	float d_across = d * sqrtf(2);
 
@@ -19,19 +18,37 @@ void Cloth::initClothSimulation(int particleH, int particleW, float d,
 	{
 		for (int j = 0; j < particleW; j++)
 		{
-			x_cpu[i * particleW + j] = x_top_left + j * d;
-			y_cpu[i * particleW + j] = y_top_left - i * d;
-			z_cpu[i * particleW + j] = z_top_left;
+			switch (orientation)
+			{
+			case ClothOrientation::XY_PLANE:
+				x_cpu[i * particleW + j] = x_top_left + j * d;
+				y_cpu[i * particleW + j] = y_top_left - i * d;
+				z_cpu[i * particleW + j] = z_top_left;
+				break;
+			case ClothOrientation::XZ_PLANE:
+				x_cpu[i * particleW + j] = x_top_left + j * d;
+				y_cpu[i * particleW + j] = y_top_left;
+				z_cpu[i * particleW + j] = z_top_left - i * d;
+				break;
+			case ClothOrientation::YZ_PLANE:
+				x_cpu[i * particleW + j] = x_top_left;
+				y_cpu[i * particleW + j] = y_top_left + j * d;
+				z_cpu[i * particleW + j] = z_top_left - i * d;
+				break;
+			default:
+				break;
+			}
+
 
 			if (j < particleW - 1)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, 0.0001f));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * particleW + j, i * particleW + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
 
 			if(i > 0)
-				constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, 0.001f));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * particleW + j, (i - 1) * particleW + j, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
 
 			if (j < particleW - 1 && i > 0)
 			{
-				constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, 0.001f));
+				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * particleW + j, (i - 1) * particleW + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_BENDING));
 			}
 		}
 	}

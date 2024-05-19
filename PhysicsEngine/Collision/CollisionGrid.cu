@@ -3,6 +3,7 @@
 #include <device_launch_parameters.h>
 #include "../Constants.hpp"
 #include "../GpuErrorHandling.hpp"
+#include "../Config/Config.hpp"
 #include <thrust/sort.h>
 #include <thrust/device_vector.h>
 #include <stdio.h>
@@ -127,7 +128,7 @@ __global__ void clearCollisionsKern(List* collisions, int nParticles)
 	collisions[index].clearList();
 }
 
-__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstraint* constraints, float d, int nParticles)
+__global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstraint* constraints, float d, float k, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
@@ -136,7 +137,7 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 
 	while (p != NULL)
 	{
-		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, ConstraintLimitType::GEQ, 0.0001f);
+		constraints[constrainIndex] = DistanceConstraint().init(d, index, p->value, ConstraintLimitType::GEQ, k);
 		p = p->next;
 		constrainIndex--;
 	}
@@ -144,7 +145,6 @@ __global__ void addCollisionsKern(List* collisions, int* counts, DistanceConstra
 
 CollisionGrid::CollisionGrid(int nParticles)
 {
-
 	gpuErrchk(cudaMalloc((void**)&dev_grid_index, nParticles * sizeof(unsigned int)));
 	gpuErrchk(cudaMalloc((void**)&dev_mapping, nParticles * sizeof(unsigned int)));
 
@@ -236,7 +236,7 @@ void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int nP
 		gpuErrchk(cudaMalloc((void**)&dev_foundCollisions, sizeof(DistanceConstraint) * nConstraintsMaxAllocated));
 	}
 
-	addCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, dev_counts, dev_foundCollisions, 2 * PARTICLERADIUS, nParticles);
+	addCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, dev_counts, dev_foundCollisions, 2 * PARTICLERADIUS, EngineConfig::K_DISTANCE_CONSTRAINT_COLLISION, nParticles);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());

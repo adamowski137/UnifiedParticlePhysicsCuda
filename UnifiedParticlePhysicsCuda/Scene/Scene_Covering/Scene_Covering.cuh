@@ -2,14 +2,14 @@
 
 #include "../Scene.hpp"
 #include "../../PhysicsEngine/Cloth/Cloth.hpp"
+#include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 
 
-class Cloth_Scene : public Scene
+class Scene_Covering : public Scene
 {
 public:
-
-	Cloth_Scene();
-	virtual ~Cloth_Scene();
+	Scene_Covering();
+	virtual ~Scene_Covering();
 	virtual void update(float dt);
 	virtual void draw();
 	virtual void reset();
@@ -18,5 +18,6 @@ protected:
 		float* dev_x, float* dev_y, float* dev_z,
 		float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass) override;
 private:
+	RigidBody rigidBody;
 	Cloth cloth;
 };

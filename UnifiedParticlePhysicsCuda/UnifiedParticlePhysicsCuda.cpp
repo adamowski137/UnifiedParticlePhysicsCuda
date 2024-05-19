@@ -9,6 +9,7 @@
 #include <chrono>
 #include "../PhysicsEngine/Math/LinearSolver.cuh"
 #include "../PhysicsEngine/Particle/Particle.cuh"
+#include "../PhysicsEngine/Config/Config.hpp"
 using namespace std;
 
 int main()
@@ -19,15 +20,17 @@ int main()
 	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
+	EngineConfig::readConfig();
 
 	ResourceManager::Instance.loadAllShaders(shaderResPath);
 	ResourceManager::Instance.loadScenes(n);
+
 	
 	// semi fixed time step
 	// https://gafferongames.com/post/fix_your_timestep/
 	float t = 0.f;
-	float dt = (1.f / 60.f) / 4.f;
-	//float dt = (1.f / 60.f);
+	//float dt = (1.f / 60.f) / 4.f;
+	float dt = (1.f / 60.f);
 	float accumulator = 0.f;
 	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())

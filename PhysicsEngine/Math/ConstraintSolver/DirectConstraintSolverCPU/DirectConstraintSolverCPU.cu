@@ -30,9 +30,8 @@ void DirectConstraintSolverCPU::calculateForces(float* new_x, float* new_y, floa
 	
 	for (int i = 0; i < iterations; i++)
 	{
-		int offset = 0;
-		offset = this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations, offset);
-		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations, offset);
+		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations);
+		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations);
 	}
 
 	gpuErrchk(cudaMemcpy(new_x, x_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
@@ -49,7 +48,7 @@ void DirectConstraintSolverCPU::calculateStabilisationForces(float* x, float* y,
 }
 
 template<typename T>
-int DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations, int lambda_offset)
+void DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations)
 {
 
 	auto constraintData = ConstraintStorage<T>::Instance.getConstraints();
@@ -60,9 +59,8 @@ int DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z, 
 
 	for (int i = 0; i < constraintData.second; i++)
 	{
-		cpu_constraints[i].directSolve_cpu(x_cpu, y_cpu, z_cpu, invmass_cpu, dt, lambda, i);
+		cpu_constraints[i].directSolve_cpu(x_cpu, y_cpu, z_cpu, invmass_cpu);
 	}
 
 	delete[] cpu_constraints;
-	return lambda_offset + constraintData.second;
 }

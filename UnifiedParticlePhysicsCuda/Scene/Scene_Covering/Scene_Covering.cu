@@ -1,4 +1,4 @@
-#include "Cloth_Scene.cuh"
+#include "Scene_Covering.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
 #include "../../PhysicsEngine/Particle/ParticleData.cuh"
@@ -7,12 +7,13 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_W 20
-#define CLOTH_H 42
-#define NUM_PARTICLES (CLOTH_W * CLOTH_H + 1)
+#define CLOTH_W 10
+#define CLOTH_H 10
+#define N_RIGID_BODY 5
+#define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
-Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
+Scene_Covering::Scene_Covering() :
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
 {
 	std::vector<float> offsets;
 	offsets.resize(NUM_PARTICLES * 3, 0.0f);
@@ -21,19 +22,21 @@ Cloth_Scene::Cloth_Scene() :
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -9.81f, -10.f);
+	particles.setExternalForces(0.f, -9.81f, 0.f);
+	particles.setSurfaces({ Surface().init(0, 1, 0, 0)});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
 	applySceneSetup();
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
+	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 }
 
-Cloth_Scene::~Cloth_Scene()
+Scene_Covering::~Scene_Covering()
 {
 }
 
-void Cloth_Scene::update(float dt)
+void Scene_Covering::update(float dt)
 {
 	particles.calculateNewPositions(dt);
 	this->handleKeys();
@@ -43,19 +46,20 @@ void Cloth_Scene::update(float dt)
 	renderer->setLightSourcePosition(glm::vec3(0, 0, -10));
 }
 
-void Cloth_Scene::draw()
+void Scene_Covering::draw()
 {
 	particles.renderData(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
-void Cloth_Scene::reset()
+void Scene_Covering::reset()
 {
 	particles.clearConstraints();
+	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 }
 
-void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -70,17 +74,8 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, ClothOrientation::XY_PLANE);
-
-	std::vector<float> invmass(nParticles, 1.f);
-	invmass[0] = 0.f;
-	invmass[W - 1] = 0.f;
-	gpuErrchk(cudaMemcpy(dev_invmass, invmass.data(), invmass.size() * sizeof(float), cudaMemcpyHostToDevice));
-
-
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5);
+	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 30.f, 5.f, dev_x, dev_y, dev_z, ClothOrientation::XZ_PLANE);
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
@@ -94,18 +89,6 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-
-	// set the colliding particle
-	auto xptr = thrust::device_pointer_cast(dev_x);
-	auto yptr = thrust::device_pointer_cast(dev_y);
-	auto zptr = thrust::device_pointer_cast(dev_z);
-
-	auto vzptr = thrust::device_pointer_cast(dev_vz);
-
-	xptr[NUM_PARTICLES - 1] = 0.f;
-	yptr[NUM_PARTICLES - 1] = -5.f;
-	zptr[NUM_PARTICLES - 1] = -50.f;
-	vzptr[NUM_PARTICLES - 1] = 50.f;
 
 	cudaFree(dev_curand);
 }

@@ -237,7 +237,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 1);
+		constraintSolver->calculateForces(dev_new_x, dev_new_y, dev_new_z, dev_invmass, dev_phase, dt, 3);
 
 	// todo solve every constraint group 
 	// update predicted position
