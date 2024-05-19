@@ -1,5 +1,6 @@
 #pragma once
 #include "../ConstraintSolver.cuh"
+#include "../../../Constraint/ConstraintArgs.hpp"
 
 
 class DirectConstraintSolver : public ConstraintSolver 
@@ -12,8 +13,9 @@ public:
 	virtual ~DirectConstraintSolver();
 
 	virtual void calculateForces(
+		float* x, float* y, float* z, int* mode,
 		float* new_x, float* new_y, float* new_z,
-		float* invmass, int* dev_phase, float dt, int iterations
+		float* invmass, float dt, int iterations
 	) override;
 
 	virtual void calculateStabilisationForces(
@@ -23,7 +25,7 @@ public:
 	) override;
 
 	template<typename T>
-	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt);
+	void projectConstraints(ConstraintArgs args);
 
 	void applyOffset(float* x, float* y, float* z);
 };

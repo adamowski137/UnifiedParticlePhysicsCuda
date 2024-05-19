@@ -70,7 +70,7 @@ __global__ void initializePositionsKern(int nParticles, float* x, float* y, floa
 	if (index >= nParticles) return;
 
 	int xIndex = index % dim;
-	int yIndex = 6 + (index / dim) % dim;
+	int yIndex = 1.0f + (index / dim) % dim;
 	int zIndex = index / (dim * dim);
 
 	x[index] = xIndex * ((PARTICLERADIUS + 0.01f) * 2);
@@ -104,11 +104,11 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaDeviceSynchronize());*/
 
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 5.f, 5.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 5.f, 5.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_vy, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

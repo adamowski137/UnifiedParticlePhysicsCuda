@@ -5,6 +5,7 @@ project(PhysicsEngine)
 add_library(PhysicsEngine STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/Constraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/ConstraintStorage.cu
+	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/ConstraintArgs.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Collision/CollisionGrid.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/SurfaceConstraint/SurfaceConstraint.cu
 	${CMAKE_CURRENT_SOURCE_DIR}/Constraint/DistanceConstraint/DistanceConstraint.cu

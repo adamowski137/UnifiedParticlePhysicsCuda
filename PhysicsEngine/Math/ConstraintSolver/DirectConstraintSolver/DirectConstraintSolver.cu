@@ -9,14 +9,12 @@
 
 template <typename T>
 __global__ void solveConstraintsDirectlyKern(int nConstraints,
-	float* x, float* y, float* z,
-	float* dx, float* dy, float* dz,
-	float* invmass, int* nConstraintsPerParticle, float dt,
+	ConstraintArgs args,
 	T* constraints)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nConstraints) return;
-	constraints[index].directSolve(x, y, z, dx, dy, dz, invmass, nConstraintsPerParticle, dt);
+	constraints[index].directSolve(args);
 }
 
 __global__ void applyOffsetKern(int nParticles,
@@ -50,7 +48,10 @@ DirectConstraintSolver::~DirectConstraintSolver()
 	gpuErrchk(cudaFree(dev_delta_lambda));
 }
 
-void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* new_z, float* invmass, int* phase, float dt, int iterations)
+void DirectConstraintSolver::calculateForces(
+	float* x, float* y, float* z, int* mode,
+	float* new_x, float* new_y, float* new_z,
+	float* invmass, float dt, int iterations)
 {
 	auto thrust_x = thrust::device_pointer_cast(new_x);
 	auto thrust_y = thrust::device_pointer_cast(new_y);
@@ -60,39 +61,46 @@ void DirectConstraintSolver::calculateForces(float* new_x, float* new_y, float* 
 	auto thrust_dy = thrust::device_pointer_cast(dev_dy);
 	auto thrust_dz = thrust::device_pointer_cast(dev_dz);
 
+	ConstraintArgsBuilder builder{};
+
 	for (int i = 0; i < iterations; i++)
 	{
-		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations);
+		builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
+		builder.addOldPosition(x, y, z);
+		this->projectConstraints<DistanceConstraint>(builder.build());
 		applyOffset(new_x, new_y, new_z);
-		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations);
+		this->projectConstraints<SurfaceConstraint>(builder.build());
 		applyOffset(new_x, new_y, new_z);
 		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
 
-		cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
-		cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
-		cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
+		gpuErrchk(cudaMemset(dev_dx, 0, sizeof(float) * nParticles));
+		gpuErrchk(cudaMemset(dev_dy, 0, sizeof(float) * nParticles));
+		gpuErrchk(cudaMemset(dev_dz, 0, sizeof(float) * nParticles));
 
 		for (int i = 0; i < rigidBodyConstraints.size(); i++)
 		{
 			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
-			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / iterations);
+			rigidBodyConstraints[i]->calculatePositionChange(builder.build());
 		}
 
 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
 		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
-		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>()); 
+		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+		builder.clear();
 	}
 	clearAllConstraints();
 }
 
 void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, float* z, int* phase, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
 {
+	ConstraintArgsBuilder builder{};
+	builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
 	for (int i = 0; i < iterations; i++)
 	{
-		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations);
+		this->projectConstraints<DistanceConstraint>(builder.build());
 		applyOffset(x, y, z);
 		applyOffset(new_x, new_y, new_z);
-		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations);
+		this->projectConstraints<SurfaceConstraint>(builder.build());
 		applyOffset(x, y, z);
 		applyOffset(new_x, new_y, new_z);
 	}
@@ -107,7 +115,7 @@ void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)
 }
 
 template<typename T>
-void DirectConstraintSolver::projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt)
+void DirectConstraintSolver::projectConstraints(ConstraintArgs args)
 {
 	cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
 	cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
@@ -118,11 +126,10 @@ void DirectConstraintSolver::projectConstraints(float* x, float* y, float* z, fl
 
 	if (constraintData.second > 0)
 	{
-
 		int threads = 32;
 		int blocks = (constraintData.second + threads - 1) / threads;
 		int particleBlocks = (nParticles + threads - 1) / threads;
-		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, x, y, z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt, constraintData.first);
+		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, args, constraintData.first);
 	}
 }
 
