@@ -41,9 +41,6 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 
 	if (args.additionalArgsSet && lambda > 0.001f)
 	{
-		float muS = 0.001f;
-		float muD = 0.0005f;
-
 		float dx = args.additionalArgs.oldPosition.x[p[0]] - args.x[p[0]];
 		float dy = args.additionalArgs.oldPosition.y[p[0]] - args.y[p[0]];
 		float dz = args.additionalArgs.oldPosition.z[p[0]] - args.z[p[0]];
@@ -71,7 +68,7 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 		else
 		{
 			float l = sqrt(lsq);
-			float coeff = fminf(muD * r / l ,1);
+			float coeff = fminf(muD * r / l, 1);
 
 			atomicAdd(args.dx + p[0], coeff * p1);
 			atomicAdd(args.dy + p[0], coeff * p2);

@@ -13,4 +13,6 @@ public:
 	__host__ void directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* delta_lambda, int idx);
 private:
 	float d;
+	float muS = 0.001f;
+	float muD = 0.0005f;
 };
