@@ -62,11 +62,11 @@ void DirectConstraintSolver::calculateForces(
 	auto thrust_dz = thrust::device_pointer_cast(dev_dz);
 
 	ConstraintArgsBuilder builder{};
+	builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
+	builder.addOldPosition(x, y, z);
 
 	for (int i = 0; i < iterations; i++)
 	{
-		builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
-		builder.addOldPosition(x, y, z);
 		this->projectConstraints<DistanceConstraint>(builder.build());
 		applyOffset(new_x, new_y, new_z);
 		this->projectConstraints<SurfaceConstraint>(builder.build());
@@ -86,7 +86,6 @@ void DirectConstraintSolver::calculateForces(
 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
 		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
 		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
-		builder.clear();
 	}
 	clearAllConstraints();
 }
@@ -117,10 +116,10 @@ void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)
 template<typename T>
 void DirectConstraintSolver::projectConstraints(ConstraintArgs args)
 {
-	cudaMemset(dev_dx, 0, sizeof(float) * nParticles);
-	cudaMemset(dev_dy, 0, sizeof(float) * nParticles);
-	cudaMemset(dev_dz, 0, sizeof(float) * nParticles);
-	cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles);
+	gpuErrchk(cudaMemset(dev_dx, 0, sizeof(float) * nParticles));
+	gpuErrchk(cudaMemset(dev_dy, 0, sizeof(float) * nParticles));
+	gpuErrchk(cudaMemset(dev_dz, 0, sizeof(float) * nParticles));
+	gpuErrchk(cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles));
 
 	auto constraintData = ConstraintStorage<T>::Instance.getConstraints();
 
@@ -130,6 +129,8 @@ void DirectConstraintSolver::projectConstraints(ConstraintArgs args)
 		int blocks = (constraintData.second + threads - 1) / threads;
 		int particleBlocks = (nParticles + threads - 1) / threads;
 		solveConstraintsDirectlyKern << <blocks, threads >> > (constraintData.second, args, constraintData.first);
+		gpuErrchk(cudaGetLastError());
+		gpuErrchk(cudaDeviceSynchronize());
 	}
 }
 

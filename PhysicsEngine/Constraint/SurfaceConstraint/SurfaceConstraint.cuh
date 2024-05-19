@@ -16,5 +16,7 @@ public:
 private:
 	float r;
 	Surface s;
+	float muS = 0.001f;
+	float muD = 0.0008f;
 };
 

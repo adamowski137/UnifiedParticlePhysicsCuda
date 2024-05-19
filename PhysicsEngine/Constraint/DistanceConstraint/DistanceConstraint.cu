@@ -79,8 +79,6 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 
 	if (args.additionalArgsSet && lambda > 0.001f)
 	{
-		float muS = 0.001f;
-		float muD = 0.0005f;
 
 		float dx = (args.additionalArgs.oldPosition.x[p[0]] - args.x[p[0]]) - (args.additionalArgs.oldPosition.x[p[1]] - args.x[p[1]]);
 		float dy = (args.additionalArgs.oldPosition.y[p[0]] - args.y[p[0]]) - (args.additionalArgs.oldPosition.y[p[1]] - args.y[p[1]]);
