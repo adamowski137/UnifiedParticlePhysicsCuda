@@ -121,6 +121,13 @@ __global__ void identifyGridCubeStartEndKern(unsigned int* grid, int* grid_cube_
 	}
 }
 
+__global__ void initCollisionListsKern(List* collisions, int nParticles)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= nParticles) return;
+	collisions[index] = List();
+}
+
 __global__ void clearCollisionsKern(List* collisions, int nParticles)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
@@ -162,6 +169,13 @@ CollisionGrid::CollisionGrid(int nParticles)
 
 	nConstraintsMaxAllocated = 128;
 	gpuErrchk(cudaMalloc((void**)&dev_foundCollisions, nConstraintsMaxAllocated * sizeof(DistanceConstraint)));
+
+	int threads = 32;
+	int particle_bound_blocks = (nParticles + threads - 1) / threads;
+
+	initCollisionListsKern << <particle_bound_blocks, threads >> > (dev_collisions, nParticles);
+	gpuErrchk(cudaGetLastError());
+	gpuErrchk(cudaDeviceSynchronize());
 
 }
 

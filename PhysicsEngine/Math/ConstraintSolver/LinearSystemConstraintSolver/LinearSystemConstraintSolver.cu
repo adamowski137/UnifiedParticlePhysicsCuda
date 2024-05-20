@@ -217,8 +217,9 @@ LinearSystemConstraintSolver::~LinearSystemConstraintSolver()
 }
 
 void LinearSystemConstraintSolver::calculateForces(
+	float* x, float* y, float* z, int* mode,
 	float* new_x, float* new_y, float* new_z,
-	float* invmass, int* mode, float dt, int iterations
+	float* invmass, float dt, int iterations
 )
 {
 	int num_iterations = 1;
@@ -244,10 +245,13 @@ void LinearSystemConstraintSolver::calculateForces(
 
 		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
 
+		ConstraintArgsBuilder builder{};
+		builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, nullptr, dt / num_iterations);
+
 		for (int i = 0; i < rigidBodyConstraints.size(); i++)
 		{
 			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
-			rigidBodyConstraints[i]->calculatePositionChange(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, dt / num_iterations);
+			rigidBodyConstraints[i]->calculatePositionChange(builder.build());
 		}
 
  		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());

@@ -19,7 +19,9 @@ DirectConstraintSolverCPU::~DirectConstraintSolverCPU()
 	delete[] invmass_cpu;
 }
 
-void DirectConstraintSolverCPU::calculateForces(float* new_x, float* new_y, float* new_z, float* invmass, int* dev_phase, float dt, int iterations)
+void DirectConstraintSolverCPU::calculateForces(float* x, float* y, float* z, int* phase,
+	float* new_x, float* new_y, float* new_z,
+	float* invmass, float dt, int iterations)
 {
 	gpuErrchk(cudaMemcpy(x_cpu, new_x, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
 	gpuErrchk(cudaMemcpy(y_cpu, new_y, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
@@ -30,8 +32,8 @@ void DirectConstraintSolverCPU::calculateForces(float* new_x, float* new_y, floa
 	
 	for (int i = 0; i < iterations; i++)
 	{
-		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations);
-		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, dev_phase, dt / iterations, iterations);
+		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
 	}
 
 	gpuErrchk(cudaMemcpy(new_x, x_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
