@@ -24,6 +24,6 @@ class CollisionGrid
 public:
 	CollisionGrid(int nParticles);
 	~CollisionGrid();
-	void findAndUpdateCollisions(float* x, float* y, float* z, int nParticles);
+	void findAndUpdateCollisions(float* x, float* y, float* z, int* phase, int nParticles);
 };
 

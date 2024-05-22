@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Scene.hpp"
-#include "../../PhysicsEngine/Cloth/Cloth.hpp"
+#include "../../PhysicsEngine/Cloth/Cloth.cuh"
 #include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 
 

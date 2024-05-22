@@ -6,10 +6,13 @@
 #include <curand.h>
 #include <curand_kernel.h>
 #include <vector>
+#include <thrust/fill.h>
+#include <thrust/device_ptr.h>
 
-#define CLOTH_W 20
-#define CLOTH_H 42
-#define NUM_PARTICLES (CLOTH_W * CLOTH_H + 1)
+#define CLOTH_W 70
+#define CLOTH_H 70
+#define N_RIGID_BODY 5
+#define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
 Cloth_Scene::Cloth_Scene() :
 	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
@@ -70,17 +73,12 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, ClothOrientation::XY_PLANE);
+	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE);
 
 	std::vector<float> invmass(nParticles, 1.f);
 	invmass[0] = 0.f;
 	invmass[W - 1] = 0.f;
 	gpuErrchk(cudaMemcpy(dev_invmass, invmass.data(), invmass.size() * sizeof(float), cudaMemcpyHostToDevice));
-
-
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, 0.f, 0.f);
-	gpuErrchk(cudaGetLastError());
-	gpuErrchk(cudaDeviceSynchronize());
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
@@ -94,18 +92,12 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, 0, -20, -30, dev_phase, 3);
 
-	// set the colliding particle
-	auto xptr = thrust::device_pointer_cast(dev_x);
-	auto yptr = thrust::device_pointer_cast(dev_y);
-	auto zptr = thrust::device_pointer_cast(dev_z);
+	auto vz_ptr = thrust::device_pointer_cast(dev_vz);
 
-	auto vzptr = thrust::device_pointer_cast(dev_vz);
+	thrust::fill(vz_ptr + CLOTH_W * CLOTH_H, vz_ptr + nParticles, 20.0f);
 
-	xptr[NUM_PARTICLES - 1] = 0.f;
-	yptr[NUM_PARTICLES - 1] = -5.f;
-	zptr[NUM_PARTICLES - 1] = -50.f;
-	vzptr[NUM_PARTICLES - 1] = 50.f;
 
 	cudaFree(dev_curand);
 }

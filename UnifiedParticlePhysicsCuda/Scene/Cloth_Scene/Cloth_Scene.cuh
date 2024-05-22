@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../Scene.hpp"
-#include "../../PhysicsEngine/Cloth/Cloth.hpp"
+#include "../../PhysicsEngine/Cloth/Cloth.cuh"
+#include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 
 
 class Cloth_Scene : public Scene
@@ -18,5 +19,7 @@ protected:
 		float* dev_x, float* dev_y, float* dev_z,
 		float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass) override;
 private:
+	RigidBody rigidBody;
 	Cloth cloth;
+	
 };

@@ -24,7 +24,7 @@ __global__ void findCollisionsKern(
 	List* collisionList,
 	float* x, float* y, float* z,
 	unsigned int* mapping, unsigned int* grid,
-	int* gridCubeStart, int* gridCubeEnd, int nParticles, int* collisionCount)
+	int* gridCubeStart, int* gridCubeEnd, int nParticles, int* collisionCount, int* phase)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
 	if (index >= nParticles) return;
@@ -55,7 +55,9 @@ __global__ void findCollisionsKern(
 				{
 					unsigned int particle = mapping[it];
 
-					if (particle == index) continue;
+					if (particle == index || phase[index] == phase[particle]) continue;
+					//if (particle == index) continue;
+
 
 					float px = x[particle];
 					float py = y[particle];
@@ -190,7 +192,7 @@ CollisionGrid::~CollisionGrid()
 
 }
 
-void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int nParticles)
+void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int* phase, int nParticles)
 {
 
 	int threads = 32;
@@ -227,7 +229,7 @@ void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int nP
 	// 2.
 	// FIND COLLISIONS IN THE GRID
 
-	findCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts);
+	findCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, x, y, z, dev_mapping, dev_grid_index, dev_grid_cube_start, dev_grid_cube_end, nParticles, dev_counts, phase);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

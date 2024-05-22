@@ -93,7 +93,8 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 0, 4, 0, 30, 0);
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 64, 8, 0, 6, 0);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 0, 4, 0, 30, 0, dev_phase, 3);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 64, 8, 0, 6, 0, dev_phase, 4);
+
 }
 

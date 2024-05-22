@@ -1,12 +1,14 @@
-#include "Cloth.hpp"
+#include "Cloth.cuh"
 #include <cmath>
 #include <vector>
 #include "../GpuErrorHandling.hpp"
 #include "../Config/Config.hpp"
+#include <thrust/device_ptr.h>
+#include <thrust/fill.h>
 
 void Cloth::initClothSimulation(Cloth& cloth, int particleH, int particleW, float d, 
 	float x_top_left, float y_top_left, float z_top_left,
-	float* x, float* y, float* z, ClothOrientation orientation)
+	float* x, float* y, float* z, int* phase, ClothOrientation orientation)
 {
 	float d_across = d * sqrtf(2);
 
@@ -52,6 +54,9 @@ void Cloth::initClothSimulation(Cloth& cloth, int particleH, int particleW, floa
 			}
 		}
 	}
+
+	auto phase_ptr = thrust::device_pointer_cast(phase);
+	//thrust::fill(phase_ptr, phase_ptr + particleW * particleH, 99);
 
 	gpuErrchk(cudaMemcpy(x, x_cpu.data(), sizeof(float) * x_cpu.size(), cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(y, y_cpu.data(), sizeof(float) * y_cpu.size(), cudaMemcpyHostToDevice));

@@ -7,8 +7,8 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_W 10
-#define CLOTH_H 10
+#define CLOTH_W 30
+#define CLOTH_H 30
 #define N_RIGID_BODY 5
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
@@ -74,8 +74,8 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5);
-	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 30.f, 5.f, dev_x, dev_y, dev_z, ClothOrientation::XZ_PLANE);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5, dev_phase, 3);
+	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 30.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
