@@ -24,7 +24,7 @@ Cloth_Scene::Cloth_Scene() :
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -9.81f, -10.f);
+	particles.setExternalForces(0.f, -98.1f, -10.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
@@ -73,7 +73,7 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE);
+	Cloth::initClothSimulation_LRA(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE, {0, W - 1});
 
 	std::vector<float> invmass(nParticles, 1.f);
 	invmass[0] = 0.f;
@@ -92,11 +92,11 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, 0, -20, -30, dev_phase, 3);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, 0, -20, -80, dev_phase, 3);
 
 	auto vz_ptr = thrust::device_pointer_cast(dev_vz);
 
-	thrust::fill(vz_ptr + CLOTH_W * CLOTH_H, vz_ptr + nParticles, 20.0f);
+	thrust::fill(vz_ptr + CLOTH_W * CLOTH_H, vz_ptr + nParticles, 100.0f);
 
 
 	cudaFree(dev_curand);

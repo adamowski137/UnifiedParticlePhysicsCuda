@@ -14,9 +14,9 @@ __global__ void initializePositionsKern(int nParticles, float* x, float* y, floa
 	int yIndex = (index / dim) % dim;
 	int zIndex = index / (dim * dim);
 
-	x[index + nOffset] = xIndex * ((PARTICLERADIUS - 0.1f) * 2) + xOffset;
-	y[index + nOffset] = yIndex * ((PARTICLERADIUS - 0.1f) * 2) + yOffset;
-	z[index + nOffset] = zIndex * ((PARTICLERADIUS - 0.1f) * 2) + zOffset;
+	x[index + nOffset] = xIndex * ((PARTICLERADIUS - 0.5f) * 2) + xOffset;
+	y[index + nOffset] = yIndex * ((PARTICLERADIUS - 0.5f) * 2) + yOffset;
+	z[index + nOffset] = zIndex * ((PARTICLERADIUS - 0.5f) * 2) + zOffset;
 }
 
 void RigidBody::addRigidBodySquare(float* x, float* y, float* z, float* invmass, int startIdx, int n, float xOffset, float yOffset, float zOffset, int* phase, int phaseIdx)

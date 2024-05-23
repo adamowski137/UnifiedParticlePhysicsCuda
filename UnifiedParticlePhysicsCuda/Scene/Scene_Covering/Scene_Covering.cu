@@ -71,11 +71,11 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 2.1f;
+	float d = 1.f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
 	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5, dev_phase, 3);
-	Cloth::initClothSimulation(cloth, H, W, d, -d * W / 2.f, 30.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
+	Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 30.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
