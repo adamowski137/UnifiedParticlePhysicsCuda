@@ -5,12 +5,11 @@
 #include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 
 
-class Cloth_Scene : public Scene
+class Scene_Covering : public Scene
 {
 public:
-
-	Cloth_Scene();
-	virtual ~Cloth_Scene();
+	Scene_Covering();
+	virtual ~Scene_Covering();
 	virtual void update(float dt);
 	virtual void draw();
 	virtual void reset();
@@ -21,5 +20,4 @@ protected:
 private:
 	RigidBody rigidBody;
 	Cloth cloth;
-	
 };

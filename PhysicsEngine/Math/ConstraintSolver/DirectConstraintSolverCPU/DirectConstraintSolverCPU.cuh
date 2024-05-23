@@ -23,5 +23,5 @@ public:
 	) override;
 
 	template<typename T>
-	int projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations, int lambda_offset);
+	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations);
 };

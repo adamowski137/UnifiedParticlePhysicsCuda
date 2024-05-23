@@ -1,10 +1,12 @@
 #include "SurfaceConstraint.cuh"
+#include "../../Config/Config.hpp"
+#include "../../Constants.hpp"
 #include <cmath>
 #include <stdio.h>
 
-__host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, int particle, Surface s)
+__host__ __device__ SurfaceConstraint SurfaceConstraint::init(float d, float k, int particle, Surface s)
 {
-	((Constraint*)this)->init(1, 0.0001f, ConstraintLimitType::GEQ);
+	((Constraint*)this)->init(1, k, ConstraintLimitType::GEQ);
 	this->r = d;
 	this->p[0] = particle;
 	this->s = s;
@@ -30,7 +32,7 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 {
 	float C = (*this)(args.x, args.y, args.z);
 
-	float lambda = -C * 0.1f / 3;
+	float lambda = -C * k;
 	lambda = min(max(lambda, cMin), cMax);
 
 	atomicAdd(args.dx + p[0], lambda * s.normal[0]);
@@ -80,19 +82,15 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 	//dz[p[0]] += -C * s.normal[2];
 }
 
-__host__ void SurfaceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* lambda, int idx)
+__host__ void SurfaceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass)
 {
 	float C = (*this)(x, y, z);
 
-	float alpha = compliance / (dt * dt);
-
-	float delta_lambda = (-C - alpha * lambda[idx]) / (1 + alpha);
-	delta_lambda = std::fmin(std::fmax(delta_lambda, cMin), cMax);
+	float lambda = -C * k;
 	
-
-	x[p[0]] += delta_lambda * s.normal[0];
-	y[p[0]] += delta_lambda * s.normal[1];
-	z[p[0]] += delta_lambda * s.normal[2];
-
-	lambda[idx] += delta_lambda;
+	lambda = std::fmin(std::fmax(lambda, cMin), cMax);
+	
+	x[p[0]] += lambda * s.normal[0];
+	y[p[0]] += lambda * s.normal[1];
+	z[p[0]] += lambda * s.normal[2];
 }

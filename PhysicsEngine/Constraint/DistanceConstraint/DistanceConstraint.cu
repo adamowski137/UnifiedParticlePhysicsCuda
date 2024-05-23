@@ -56,10 +56,9 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 	float C = (dist - d);
 	float invw = 1.f / (args.invmass[p[0]] + args.invmass[p[1]]);
 
-	float lambda = -C * invw;
+	float lambda = -C * k * invw;
 
 	lambda = min(max(lambda, cMin), cMax);
-	lambda = lambda * 0.1f;
 
 	float coeff_p0 = args.invmass[p[0]] * lambda / dist;
 	float coeff_p1 = -args.invmass[p[1]] * lambda / dist;
@@ -130,24 +129,22 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 	}
 }
 
-__host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* lambda, int idx)
+__host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass)
 {
 	float distX = (x[p[0]] - x[p[1]]);
 	float distY = (y[p[0]] - y[p[1]]);
 	float distZ = (z[p[0]] - z[p[1]]);
 
-	float alpha = compliance / (dt * dt);
-
 	float dist = sqrt(distX * distX + distY * distY + distZ * distZ);
 	float C = (dist - d);
-	float invw = 1.f / (invmass[p[0]] + invmass[p[1]] + alpha);
+	float invw = 1.f / (invmass[p[0]] + invmass[p[1]]);
 
-	float delta_lambda = (- C - alpha * lambda[idx]) * invw;
+	float lambda = - C * invw * k;
 
-	delta_lambda = std::fmin(std::fmax(delta_lambda, cMin), cMax);
+	lambda = std::fmin(std::fmax(lambda, cMin), cMax);
 
-	float coeff_p0 = invmass[p[0]] * delta_lambda / dist;
-	float coeff_p1 = -invmass[p[1]] * delta_lambda / dist;
+	float coeff_p0 = invmass[p[0]] * lambda / dist;
+	float coeff_p1 = -invmass[p[1]] * lambda / dist;
 
 	x[p[0]] += coeff_p0 * distX;
 	y[p[0]] += coeff_p0 * distY;
@@ -156,6 +153,4 @@ __host__ void DistanceConstraint::directSolve_cpu(float* x, float* y, float* z, 
 	x[p[1]] += coeff_p1 * distX;
 	y[p[1]] += coeff_p1 * distY;
 	z[p[1]] += coeff_p1 * distZ;
-
-	lambda[idx] += delta_lambda;
 }

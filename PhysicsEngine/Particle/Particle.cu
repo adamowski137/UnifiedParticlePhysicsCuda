@@ -221,7 +221,7 @@ void ParticleType::calculateNewPositions(float dt)
 	 //find neighboring particles and solid contacts ??
 
 	//if (mode & GRID_CHECKING_ON)
-	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, nParticles);
+	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, dev_phase, nParticles);
 
 	//if (mode & SURFACE_CHECKING_ON)
 	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
@@ -231,13 +231,13 @@ void ParticleType::calculateNewPositions(float dt)
 
 	// solve iterations
 	if (mode & GRID_CHECKING_ON)
-		collisionGrid->findAndUpdateCollisions(dev_new_x, dev_new_y, dev_new_z, nParticles);
+		collisionGrid->findAndUpdateCollisions(dev_new_x, dev_new_y, dev_new_z, dev_phase, nParticles);
 
 	if (mode & SURFACE_CHECKING_ON)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 3);
 
 	// todo solve every constraint group 
 	// update predicted position

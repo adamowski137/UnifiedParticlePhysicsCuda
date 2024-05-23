@@ -10,6 +10,7 @@
 #include "thrust/scan.h"
 #include "../Constants.hpp"
 #include "../Constraint/ConstraintStorage.cuh"
+#include "../Config/Config.hpp"
 
 
 __global__ void findSurfaceCollisions(
@@ -45,7 +46,7 @@ __global__ void findSurfaceCollisions(
 
 __global__ void fillConstraints(int nParticles, int nSurfaces,
 	SurfaceConstraint* constraints,
-	int* hits, int* hitsSum, Surface* surfaces, float r)
+	int* hits, int* hitsSum, Surface* surfaces, float r, float k)
 {
 	int index = blockDim.x * blockIdx.x + threadIdx.x;
 	if (index >= nParticles) return;
@@ -56,7 +57,7 @@ __global__ void fillConstraints(int nParticles, int nSurfaces,
 		{
 			// offset by 1 because we index array starting from 0
 			int constraintIndex = hitsSum[index + i * nParticles] - 1;
-			constraints[constraintIndex] = SurfaceConstraint().init(r, index, surfaces[i]);
+			constraints[constraintIndex] = SurfaceConstraint().init(r, k, index, surfaces[i]);
 		}
 	}
 }
@@ -134,7 +135,7 @@ void SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, f
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_foundCollisions,
-		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS);
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS, EngineConfig::K_SURFACE_CONSTRAINT);
 	
 	if(nCollisions > 0)
 		ConstraintStorage<SurfaceConstraint>::Instance.addDynamicConstraints(dev_foundCollisions, nCollisions);

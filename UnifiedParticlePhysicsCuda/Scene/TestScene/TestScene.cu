@@ -19,7 +19,7 @@ TestScene::TestScene(int n) : Scene(ResourceManager::Instance.Shaders["instanced
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setConstraints({ }, 2.f);
 	particles.setExternalForces(0.f, -9.81f, 0.f);
-	particles.setSurfaces({ Surface().init(0, 1, 0, 10), Surface().init(1, 0, 0, 10), Surface().init(-1, 0, 0, 10), Surface().init(0, 0, 1, 10), Surface().init(0, 0, -1, 10)});
+	particles.setSurfaces({ Surface().init(0, 1, 0, 0), Surface().init(1, 0, 0, 20), Surface().init(-1, 0, 0, 20), Surface().init(0, 0, 1, 20), Surface().init(0, 0, -1, 20)});
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
@@ -62,15 +62,15 @@ void TestScene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -5.f, 5.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_x, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 8.f, 28.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_y, dev_curand, 8.f, 78.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, -5.f, 5.f);
+	fillRandomKern << <blocks, threads >> > (nParticles, dev_z, dev_curand, -10.f, 10.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 

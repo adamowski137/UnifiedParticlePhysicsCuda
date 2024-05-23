@@ -10,7 +10,7 @@ public:
 	__host__ __device__ float operator()(float* x, float* y, float* z);
 	__host__ __device__ void positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index);
 	__device__ void directSolve(ConstraintArgs args);
-	__host__ void directSolve_cpu(float* x, float* y, float* z, float* invmass, float dt, float* delta_lambda, int idx);
+	__host__ void directSolve_cpu(float* x, float* y, float* z, float* invmass);
 private:
 	float d;
 	float muS = 0.001f;
