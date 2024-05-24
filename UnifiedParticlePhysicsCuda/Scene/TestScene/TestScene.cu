@@ -40,7 +40,7 @@ void TestScene::update(float dt)
 
 void TestScene::draw()
 {
-	particles.renderData(sceneSphere.instancingVBO);
+	particles.sendDataToVBO(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 

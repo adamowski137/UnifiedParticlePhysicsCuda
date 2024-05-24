@@ -48,7 +48,7 @@ void Scene_Covering::update(float dt)
 
 void Scene_Covering::draw()
 {
-	particles.renderData(sceneSphere.instancingVBO);
+	particles.sendDataToVBO(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 

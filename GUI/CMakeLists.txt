@@ -10,6 +10,8 @@ add_library(gui STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/Error/ErrorHandling.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/MeshGenerator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/Renderer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/ParticleRenderer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/ClothRenderer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Renderer/RenderInfo.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Shader/Shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Window/Window.cpp

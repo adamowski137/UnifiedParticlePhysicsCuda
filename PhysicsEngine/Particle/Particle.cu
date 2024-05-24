@@ -20,13 +20,13 @@
 #define EPS 0.0000001
 
 
-__global__ void copyToVBOKernel(int amount, float* x, float* y, float* z, float* dst)
+__global__ void copyToVBOKernel(int n, int offset, float* x, float* y, float* z, float* dst)
 {
 	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
-	if (index >= amount) return;
-	dst[3 * index + 0] = x[index];
-	dst[3 * index + 1] = y[index];
-	dst[3 * index + 2] = z[index];
+	if (index >= n) return;
+	dst[3 * index + 0] = x[index + offset];
+	dst[3 * index + 1] = y[index + offset];
+	dst[3 * index + 2] = z[index + offset];
 }
 
 __global__ void setDiagonalMatrix(int amount, float* src, float* dst)
@@ -188,17 +188,24 @@ void ParticleType::allocateDeviceData()
 
 }
 
-void ParticleType::renderData(unsigned int vbo)
+void ParticleType::sendDataToVBO(unsigned int vbo, int startIdx, int n)
 {
 	float* dst;
 	cudaGLMapBufferObject((void**)&dst, vbo);
 
-	copyToVBOKernel << <blocks, THREADS >> > (nParticles, dev_x, dev_y, dev_z, dst);
+	int n_bound_blocks = (n + THREADS - 1) / THREADS;
+
+	copyToVBOKernel << <n_bound_blocks, THREADS >> > (n, startIdx, dev_x, dev_y, dev_z, dst);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
 	cudaGLUnmapBufferObject(vbo);
+}
+
+void ParticleType::sendDataToVBO(unsigned int vbo)
+{
+	sendDataToVBO(vbo, 0, this->nParticles);
 }
 
 void ParticleType::calculateNewPositions(float dt)
@@ -280,3 +287,4 @@ void ParticleType::mapCudaVBO(unsigned int vbo)
 {
 	cudaGLRegisterBufferObject(vbo);
 }
+

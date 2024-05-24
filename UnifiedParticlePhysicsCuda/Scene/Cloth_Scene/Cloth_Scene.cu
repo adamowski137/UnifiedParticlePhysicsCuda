@@ -15,21 +15,24 @@
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
 Cloth_Scene::Cloth_Scene() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON)
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON),
+	clothRenderer(ResourceManager::Instance.Shaders["cloth"])
 {
 	std::vector<float> offsets;
 	offsets.resize(NUM_PARTICLES * 3, 0.0f);
+
 
 	renderer->setSphereScale(0.1f);
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -98.1f, -10.f);
+	particles.setExternalForces(0.f, -98.1f, -40.f);
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
 	applySceneSetup();
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
+	particles.mapCudaVBO(cloth.clothMesh.VBO); 
 }
 
 Cloth_Scene::~Cloth_Scene()
@@ -44,12 +47,18 @@ void Cloth_Scene::update(float dt)
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
 	renderer->setCameraPosition(camera.getPosition());
 	renderer->setLightSourcePosition(glm::vec3(0, 0, -10));
+
+	clothRenderer.getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
+	//clothRenderer.setCameraPosition(camera.getPosition());
+	//clothRenderer.setLightSourcePosition(glm::vec3(0, 0, -10));
 }
 
 void Cloth_Scene::draw()
 {
-	particles.renderData(sceneSphere.instancingVBO);
-	renderer->drawInstanced(sceneSphere, particles.particleCount());
+	particles.sendDataToVBO(sceneSphere.instancingVBO, CLOTH_W * CLOTH_H, NUM_PARTICLES - CLOTH_W * CLOTH_H);
+	particles.sendDataToVBO(cloth.clothMesh.VBO, 0, CLOTH_W * CLOTH_H);
+	renderer->drawInstanced(sceneSphere, NUM_PARTICLES - CLOTH_W * CLOTH_H);
+	clothRenderer.draw(cloth.clothMesh);
 }
 
 void Cloth_Scene::reset()

@@ -13,7 +13,7 @@ Scene::Scene(std::shared_ptr<Shader>& shader, int n, int mode) :
 	particles(n, mode),
 	input({ GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D }, {})
 {
-	renderer = std::make_unique<Renderer>(shader);
+	renderer = std::make_unique<ParticleRenderer>(shader);
 	sceneSphere = getSphereData(10, 10);
 	cameraRadius = 10.f;
 	cameraAngleHorizontal = cameraAngleVertical = 0.f;

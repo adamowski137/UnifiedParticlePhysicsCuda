@@ -22,7 +22,8 @@ public:
 	~ParticleType();
 
 	void mapCudaVBO(unsigned int vbo);
-	void renderData(unsigned int vbo);
+	void sendDataToVBO(unsigned int vbo);
+	void sendDataToVBO(unsigned int vbo, int startIdx, int n);
 	void calculateNewPositions(float dt);
 	void setConstraints(std::vector<std::pair<int, int>> pairs, float d);
 	void setSurfaces(std::vector<Surface> surfaces);
