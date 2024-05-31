@@ -89,6 +89,8 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
+	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
+	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 
-	cudaFree(dev_curand);
+	gpuErrchk(cudaFree(dev_curand));
 }
