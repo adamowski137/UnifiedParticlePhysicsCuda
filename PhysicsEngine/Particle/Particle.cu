@@ -14,7 +14,8 @@
 #include "../GpuErrorHandling.hpp"
 #include "../Constraint/DistanceConstraint/DistanceConstraint.cuh"
 #include "../Math/ConstraintSolver/LinearSystemConstraintSolver/LinearSystemConstraintSolver.cuh"
-#include "../Math/ConstraintSolver/DirectConstraintSolver/DirectConstraintSolver.cuh"
+#include "../Math/ConstraintSolver/DirectConstraintSolverJacobi/DirectConstraintSolverJacobi.cuh"
+#include "../Math/ConstraintSolver/DirectConstraintSolverGaussSeidel/DirectConstraintSolverGaussSeidel.cuh"
 #include "../Math/ConstraintSolver/DirectConstraintSolverCPU/DirectConstraintSolverCPU.cuh"
 
 #define EPS 0.0000001
@@ -98,7 +99,8 @@ ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode
 {
 	blocks = ceilf((float)nParticles / THREADS);
 	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new LinearSystemConstraintSolver{amount} };
-	constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolver{amount} };
+	constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverGaussSeidel{amount} };
+	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverJacobi{amount} };
 	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverCPU{amount} };
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
 	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };

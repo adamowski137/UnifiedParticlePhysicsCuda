@@ -82,15 +82,15 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 	//dz[p[0]] += -C * s.normal[2];
 }
 
-__host__ void SurfaceConstraint::directSolve_cpu(float* x, float* y, float* z, float* invmass)
+__host__ void SurfaceConstraint::directSolve_GaussSeidel(ConstraintArgs args)
 {
-	float C = (*this)(x, y, z);
+	float C = (*this)(args.x, args.y, args.z);
 
 	float lambda = -C * k;
 	
 	lambda = std::fmin(std::fmax(lambda, cMin), cMax);
 	
-	x[p[0]] += lambda * s.normal[0];
-	y[p[0]] += lambda * s.normal[1];
-	z[p[0]] += lambda * s.normal[2];
+	args.x[p[0]] += lambda * s.normal[0];
+	args.y[p[0]] += lambda * s.normal[1];
+	args.z[p[0]] += lambda * s.normal[2];
 }

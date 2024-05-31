@@ -10,7 +10,7 @@ public:
 	__host__ __device__ float operator()(float* x, float* y, float* z);
 	__host__ __device__ void positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index);
 	__device__ void directSolve(ConstraintArgs args);
-	__host__ void directSolve_cpu(float* x, float* y, float* z, float* invmass);
+	__host__ __device__ void directSolve_GaussSeidel(ConstraintArgs args);
 private:
 	bool apply_friction;
 	float d;

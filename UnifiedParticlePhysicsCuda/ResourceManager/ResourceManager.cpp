@@ -61,8 +61,8 @@ void ResourceManager::loadScenes(int amountOfPoints)
 		options.sceneData.push_back(data);
 	}
 
-	options.sceneData[3].isActive = true;
-	currentScene = scenes[options.sceneData[3].name];
+	options.sceneData[0].isActive = true;
+	currentScene = scenes[options.sceneData[0].name];
 	currentScene.get()->reset();
 }
 

@@ -1,4 +1,4 @@
-#include "DirectConstraintSolver.cuh"
+#include "DirectConstraintSolverJacobi.cuh"
 #include <cuda_runtime.h>
 #include "../../../GpuErrorHandling.hpp"
 #include <device_launch_parameters.h>
@@ -35,20 +35,20 @@ __global__ void applyOffsetKern(int nParticles,
 }
 
 
-DirectConstraintSolver::DirectConstraintSolver(int nParticles) : ConstraintSolver(nParticles)
+DirectConstraintSolverJacobi::DirectConstraintSolverJacobi(int nParticles) : ConstraintSolver(nParticles)
 {
 	gpuErrchk(cudaMalloc((void**)&dev_nConstraintsPerParticle, nParticles * sizeof(float)));
 	nConstraintsMaxAllocated = 1000;
 	gpuErrchk(cudaMalloc((void**)&dev_delta_lambda, nConstraintsMaxAllocated * sizeof(float)));
 }
 
-DirectConstraintSolver::~DirectConstraintSolver()
+DirectConstraintSolverJacobi::~DirectConstraintSolverJacobi()
 {
 	gpuErrchk(cudaFree(dev_nConstraintsPerParticle));
 	gpuErrchk(cudaFree(dev_delta_lambda));
 }
 
-void DirectConstraintSolver::calculateForces(
+void DirectConstraintSolverJacobi::calculateForces(
 	float* x, float* y, float* z, int* mode,
 	float* new_x, float* new_y, float* new_z,
 	float* invmass, float dt, int iterations)
@@ -90,7 +90,7 @@ void DirectConstraintSolver::calculateForces(
 	clearAllConstraints();
 }
 
-void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, float* z, int* phase, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
+void DirectConstraintSolverJacobi::calculateStabilisationForces(float* x, float* y, float* z, int* phase, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
 {
 	ConstraintArgsBuilder builder{};
 	builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
@@ -106,7 +106,7 @@ void DirectConstraintSolver::calculateStabilisationForces(float* x, float* y, fl
 	clearAllConstraints();
 }
 
-void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)
+void DirectConstraintSolverJacobi::applyOffset(float* x, float* y, float* z)
 {
 	int threads = 32;
 	int particleBlocks = (nParticles + threads - 1) / threads;
@@ -114,7 +114,7 @@ void DirectConstraintSolver::applyOffset(float* x, float* y, float* z)
 }
 
 template<typename T>
-void DirectConstraintSolver::projectConstraints(ConstraintArgs args)
+void DirectConstraintSolverJacobi::projectConstraints(ConstraintArgs args)
 {
 	gpuErrchk(cudaMemset(dev_dx, 0, sizeof(float) * nParticles));
 	gpuErrchk(cudaMemset(dev_dy, 0, sizeof(float) * nParticles));

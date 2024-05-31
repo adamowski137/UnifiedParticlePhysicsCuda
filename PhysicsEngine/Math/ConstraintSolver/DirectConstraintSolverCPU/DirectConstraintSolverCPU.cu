@@ -61,7 +61,7 @@ void DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z,
 
 	for (int i = 0; i < constraintData.second; i++)
 	{
-		cpu_constraints[i].directSolve_cpu(x_cpu, y_cpu, z_cpu, invmass_cpu);
+		//cpu_constraints[i].directSolve_GaussSeidel(x_cpu, y_cpu, z_cpu, invmass_cpu);
 	}
 
 	delete[] cpu_constraints;

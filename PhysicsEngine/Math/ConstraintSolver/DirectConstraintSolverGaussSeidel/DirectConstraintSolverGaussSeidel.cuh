@@ -2,15 +2,13 @@
 #include "../ConstraintSolver.cuh"
 #include "../../../Constraint/ConstraintArgs.hpp"
 
-
-class DirectConstraintSolver : public ConstraintSolver 
+class DirectConstraintSolverGaussSeidel : public ConstraintSolver
 {
-	int* dev_nConstraintsPerParticle;
-	float* dev_delta_lambda;
 	int nConstraintsMaxAllocated;
+	int* dev_coloring;
 public:
-	DirectConstraintSolver(int nParticles);
-	virtual ~DirectConstraintSolver();
+	DirectConstraintSolverGaussSeidel(int nParticles);
+	virtual ~DirectConstraintSolverGaussSeidel();
 
 	virtual void calculateForces(
 		float* x, float* y, float* z, int* mode,
@@ -23,9 +21,17 @@ public:
 		float* new_x, float* new_y, float* new_z,
 		float* invmass, float dt, int iterations
 	) override;
+private:
 
 	template<typename T>
 	void projectConstraints(ConstraintArgs args);
 
-	void applyOffset(float* x, float* y, float* z);
+	template<typename T>
+	int findColoring(std::pair<T*, int> constraintData);
+
+	template<typename T>
+	int getParticlePerConstraint();
+
+	void reallocateColoring(int n);
 };
+
