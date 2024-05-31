@@ -7,8 +7,8 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_W 30
-#define CLOTH_H 30
+#define CLOTH_W 70
+#define CLOTH_H 70
 #define N_RIGID_BODY 5
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
@@ -59,7 +59,11 @@ void Scene_Covering::reset()
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 }
 
-void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void Scene_Covering::initData(int nParticles,
+	float* dev_x, float* dev_y, float* dev_z,
+	float* dev_vx, float* dev_vy, float* dev_vz,
+	int* dev_SDF_mode, float* dev_SDF_value, float* dev_SDF_normal_x, float* dev_SDF_normal_y, float* dev_SDF_normal_z,
+	int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -71,11 +75,14 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 1.f;
+	float d = 1.5f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5, dev_phase, 3);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z,
+		dev_SDF_mode, dev_SDF_value, dev_SDF_normal_x, dev_SDF_normal_y, dev_SDF_normal_z,
+		dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5, dev_phase, 3);
 	Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 30.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
+	//Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 30.f, 115.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
@@ -88,6 +95,14 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vz, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
+
+	//auto x_ptr = thrust::device_pointer_cast(dev_x);
+	//auto y_ptr = thrust::device_pointer_cast(dev_y);
+	//auto z_ptr = thrust::device_pointer_cast(dev_z);
+	//
+	//x_ptr[NUM_PARTICLES - 1] = -8;
+	//y_ptr[NUM_PARTICLES - 1] = 25;
+	//z_ptr[NUM_PARTICLES - 1] = -3;
 
 
 	cudaFree(dev_curand);

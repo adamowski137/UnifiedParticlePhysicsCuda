@@ -82,5 +82,6 @@ void Scene::applySceneSetup()
 	initData(particles.nParticles,
 	particles.dev_x, particles.dev_y, particles.dev_z,
 	particles.dev_vx, particles.dev_vy, particles.dev_vz,
+	particles.dev_SDF_mode, particles.dev_SDF_value, particles.dev_SDF_normal_x, particles.dev_SDF_normal_y, particles.dev_SDF_normal_z,
 	particles.dev_phase, particles.dev_invmass);
 }

@@ -103,7 +103,7 @@ void Cloth::initClothSimulation_simple(Cloth& cloth, int H, int W, float d,
 	}
 
 	auto phase_ptr = thrust::device_pointer_cast(phase);
-	//thrust::fill(phase_ptr, phase_ptr + W * H, 99);
+	thrust::fill(phase_ptr, phase_ptr + W * H, 99);
 
 	gpuErrchk(cudaMemcpy(x, x_cpu.data(), sizeof(float) * x_cpu.size(), cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(y, y_cpu.data(), sizeof(float) * y_cpu.size(), cudaMemcpyHostToDevice));

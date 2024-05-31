@@ -44,7 +44,11 @@ void TestScene::draw()
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
-void TestScene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void TestScene::initData(int nParticles,
+	float* dev_x, float* dev_y, float* dev_z,
+	float* dev_vx, float* dev_vy, float* dev_vz,
+	int* dev_SDF_mode, float* dev_SDF_value, float* dev_SDF_normal_x, float* dev_SDF_normal_y, float* dev_SDF_normal_z,
+	int* dev_phase, float* dev_invmass)
 {
 	//gpuErrchk(cudaMemset(dev_x, 0, sizeof(float) * 3 * nParticles));
 	//gpuErrchk(cudaMemset(dev_y, 0, sizeof(float) * 3 * nParticles));

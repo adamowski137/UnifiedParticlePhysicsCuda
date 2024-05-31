@@ -102,8 +102,18 @@ ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode
 	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new DirectConstraintSolverCPU{amount} };
 	collisionGrid = std::unique_ptr<CollisionGrid>{ new CollisionGrid{amount} };
 	surfaceCollisionFinder = std::unique_ptr<SurfaceCollisionFinder>{ new SurfaceCollisionFinder{ { } , amount} };
+
 	allocateDeviceData();
 	setupDeviceData();
+
+	constraintSolver->initConstraintArgsBuilder(
+		dev_x, dev_y, dev_z,
+		dev_new_x, dev_new_y, dev_new_z,
+		dev_SDF_mode, dev_SDF_value, dev_SDF_normal_x, dev_SDF_normal_y, dev_SDF_normal_z,
+		dev_invmass);
+	
+
+
 }
 
 ParticleType::~ParticleType()
@@ -117,6 +127,11 @@ ParticleType::~ParticleType()
 	gpuErrchk(cudaFree(dev_vx));
 	gpuErrchk(cudaFree(dev_vy));
 	gpuErrchk(cudaFree(dev_vz));
+	gpuErrchk(cudaFree(dev_SDF_mode));
+	gpuErrchk(cudaFree(dev_SDF_value));
+	gpuErrchk(cudaFree(dev_SDF_normal_x));
+	gpuErrchk(cudaFree(dev_SDF_normal_y));
+	gpuErrchk(cudaFree(dev_SDF_normal_z));
 	gpuErrchk(cudaFree(dev_invmass));
 	gpuErrchk(cudaFree(dev_phase));
 }
@@ -171,6 +186,14 @@ void ParticleType::allocateDeviceData()
 	gpuErrchk(cudaMalloc((void**)&dev_vy, nParticles * sizeof(float)));
 	gpuErrchk(cudaMalloc((void**)&dev_vz, nParticles * sizeof(float)));
 
+
+	gpuErrchk(cudaMalloc((void**)&dev_SDF_mode, nParticles * sizeof(int)));
+	gpuErrchk(cudaMemset(dev_SDF_mode, 0, nParticles * sizeof(int)));
+
+	gpuErrchk(cudaMalloc((void**)&dev_SDF_value, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_SDF_normal_x, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_SDF_normal_y, nParticles * sizeof(float)));
+	gpuErrchk(cudaMalloc((void**)&dev_SDF_normal_z, nParticles * sizeof(float)));
 
 	gpuErrchk(cudaMalloc((void**)&dev_phase, nParticles * sizeof(int)));
 	// by default every particle is in a separate group
@@ -244,7 +267,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 3);
+		constraintSolver->calculateForces(dt, 3);
 
 	// todo solve every constraint group 
 	// update predicted position

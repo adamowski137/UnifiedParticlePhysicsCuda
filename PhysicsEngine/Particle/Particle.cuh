@@ -38,12 +38,21 @@ private:
 	float* dev_x;
 	float* dev_y;
 	float* dev_z;
+
 	float* dev_new_x;
 	float* dev_new_y;
 	float* dev_new_z;
+
 	float* dev_vx;
 	float* dev_vy;
 	float* dev_vz;
+
+	int* dev_SDF_mode;
+	float* dev_SDF_value;
+	float* dev_SDF_normal_x;
+	float* dev_SDF_normal_y;
+	float* dev_SDF_normal_z;
+
 	float* dev_invmass;
 	float* dev_fc;
 	friend class Scene;

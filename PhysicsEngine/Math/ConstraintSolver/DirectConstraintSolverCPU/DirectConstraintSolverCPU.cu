@@ -19,38 +19,37 @@ DirectConstraintSolverCPU::~DirectConstraintSolverCPU()
 	delete[] invmass_cpu;
 }
 
-void DirectConstraintSolverCPU::calculateForces(float* x, float* y, float* z, int* phase,
-	float* new_x, float* new_y, float* new_z,
-	float* invmass, float dt, int iterations)
+void DirectConstraintSolverCPU::calculateForces(float dt, int iterations)
 {
-	gpuErrchk(cudaMemcpy(x_cpu, new_x, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
-	gpuErrchk(cudaMemcpy(y_cpu, new_y, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
-	gpuErrchk(cudaMemcpy(z_cpu, new_z, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
-	gpuErrchk(cudaMemcpy(invmass_cpu, invmass, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
+	auto args = builder.build();
+	gpuErrchk(cudaMemcpy(x_cpu, args.new_x, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(y_cpu, args.new_y, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(z_cpu, args.new_z, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(invmass_cpu, args.invmass, sizeof(float) * nParticles, cudaMemcpyDeviceToHost));
 	memset(lambda, 0, sizeof(float) * 2000);
 
 	
 	for (int i = 0; i < iterations; i++)
 	{
-		this->projectConstraints<DistanceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
-		this->projectConstraints<SurfaceConstraint>(new_x, new_y, new_z, invmass, phase, dt / iterations, iterations);
+		this->projectConstraints<DistanceConstraint>(args.new_x, args.new_y, args.new_z, args.invmass, dt / iterations, iterations);
+		this->projectConstraints<SurfaceConstraint>(args.new_x, args.new_y, args.new_z, args.invmass, dt / iterations, iterations);
 	}
 
-	gpuErrchk(cudaMemcpy(new_x, x_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(new_y, y_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(new_z, z_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(invmass, invmass_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(args.new_x, x_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(args.new_y, y_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(args.new_z, z_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(args.invmass, invmass_cpu, sizeof(float) * nParticles, cudaMemcpyHostToDevice));
 
 	clearAllConstraints();
 }
 
-void DirectConstraintSolverCPU::calculateStabilisationForces(float* x, float* y, float* z, int* mode, float* new_x, float* new_y, float* new_z, float* invmass, float dt, int iterations)
+void DirectConstraintSolverCPU::calculateStabilisationForces(float dt, int iterations)
 {
 	throw - 1;
 }
 
 template<typename T>
-void DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations)
+void DirectConstraintSolverCPU::projectConstraints(float* x, float* y, float* z, float* invmass, float dt, int iterations)
 {
 
 	auto constraintData = ConstraintStorage<T>::Instance.getConstraints();

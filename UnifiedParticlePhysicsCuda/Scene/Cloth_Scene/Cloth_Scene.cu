@@ -67,7 +67,11 @@ void Cloth_Scene::reset()
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 }
 
-void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void Cloth_Scene::initData(int nParticles,
+	float* dev_x, float* dev_y, float* dev_z,
+	float* dev_vx, float* dev_vy, float* dev_vz,
+	int* dev_SDF_mode, float* dev_SDF_value, float* dev_SDF_normal_x, float* dev_SDF_normal_y, float* dev_SDF_normal_z,
+	int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -101,7 +105,8 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, 0, -20, -80, dev_phase, 3);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_SDF_mode, dev_SDF_value, dev_SDF_normal_x, dev_SDF_normal_y, dev_SDF_normal_z,
+		dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, 0, -20, -80, dev_phase, 3);
 
 	auto vz_ptr = thrust::device_pointer_cast(dev_vz);
 

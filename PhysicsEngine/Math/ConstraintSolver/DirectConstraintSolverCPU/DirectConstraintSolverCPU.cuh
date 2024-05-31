@@ -10,18 +10,10 @@ public:
 	DirectConstraintSolverCPU(int nParticles);
 	virtual ~DirectConstraintSolverCPU();
 
-	virtual void calculateForces(
-		float* x, float* y, float* z, int* mode,
-		float* new_x, float* new_y, float* new_z,
-		float* invmass, float dt, int iterations
-	) override;
+	virtual void calculateForces(float dt, int iterations) override;
 
-	virtual void calculateStabilisationForces(
-		float* x, float* y, float* z, int* mode,
-		float* new_x, float* new_y, float* new_z,
-		float* invmass, float dt, int iterations
-	) override;
+	virtual void calculateStabilisationForces(float dt, int iterations) override;
 
 	template<typename T>
-	void projectConstraints(float* x, float* y, float* z, float* invmass, int* phase, float dt, int iterations);
+	void projectConstraints(float* x, float* y, float* z, float* invmass, float dt, int iterations);
 };

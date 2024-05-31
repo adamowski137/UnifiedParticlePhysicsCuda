@@ -216,83 +216,80 @@ LinearSystemConstraintSolver::~LinearSystemConstraintSolver()
 	gpuErrchk(cudaFree(dev_c_max));
 }
 
-void LinearSystemConstraintSolver::calculateForces(
-	float* x, float* y, float* z, int* mode,
-	float* new_x, float* new_y, float* new_z,
-	float* invmass, float dt, int iterations
-)
+void LinearSystemConstraintSolver::calculateForces(float dt, int iterations)
 {
+	auto args = builder.build();
+
 	int num_iterations = 1;
 	for (int i = 0; i < num_iterations; i++)
 	{
-		gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
-		gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
-		gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
+	//	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
+	//	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
+	//	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
 
-		thrust::device_ptr<float> thrust_x(new_x);
-		thrust::device_ptr<float> thrust_y(new_y);
-		thrust::device_ptr<float> thrust_z(new_z);
+	//	thrust::device_ptr<float> thrust_x(new_x);
+	//	thrust::device_ptr<float> thrust_y(new_y);
+	//	thrust::device_ptr<float> thrust_z(new_z);
 
-		thrust::device_ptr<float> thrust_dx(dev_dx);
-		thrust::device_ptr<float> thrust_dy(dev_dy);
-		thrust::device_ptr<float> thrust_dz(dev_dz);
+	//	thrust::device_ptr<float> thrust_dx(dev_dx);
+	//	thrust::device_ptr<float> thrust_dy(dev_dy);
+	//	thrust::device_ptr<float> thrust_dz(dev_dz);
 
-		this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
-		this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
+	//	this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
+	//	this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, true, iterations);
 
-		//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
-		//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+	//	//this->projectConstraints<SurfaceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
+	//	//this->projectConstraints<DistanceConstraint>(invmass, new_x, new_y, new_z, mode, dt / num_iterations, false, iterations);
 
-		auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
+	//	auto rigidBodyConstraints = ConstraintStorage<RigidBodyConstraint>::Instance.getCpuConstraints();
 
-		ConstraintArgsBuilder builder{};
-		builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, nullptr, dt / num_iterations);
+	//	ConstraintArgsBuilder builder{};
+	//	builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, nullptr, dt / num_iterations);
 
-		for (int i = 0; i < rigidBodyConstraints.size(); i++)
-		{
-			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
-			rigidBodyConstraints[i]->calculatePositionChange(builder.build());
-		}
+	//	for (int i = 0; i < rigidBodyConstraints.size(); i++)
+	//	{
+	//		rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
+	//		rigidBodyConstraints[i]->calculatePositionChange(builder.build());
+	//	}
 
- 		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
-		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
-		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+ //		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+	//	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
+	//	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 	}
 
 	this->clearAllConstraints();
 }
 
-void LinearSystemConstraintSolver::calculateStabilisationForces(
-	float* x, float* y, float* z, int* mode,
-	float* new_x, float* new_y, float* new_z,
-	float* invmass, float dt, int iterations)
+void LinearSystemConstraintSolver::calculateStabilisationForces(float dt, int iterations)
 {
+	auto args = builder.build();
+
 	gpuErrchk(cudaMemset(dev_dx, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_dy, 0, nParticles * sizeof(float)));
 	gpuErrchk(cudaMemset(dev_dz, 0, nParticles * sizeof(float)));
 
-	thrust::device_ptr<float> thrust_x(x);
-	thrust::device_ptr<float> thrust_y(y);
-	thrust::device_ptr<float> thrust_z(z);
+	//thrust::device_ptr<float> thrust_x(x);
+	//thrust::device_ptr<float> thrust_y(y);
+	//thrust::device_ptr<float> thrust_z(z);
 
-	thrust::device_ptr<float> thrust_new_x(new_x);
-	thrust::device_ptr<float> thrust_new_y(new_y);
-	thrust::device_ptr<float> thrust_new_z(new_z);
+	//thrust::device_ptr<float> thrust_new_x(new_x);
+	//thrust::device_ptr<float> thrust_new_y(new_y);
+	//thrust::device_ptr<float> thrust_new_z(new_z);
 
-	thrust::device_ptr<float> thrust_dx(dev_dx);
-	thrust::device_ptr<float> thrust_dy(dev_dy);
-	thrust::device_ptr<float> thrust_dz(dev_dz);
+	//thrust::device_ptr<float> thrust_dx(dev_dx);
+	//thrust::device_ptr<float> thrust_dy(dev_dy);
+	//thrust::device_ptr<float> thrust_dz(dev_dz);
 
-	this->projectConstraints<DistanceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
-	this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
+	//this->projectConstraints<DistanceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
+	//this->projectConstraints<SurfaceConstraint>(invmass, x, y, z, mode, dt, true, iterations);
 
-	thrust::transform(thrust_new_x, thrust_new_x + nParticles, thrust_dx, thrust_new_x, thrust::plus<float>());
-	thrust::transform(thrust_new_y, thrust_new_y + nParticles, thrust_dy, thrust_new_y, thrust::plus<float>());
-	thrust::transform(thrust_new_z, thrust_new_z + nParticles, thrust_dz, thrust_new_z, thrust::plus<float>());
+	//thrust::transform(thrust_new_x, thrust_new_x + nParticles, thrust_dx, thrust_new_x, thrust::plus<float>());
+	//thrust::transform(thrust_new_y, thrust_new_y + nParticles, thrust_dy, thrust_new_y, thrust::plus<float>());
+	//thrust::transform(thrust_new_z, thrust_new_z + nParticles, thrust_dz, thrust_new_z, thrust::plus<float>());
 
-	thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
-	thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
-	thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+	//thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
+	//thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
+	//thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
 
 	this->clearAllConstraints();
 }

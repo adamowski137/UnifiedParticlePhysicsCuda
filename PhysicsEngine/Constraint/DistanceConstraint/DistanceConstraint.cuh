@@ -9,9 +9,11 @@ public:
 	__host__ __device__ DistanceConstraint init(float d, int p1, int p2, ConstraintLimitType type, float k = 0.f, bool apply_friction = true);
 	__host__ __device__ float operator()(float* x, float* y, float* z);
 	__host__ __device__ void positionDerivative(float* x, float* y, float* z, float* jacobian, int nParticles, int index);
+	__host__ __device__ void calculateNormalVector(ConstraintArgs args, float n[3], float* dist);
 	__device__ void directSolve(ConstraintArgs args);
 	__host__ void directSolve_cpu(float* x, float* y, float* z, float* invmass);
 private:
+	float n[3];
 	bool apply_friction;
 	float d;
 	float muS = 0.001f;

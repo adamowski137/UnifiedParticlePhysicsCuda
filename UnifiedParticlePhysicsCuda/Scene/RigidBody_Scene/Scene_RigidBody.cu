@@ -58,7 +58,11 @@ void Scene_RigidBody::reset()
 	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 }
 
-void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void Scene_RigidBody::initData(int nParticles,
+	float* dev_x, float* dev_y, float* dev_z,
+	float* dev_vx, float* dev_vy, float* dev_vz,
+	int* dev_SDF_mode, float* dev_SDF_value, float* dev_SDF_normal_x, float* dev_SDF_normal_y, float* dev_SDF_normal_z,
+	int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -93,8 +97,12 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 0, 4, 0, 30, 0, dev_phase, 3);
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 64, 8, 0, 6, 0, dev_phase, 4);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z,
+		dev_SDF_mode, dev_SDF_value, dev_SDF_normal_x, dev_SDF_normal_y, dev_SDF_normal_z,
+		dev_invmass, 0, 4, 0, 30, 0, dev_phase, 3);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z,
+		dev_SDF_mode, dev_SDF_value, dev_SDF_normal_x, dev_SDF_normal_y, dev_SDF_normal_z,
+		dev_invmass, 64, 8, 0, 6, 0, dev_phase, 4);
 
 }
 
