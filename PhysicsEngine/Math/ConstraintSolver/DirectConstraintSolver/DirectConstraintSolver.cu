@@ -34,6 +34,13 @@ __global__ void applyOffsetKern(int nParticles,
 	}
 }
 
+__global__ void setConstraintsKern(int cardinality, int* nConstraintsPerParticle, int* p)
+{
+	const int index = threadIdx.x + (blockIdx.x * blockDim.x);
+	if (index >= cardinality) return;
+	nConstraintsPerParticle[p[index]] = 1;
+}
+
 
 DirectConstraintSolver::DirectConstraintSolver(int nParticles) : ConstraintSolver(nParticles)
 {
@@ -53,13 +60,9 @@ void DirectConstraintSolver::calculateForces(
 	float* new_x, float* new_y, float* new_z,
 	float* invmass, float dt, int iterations)
 {
-	auto thrust_x = thrust::device_pointer_cast(new_x);
-	auto thrust_y = thrust::device_pointer_cast(new_y);
-	auto thrust_z = thrust::device_pointer_cast(new_z);
-
-	auto thrust_dx = thrust::device_pointer_cast(dev_dx);
-	auto thrust_dy = thrust::device_pointer_cast(dev_dy);
-	auto thrust_dz = thrust::device_pointer_cast(dev_dz);
+	thrust::device_ptr<float> dev_dx_ptr(dev_dx);
+	thrust::device_ptr<float> dev_dy_ptr(dev_dy);
+	thrust::device_ptr<float> dev_dz_ptr(dev_dz);
 
 	ConstraintArgsBuilder builder{};
 	builder.initBase(new_x, new_y, new_z, dev_dx, dev_dy, dev_dz, invmass, dev_nConstraintsPerParticle, dt / iterations);
@@ -76,16 +79,21 @@ void DirectConstraintSolver::calculateForces(
 		gpuErrchk(cudaMemset(dev_dx, 0, sizeof(float) * nParticles));
 		gpuErrchk(cudaMemset(dev_dy, 0, sizeof(float) * nParticles));
 		gpuErrchk(cudaMemset(dev_dz, 0, sizeof(float) * nParticles));
+		gpuErrchk(cudaMemset(dev_nConstraintsPerParticle, 0, sizeof(int) * nParticles));
 
 		for (int i = 0; i < rigidBodyConstraints.size(); i++)
 		{
+			int threads = 32;
+			int blocks = (rigidBodyConstraints[i]->n + threads - 1) / threads;
+			setConstraintsKern<<<blocks, threads>>>(rigidBodyConstraints[i]->n, dev_nConstraintsPerParticle, rigidBodyConstraints[i]->p);
+			gpuErrchk(cudaGetLastError());
+			gpuErrchk(cudaDeviceSynchronize());
+
 			rigidBodyConstraints[i]->calculateShapeCovariance(new_x, new_y, new_z, invmass);
 			rigidBodyConstraints[i]->calculatePositionChange(builder.build());
 		}
 
-		thrust::transform(thrust_x, thrust_x + nParticles, thrust_dx, thrust_x, thrust::plus<float>());
-		thrust::transform(thrust_y, thrust_y + nParticles, thrust_dy, thrust_y, thrust::plus<float>());
-		thrust::transform(thrust_z, thrust_z + nParticles, thrust_dz, thrust_z, thrust::plus<float>());
+		applyOffset(new_x, new_y, new_z);
 	}
 	clearAllConstraints();
 }

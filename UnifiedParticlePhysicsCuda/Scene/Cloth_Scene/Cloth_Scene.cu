@@ -64,6 +64,7 @@ void Cloth_Scene::draw()
 void Cloth_Scene::reset()
 {
 	particles.clearConstraints();
+	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 }
 
