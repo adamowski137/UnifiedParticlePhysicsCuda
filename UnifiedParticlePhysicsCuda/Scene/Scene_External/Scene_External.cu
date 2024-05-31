@@ -43,7 +43,7 @@ void Scene_External::update(float dt)
 
 void Scene_External::draw()
 {
-	particles.renderData(sceneSphere.instancingVBO);
+	particles.sendDataToVBO(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 

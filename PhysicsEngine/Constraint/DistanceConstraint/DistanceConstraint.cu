@@ -2,12 +2,13 @@
 #include <cmath>
 #include "../Constraint.cuh"
 
-__host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1, int p2, ConstraintLimitType type, float compliance)
+__host__ __device__ DistanceConstraint DistanceConstraint::init(float d, int p1, int p2, ConstraintLimitType type, float k, bool apply_friction)
 {
-	((Constraint*)this)->init(2, compliance, type);
+	((Constraint*)this)->init(2, k, type);
 	this->p[0] = p1;
 	this->p[1] = p2;
 	this->d = d;
+	this->apply_friction = apply_friction;
 	return *this;
 }
 
@@ -76,7 +77,7 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 	atomicAdd(args.nConstraintsPerParticle + p[0], 1);
 	atomicAdd(args.nConstraintsPerParticle + p[1], 1);
 
-	if (args.additionalArgsSet && lambda > 0.001f)
+	if (apply_friction && args.additionalArgsSet && lambda > 0.001f)
 	{
 
 		float dx = (args.additionalArgs.oldPosition.x[p[0]] - args.x[p[0]]) - (args.additionalArgs.oldPosition.x[p[1]] - args.x[p[1]]);

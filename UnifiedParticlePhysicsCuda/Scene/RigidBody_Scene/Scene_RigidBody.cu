@@ -48,7 +48,7 @@ void Scene_RigidBody::update(float dt)
 
 void Scene_RigidBody::draw()
 {
-	particles.renderData(sceneSphere.instancingVBO);
+	particles.sendDataToVBO(sceneSphere.instancingVBO);
 	renderer->drawInstanced(sceneSphere, particles.particleCount());
 }
 
