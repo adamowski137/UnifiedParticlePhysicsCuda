@@ -32,7 +32,7 @@ TestScene::~TestScene()
 
 void TestScene::update(float dt)
 {
-	particles.calculateNewPositions(dt);
+	if(!isPaused)	particles.calculateNewPositions(dt);
 	this->handleKeys();
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
 	renderer->setLightSourcePosition({ 0.f, 0.f, -10.f });

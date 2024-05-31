@@ -38,7 +38,7 @@ void KeyInput::setKeyDown(int key, bool flag)
 
 bool KeyInput::getKeyDown(int key)
 {
-    bool result;
+    bool result = false;
     auto it = keymap.find(key);
     if (it != keymap.end())
         result = keymap[key];
@@ -74,7 +74,7 @@ void KeyInput::setKeyReleased(int key, bool flag)
 
 bool KeyInput::getKeyReleased(int key)
 {
-    bool result;
+    bool result = false;
     auto it = releasemap.find(key);
     if (it != releasemap.end())
         result = releasemap[key];
@@ -91,7 +91,10 @@ int KeyInput::getScrollOffset()
 void KeyInput::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     for (KeyInput* instance : _instances)
+    {
         instance->setKeyDown(key, action != GLFW_RELEASE);
+		instance->setKeyReleased(key, action == GLFW_RELEASE);
+    }
 }
 
 void KeyInput::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

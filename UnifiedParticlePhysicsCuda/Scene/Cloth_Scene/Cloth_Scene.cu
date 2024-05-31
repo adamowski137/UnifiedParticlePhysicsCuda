@@ -41,7 +41,7 @@ Cloth_Scene::~Cloth_Scene()
 
 void Cloth_Scene::update(float dt)
 {
-	particles.calculateNewPositions(dt);
+	if(!isPaused)	particles.calculateNewPositions(dt);
 	this->handleKeys();
 
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());

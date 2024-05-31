@@ -35,6 +35,7 @@ int main()
 	auto current_time = std::chrono::high_resolution_clock::now();
 	while (!Window::Instance.isClosed())
 	{
+
 		auto new_time = std::chrono::high_resolution_clock::now();
 		float frameTime = std::chrono::duration_cast<std::chrono::microseconds>(new_time - current_time).count() / 1000000.f;
 		current_time = new_time;
