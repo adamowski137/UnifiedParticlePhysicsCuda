@@ -28,7 +28,7 @@ __global__ void findSurfaceCollisions(
 		float sign = v1 < 0 ? 1 : -1;
 		if (hits[i * nParticles + index] == 1)
 		{
-			if (hit_sign[i * nParticles + index] == sign)
+			if (hit_sign[i * nParticles + index] == -sign)
 				hits[i * nParticles + index] = 0;
 		}
 		else
