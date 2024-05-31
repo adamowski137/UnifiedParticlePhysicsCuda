@@ -11,7 +11,8 @@
 Scene::Scene(std::shared_ptr<Shader>& shader, int n, int mode) :
 	camera(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height, { 0, 0, -10 }),
 	particles(n, mode),
-	input({ GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D }, {})
+	isPaused(false),
+	input({ GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_SPACE }, {GLFW_KEY_SPACE})
 {
 	renderer = std::make_unique<ParticleRenderer>(shader);
 	sceneSphere = getSphereData(10, 10);
@@ -57,6 +58,11 @@ void Scene::handleKeys()
 			cameraAngleVertical = -verticalLimit;
 	}
 
+	if (input.getKeyReleased(GLFW_KEY_SPACE))
+	{
+		isPaused = !isPaused;
+		input.setKeyReleased(GLFW_KEY_SPACE, false);
+	}
 
 	int scroll = input.getScrollOffset();
 	if (scroll)

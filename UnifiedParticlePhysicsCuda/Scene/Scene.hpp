@@ -17,7 +17,9 @@ protected:
 	Camera camera;
 	KeyInput input;
 	float cameraRadius, cameraAngleHorizontal, cameraAngleVertical;
+	bool isPaused;
 public:
+	inline bool isScenePaused() { return isPaused; }
 	Scene(std::shared_ptr<Shader>& shader, int n, int mode = 0);
 	virtual ~Scene();
 	virtual void update(float dt);
