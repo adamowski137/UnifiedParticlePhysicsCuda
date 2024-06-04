@@ -252,7 +252,7 @@ void CollisionGrid::findAndUpdateCollisions(float* x, float* y, float* z, int* p
 		gpuErrchk(cudaMalloc((void**)&dev_foundCollisions, sizeof(DistanceConstraint) * nConstraintsMaxAllocated));
 	}
 
-	addCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, dev_counts, dev_foundCollisions, 2 * PARTICLERADIUS, EngineConfig::K_DISTANCE_CONSTRAINT_COLLISION, nParticles);
+	addCollisionsKern << <particle_bound_blocks, threads >> > (dev_collisions, dev_counts, dev_foundCollisions, 2 * PARTICLERADIUS, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_COLLISION, nParticles);
 
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());

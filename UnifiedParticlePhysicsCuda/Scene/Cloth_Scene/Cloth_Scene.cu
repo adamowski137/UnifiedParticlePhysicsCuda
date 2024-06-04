@@ -85,7 +85,7 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	int H = CLOTH_H;
 	Cloth::initClothSimulation_LRA(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE, {0, W - 1});
 
-	std::vector<float> invmass(nParticles, 1.f);
+	std::vector<float> invmass(CLOTH_W * CLOTH_H, 1.f);
 	invmass[0] = 0.f;
 	invmass[W - 1] = 0.f;
 	gpuErrchk(cudaMemcpy(dev_invmass, invmass.data(), invmass.size() * sizeof(float), cudaMemcpyHostToDevice));

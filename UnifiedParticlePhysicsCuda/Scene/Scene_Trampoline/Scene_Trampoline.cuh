@@ -2,15 +2,15 @@
 
 #include "../Scene.hpp"
 #include "../../PhysicsEngine/Cloth/Cloth.cuh"
-#include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 #include "../../GUI/Renderer/ClothRenderer.hpp"
+#include "../../PhysicsEngine/RigidBodies/RigidBody.cuh"
 
 
-class Scene_Covering : public Scene
+class Scene_Trampoline : public Scene
 {
 public:
-	Scene_Covering();
-	virtual ~Scene_Covering();
+	Scene_Trampoline();
+	virtual ~Scene_Trampoline();
 	virtual void update(float dt);
 	virtual void draw();
 	virtual void reset();

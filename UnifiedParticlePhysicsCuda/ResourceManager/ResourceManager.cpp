@@ -5,6 +5,7 @@
 #include "../../GUI/Renderer/MeshGenerator.hpp"
 #include "../Scene/TestScene/TestScene.cuh"
 #include "../Scene/Scene_Covering/Scene_Covering.cuh"
+#include "../Scene/Scene_Trampoline/Scene_Trampoline.cuh"
 #include "../Scene/Scene_External/Scene_External.cuh"
 #include "../Scene/Cloth_Scene/Cloth_Scene.cuh"
 #include "../Scene/RigidBody_Scene/Scene_RigidBody.cuh"
@@ -46,12 +47,37 @@ void ResourceManager::loadConfig(std::string configPath)
 
 void ResourceManager::loadScenes(int amountOfPoints)
 {
+	const std::string scenesPath = "../../../../UnifiedParticlePhysicsCuda/Scene/";
+	
+	EngineConfig currConfig = EngineConfig::readConfig(scenesPath + "Scene_External/config.txt");
+	GlobalEngineConfig::config = currConfig;
+	configs.insert(std::make_pair("external scene", currConfig));	
 	scenes.insert(std::make_pair("external scene", std::shared_ptr<Scene>(new Scene_External(amountOfPoints))));
+
+	currConfig = EngineConfig::readConfig(scenesPath + "TestScene/config.txt");
+	GlobalEngineConfig::config = currConfig;
 	scenes.insert(std::make_pair("first scene", std::shared_ptr<Scene>(new TestScene(5000))));
+	configs.insert(std::make_pair("first scene", currConfig));
+
+	currConfig = EngineConfig::readConfig(scenesPath + "Cloth_Scene/config.txt");
+	GlobalEngineConfig::config = currConfig;
 	scenes.insert(std::make_pair("Cloth simulation", std::shared_ptr<Scene>(new Cloth_Scene())));
+	configs.insert(std::make_pair("Cloth simulation", currConfig));
+	
+	currConfig = EngineConfig::readConfig(scenesPath + "RigidBody_Scene/config.txt");
+	GlobalEngineConfig::config = currConfig;
 	scenes.insert(std::make_pair("Rigid body simulation", std::shared_ptr<Scene>(new Scene_RigidBody())));
-	scenes.insert(std::make_pair("Covering simulaiton", std::shared_ptr<Scene>(new Scene_Covering())));
-	//scenes.insert(std::make_pair("naive drawing of lots of spheres", std::shared_ptr<Scene>(new Scene_NaiveDraw())));
+	configs.insert(std::make_pair("Rigid body simulation", currConfig));
+	
+	currConfig = EngineConfig::readConfig(scenesPath + "Scene_Covering/config.txt");
+	GlobalEngineConfig::config = currConfig;
+	scenes.insert(std::make_pair("Covering simulation", std::shared_ptr<Scene>(new Scene_Covering())));
+	configs.insert(std::make_pair("Covering simulation", currConfig));
+
+	currConfig = EngineConfig::readConfig(scenesPath + "Scene_Trampoline/config.txt");
+	GlobalEngineConfig::config = currConfig;
+	scenes.insert(std::make_pair("Cloth trampoline simulation", std::shared_ptr<Scene>(new Scene_Trampoline())));
+	configs.insert(std::make_pair("Cloth trampoline simulation", currConfig));
 
 	for (const auto& it : scenes)
 	{
@@ -63,6 +89,7 @@ void ResourceManager::loadScenes(int amountOfPoints)
 
 	options.sceneData[3].isActive = true;
 	currentScene = scenes[options.sceneData[3].name];
+	GlobalEngineConfig::config = configs[options.sceneData[3].name];
 	currentScene.get()->reset();
 }
 
@@ -75,7 +102,8 @@ std::shared_ptr<Scene>& ResourceManager::getActiveScene()
 			if (options.sceneData[i].isActive)
 			{
 				currentScene = scenes[options.sceneData[i].name];
-				scenes[options.sceneData[i].name].get()->reset();
+				GlobalEngineConfig::config = configs[options.sceneData[i].name];
+				currentScene.get()->reset();
 				break;
 			}
 		}

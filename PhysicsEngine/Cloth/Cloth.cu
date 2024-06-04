@@ -90,20 +90,20 @@ void Cloth::initClothSimulation_simple(Cloth& cloth, int H, int W, float d,
 
 
 			if (j < W - 1)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
 
 			if(i > 0)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
 
 			if (j < W - 1 && i > 0)
 			{
-				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_BENDING));
+				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_BENDING));
 			}
 		}
 	}
 
 	auto phase_ptr = thrust::device_pointer_cast(phase);
-	//thrust::fill(phase_ptr, phase_ptr + W * H, 99);
+	thrust::fill(phase_ptr, phase_ptr + W * H, 99);
 
 	gpuErrchk(cudaMemcpy(x, x_cpu.data(), sizeof(float) * x_cpu.size(), cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(y, y_cpu.data(), sizeof(float) * y_cpu.size(), cudaMemcpyHostToDevice));
@@ -149,14 +149,14 @@ void Cloth::initClothSimulation_LRA(Cloth& cloth, int H, int W, float d,
 
 
 			if (j < W - 1)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
 
 			if (i > 0)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
 
 			if (j < W - 1 && i > 0)
 			{
-				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_BENDING, false));
+				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_BENDING, false));
 			}
 
 			// LRA
@@ -168,7 +168,7 @@ void Cloth::initClothSimulation_LRA(Cloth& cloth, int H, int W, float d,
 					int att_j = particleIdx % W;
 
 					float dist = sqrtf((att_i - i) * d * (att_i - i) * d + (att_j - j) * d * (att_j - j) * d);
-					cloth.constraints.push_back(DistanceConstraint().init(dist, particleIdx, i * W + j, ConstraintLimitType::EQ, EngineConfig::K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING / 100, false));
+					cloth.constraints.push_back(DistanceConstraint().init(dist, particleIdx, i * W + j, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING / 50, false));
 				}
 			}
 		}

@@ -1,12 +1,21 @@
 #pragma once
+#include <string>
 
-class EngineConfig 
+struct EngineConfig 
 {
 public:
-	static float K_DISTANCE_CONSTRAINT_COLLISION;
-	static float K_DISTANCE_CONSTRAINT_CLOTH_BENDING;
-	static float K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING;
-	static float K_SURFACE_CONSTRAINT;
+	float K_DISTANCE_CONSTRAINT_COLLISION;
+	float K_DISTANCE_CONSTRAINT_CLOTH_BENDING;
+	float K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING;
+	float K_SURFACE_CONSTRAINT;
 
-	static void readConfig();
+	static EngineConfig readConfig(std::string path);
 };
+
+class GlobalEngineConfig 
+{
+public:
+	static EngineConfig config;
+};
+
+

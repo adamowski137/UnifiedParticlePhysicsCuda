@@ -1,4 +1,4 @@
-#include "Scene_Covering.cuh"
+#include "Scene_Trampoline.cuh"
 #include "../../ResourceManager/ResourceManager.hpp"
 
 #include "../../PhysicsEngine/Particle/ParticleData.cuh"
@@ -7,14 +7,14 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_W 30
-#define CLOTH_H 30
-#define N_RIGID_BODY 10
+#define CLOTH_W 1000
+#define CLOTH_H 1000
+#define N_RIGID_BODY 6
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
-Scene_Covering::Scene_Covering() :
-	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON),
-		clothRenderer(ResourceManager::Instance.Shaders["cloth"])
+Scene_Trampoline::Scene_Trampoline() :
+	Scene(ResourceManager::Instance.Shaders["instancedphong"], NUM_PARTICLES, ANY_CONSTRAINTS_ON | GRID_CHECKING_ON),
+	clothRenderer(ResourceManager::Instance.Shaders["cloth"])
 {
 	std::vector<float> offsets;
 	offsets.resize(NUM_PARTICLES * 3, 0.0f);
@@ -23,8 +23,8 @@ Scene_Covering::Scene_Covering() :
 
 	sceneSphere.addInstancing(offsets);
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
-	particles.setExternalForces(0.f, -9.81f, 0.f);
-	particles.setSurfaces({ Surface().init(0, 1, 0, 0)});
+	particles.setExternalForces(0.f, -98.1f, 0.f);
+	particles.setSurfaces({ });
 
 	camera.setPosition(glm::vec3(0, 0, -10));
 
@@ -32,17 +32,16 @@ Scene_Covering::Scene_Covering() :
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 
-	particles.mapCudaVBO(cloth.clothMesh.VBO); 
+	particles.mapCudaVBO(cloth.clothMesh.VBO);
 }
 
-Scene_Covering::~Scene_Covering()
+Scene_Trampoline::~Scene_Trampoline()
 {
 }
 
-void Scene_Covering::update(float dt)
+void Scene_Trampoline::update(float dt)
 {
-	if(isPaused)	
-		particles.calculateNewPositions(dt);
+	if (isPaused)	particles.calculateNewPositions(dt);
 	this->handleKeys();
 
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
@@ -52,7 +51,7 @@ void Scene_Covering::update(float dt)
 	clothRenderer.getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
 }
 
-void Scene_Covering::draw()
+void Scene_Trampoline::draw()
 {
 	//particles.sendDataToVBO(sceneSphere.instancingVBO);
 	//renderer->drawInstanced(sceneSphere, particles.particleCount());
@@ -62,14 +61,14 @@ void Scene_Covering::draw()
 	clothRenderer.draw(cloth.clothMesh);
 }
 
-void Scene_Covering::reset()
+void Scene_Trampoline::reset()
 {
 	particles.clearConstraints();
 	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
 }
 
-void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
+void Scene_Trampoline::initData(int nParticles, float* dev_x, float* dev_y, float* dev_z, float* dev_vx, float* dev_vy, float* dev_vz, int* dev_phase, float* dev_invmass)
 {
 	curandState* dev_curand;
 	int threads = 32;
@@ -81,11 +80,18 @@ void Scene_Covering::initData(int nParticles, float* dev_x, float* dev_y, float*
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 1.7f;
+	float d = 0.5f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 1, -5, dev_phase, 3);
-	Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 30.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
+	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 20, -5, dev_phase, 3);
+	Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 10.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
+
+	std::vector<float> invmass(CLOTH_W * CLOTH_H, 100.f);
+	invmass[0] = 0.f;
+	invmass[W - 1] = 0.f;
+	invmass[CLOTH_W * (CLOTH_H - 1)] = 0.f;
+	invmass[CLOTH_W * CLOTH_H - 1] = 0.f;
+	gpuErrchk(cudaMemcpy(dev_invmass, invmass.data(), invmass.size() * sizeof(float), cudaMemcpyHostToDevice));
 
 	fillRandomKern << <blocks, threads >> > (nParticles, dev_vx, dev_curand, 0.f, 0.f);
 	gpuErrchk(cudaGetLastError());

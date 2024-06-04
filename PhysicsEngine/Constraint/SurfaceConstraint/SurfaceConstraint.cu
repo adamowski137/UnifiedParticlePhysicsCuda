@@ -55,9 +55,11 @@ __device__ void SurfaceConstraint::directSolve(ConstraintArgs args)
 		float tmpy = w * s.normal[1];
 		float tmpz = w * s.normal[2];
 
-		float p1 = dx - tmpx;
-		float p2 = dy - tmpy;
-		float p3 = dz - tmpz;
+		float strength = 5.f;
+
+		float p1 = (dx - tmpx) * strength;
+		float p2 = (dy - tmpy) * strength;
+		float p3 = (dz - tmpz) * strength;
 
 		float lsq = p1 * p1 + p2 * p2 + p3 * p3;
 

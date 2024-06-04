@@ -103,8 +103,10 @@ __device__ void DistanceConstraint::directSolve(ConstraintArgs args)
 		float lsq = p1 * p1 + p2 * p2 + p3 * p3;
 
 		float denom = 1 / (1 / (args.invmass[p[0]]) + 1 / (args.invmass[p[1]]));
-		float w1 = (1 / args.invmass[p[0]]) * denom;
-		float w2 = -(1 / args.invmass[p[1]]) * denom;
+
+		float strength = 5.f;
+		float w1 = (1 / args.invmass[p[0]]) * denom * strength;
+		float w2 = -(1 / args.invmass[p[1]]) * denom * strength;
 
 		if (lsq < muS * muS * d * d)
 		{

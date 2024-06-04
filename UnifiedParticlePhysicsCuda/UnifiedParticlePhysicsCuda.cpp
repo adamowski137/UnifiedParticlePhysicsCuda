@@ -20,7 +20,6 @@ int main()
 	Window::Instance.initInstance(ResourceManager::Instance.config.width, ResourceManager::Instance.config.height);
 
 	const std::string shaderResPath = "../../../../GUI/res/shaders";
-	EngineConfig::readConfig();
 
 	ResourceManager::Instance.loadAllShaders(shaderResPath);
 	ResourceManager::Instance.loadScenes(n);

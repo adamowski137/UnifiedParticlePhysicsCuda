@@ -7,7 +7,8 @@
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
 
-#define amountOfPoints 576
+#define N_BODIES 6
+#define amountOfPoints 216 * N_BODIES
 
 Scene_RigidBody::Scene_RigidBody() : Scene(
 	ResourceManager::Instance.Shaders["instancedphong"], amountOfPoints, ANY_CONSTRAINTS_ON | SURFACE_CHECKING_ON | GRID_CHECKING_ON)
@@ -93,8 +94,13 @@ void Scene_RigidBody::initData(int nParticles, float* dev_x, float* dev_y, float
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 0, 4, 0, 30, 0, dev_phase, 3);
-	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 64, 8, 0, 6, 0, dev_phase, 4);
+	for (int i = 0; i < N_BODIES; i++)
+	{
+		rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 216 * i, 6, 0, 10*i, 0, dev_phase, i + 4);
+
+	}
+
+	//rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, 64, 8, 0, 6, 0, dev_phase, 4);
 
 }
 

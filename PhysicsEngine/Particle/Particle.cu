@@ -48,9 +48,13 @@ __global__ void predictPositionsKern(int amount,
 	if (index >= amount) return;
 
 	// update velocities
-	vx[index] += invmass[index] * dvx;
-	vy[index] += invmass[index] * dvy;
-	vz[index] += invmass[index] * dvz;
+	if (invmass[index] > 0)
+	{
+
+		vx[index] += dvx;
+		vy[index] += dvy;
+		vz[index] += dvz;
+	}
 
 	// predict new position - not the actual new positions
 	new_x[index] = x[index] + dt * vx[index];
@@ -94,7 +98,7 @@ __global__ void applyChangesKern(int amount,
 
 }
 
-ParticleType::ParticleType(int amount, int mode) : nParticles{amount}, mode{mode}
+ParticleType::ParticleType(int amount, int mode) : nParticles{ amount }, mode{ mode }
 {
 	blocks = ceilf((float)nParticles / THREADS);
 	//constraintSolver = std::unique_ptr<ConstraintSolver>{ new LinearSystemConstraintSolver{amount} };
@@ -176,7 +180,7 @@ void ParticleType::allocateDeviceData()
 	// by default every particle is in a separate group
 	thrust::device_ptr<int> phaseptr{ dev_phase };
 	thrust::sequence(phaseptr, phaseptr + nParticles, 1);
-	
+
 
 
 	gpuErrchk(cudaMalloc((void**)&dev_fc, 3 * nParticles * sizeof(float)));
@@ -225,18 +229,18 @@ void ParticleType::calculateNewPositions(float dt)
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	 //find neighboring particles and solid contacts ??
+	//find neighboring particles and solid contacts ??
 
-	//if (mode & GRID_CHECKING_ON)
-	//	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, dev_phase, nParticles);
+   //if (mode & GRID_CHECKING_ON)
+   //	collisionGrid->findAndUpdateCollisions(dev_x, dev_y, dev_z, dev_phase, nParticles);
 
-	//if (mode & SURFACE_CHECKING_ON)
-	//	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
+   //if (mode & SURFACE_CHECKING_ON)
+   //	surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_x, dev_y, dev_z);
 
-	//if (mode & ANY_CONSTRAINTS_ON)
-	//	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
+   //if (mode & ANY_CONSTRAINTS_ON)
+   //	constraintSolver->calculateStabilisationForces(dev_x, dev_y,dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 1);
 
-	// solve iterations
+   // solve iterations
 	if (mode & GRID_CHECKING_ON)
 		collisionGrid->findAndUpdateCollisions(dev_new_x, dev_new_y, dev_new_z, dev_phase, nParticles);
 
@@ -244,7 +248,7 @@ void ParticleType::calculateNewPositions(float dt)
 		surfaceCollisionFinder->findAndUpdateCollisions(nParticles, dev_new_x, dev_new_y, dev_new_z);
 
 	if (mode & ANY_CONSTRAINTS_ON)
-		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 3);
+		constraintSolver->calculateForces(dev_x, dev_y, dev_z, dev_phase, dev_new_x, dev_new_y, dev_new_z, dev_invmass, dt, 5);
 
 	// todo solve every constraint group 
 	// update predicted position

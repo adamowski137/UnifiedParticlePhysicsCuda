@@ -135,7 +135,7 @@ void SurfaceCollisionFinder::findAndUpdateCollisions(int nParticles, float* x, f
 
 	fillConstraints << <blocks, threads >> > (nParticles, nSurfaces,
 		dev_foundCollisions,
-		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS, EngineConfig::K_SURFACE_CONSTRAINT);
+		dev_hit, dev_hitsSum, dev_surface, PARTICLERADIUS, GlobalEngineConfig::config.K_SURFACE_CONSTRAINT);
 	
 	if(nCollisions > 0)
 		ConstraintStorage<SurfaceConstraint>::Instance.addDynamicConstraints(dev_foundCollisions, nCollisions);
