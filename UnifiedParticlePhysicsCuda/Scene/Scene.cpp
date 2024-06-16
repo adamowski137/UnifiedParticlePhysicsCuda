@@ -37,7 +37,6 @@ void Scene::reset()
 
 void Scene::handleKeys()
 {
-	glm::vec3 currCameraPosition = camera.getPosition();
 	float dA = 0.04, dR = 0.5, verticalLimit = 89.f / 180.f * 3.1415f;
 
 	if (input.getKeyDown(GLFW_KEY_A))

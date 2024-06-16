@@ -28,7 +28,7 @@ Cloth_Scene::Cloth_Scene() :
 	particles.mapCudaVBO(sceneSphere.instancingVBO);
 	particles.setExternalForces(0.f, -98.1f, -40.f);
 
-	camera.setPosition(glm::vec3(0, 0, -10));
+	//camera.setPosition(glm::vec3(0, -100, -10));
 
 	applySceneSetup();
 	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
@@ -42,6 +42,7 @@ Cloth_Scene::~Cloth_Scene()
 void Cloth_Scene::update(float dt)
 {
 	if(!isPaused)	particles.calculateNewPositions(dt);
+	auto pos = camera.getPosition();
 	this->handleKeys();
 
 	renderer->getShader().setUniformMat4fv("VP", camera.getProjectionViewMatrix());
@@ -83,7 +84,7 @@ void Cloth_Scene::initData(int nParticles, float* dev_x, float* dev_y, float* de
 	float d = 2.1f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
-	Cloth::initClothSimulation_LRA(cloth, H, W, d, -d * W / 2.f, 0.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE, {0, W - 1});
+	Cloth::initClothSimulation_LRA(cloth, H, W, d, -d * W / 2.f, 60.f, 0.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XY_PLANE, {0, W - 1});
 
 	std::vector<float> invmass(CLOTH_W * CLOTH_H, 1.f);
 	invmass[0] = 0.f;
