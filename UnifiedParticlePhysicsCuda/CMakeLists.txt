@@ -7,6 +7,7 @@ add_executable (UnifiedParticlePhysicsCuda
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Covering/Scene_Covering.cu
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Trampoline/Scene_Trampoline.cu
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_External/Scene_External.cu
+		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Scene_Friction/Scene_Friction.cu
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/Cloth_Scene/Cloth_Scene.cu
 		${CMAKE_CURRENT_SOURCE_DIR}/Scene/RigidBody_Scene/Scene_RigidBody.cu
 		${CMAKE_CURRENT_SOURCE_DIR}/ResourceManager/ResourceManager.cpp

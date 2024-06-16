@@ -90,14 +90,14 @@ void Cloth::initClothSimulation_simple(Cloth& cloth, int H, int W, float d,
 
 
 			if (j < W - 1)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, i * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
 
 			if(i > 0)
-				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING));
+				cloth.constraints.push_back(DistanceConstraint().init(d, i * W + j, (i - 1) * W + j, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_STRETCHING, false));
 
 			if (j < W - 1 && i > 0)
 			{
-				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_BENDING));
+				cloth.constraints.push_back(DistanceConstraint().init(d_across, i * W + j, (i - 1) * W + j + 1, ConstraintLimitType::EQ, GlobalEngineConfig::config.K_DISTANCE_CONSTRAINT_CLOTH_BENDING, false));
 			}
 		}
 	}

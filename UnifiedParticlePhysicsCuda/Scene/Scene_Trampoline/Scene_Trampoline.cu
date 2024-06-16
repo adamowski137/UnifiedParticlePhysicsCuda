@@ -7,8 +7,8 @@
 #include <curand_kernel.h>
 #include <vector>
 
-#define CLOTH_W 1000
-#define CLOTH_H 1000
+#define CLOTH_W 30
+#define CLOTH_H 30 
 #define N_RIGID_BODY 6
 #define NUM_PARTICLES (CLOTH_W * CLOTH_H + N_RIGID_BODY * N_RIGID_BODY * N_RIGID_BODY)
 
@@ -29,8 +29,8 @@ Scene_Trampoline::Scene_Trampoline() :
 	camera.setPosition(glm::vec3(0, 0, -10));
 
 	applySceneSetup();
-	ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
-	ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
+	//ConstraintStorage<DistanceConstraint>::Instance.addStaticConstraints(cloth.getConstraints().first, cloth.getConstraints().second);
+	//ConstraintStorage<RigidBodyConstraint>::Instance.setCpuConstraints(rigidBody.getConstraints());
 
 	particles.mapCudaVBO(cloth.clothMesh.VBO);
 }
@@ -80,13 +80,13 @@ void Scene_Trampoline::initData(int nParticles, float* dev_x, float* dev_y, floa
 	gpuErrchk(cudaGetLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	float d = 0.5f;
+	float d = 1.5f;
 	int W = CLOTH_W;
 	int H = CLOTH_H;
 	rigidBody.addRigidBodySquare(dev_x, dev_y, dev_z, dev_invmass, CLOTH_W * CLOTH_H, N_RIGID_BODY, -10, 20, -5, dev_phase, 3);
 	Cloth::initClothSimulation_simple(cloth, H, W, d, -d * W / 2.f, 10.f, 15.f, dev_x, dev_y, dev_z, dev_phase, ClothOrientation::XZ_PLANE);
 
-	std::vector<float> invmass(CLOTH_W * CLOTH_H, 100.f);
+	std::vector<float> invmass(CLOTH_W * CLOTH_H, 1.f);
 	invmass[0] = 0.f;
 	invmass[W - 1] = 0.f;
 	invmass[CLOTH_W * (CLOTH_H - 1)] = 0.f;

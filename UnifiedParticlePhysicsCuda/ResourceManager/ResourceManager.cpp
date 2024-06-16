@@ -9,6 +9,7 @@
 #include "../Scene/Scene_External/Scene_External.cuh"
 #include "../Scene/Cloth_Scene/Cloth_Scene.cuh"
 #include "../Scene/RigidBody_Scene/Scene_RigidBody.cuh"
+#include "../Scene/Scene_Friction/Scene_Friction.cuh"
 
 ResourceManager ResourceManager::Instance;
 
@@ -78,6 +79,11 @@ void ResourceManager::loadScenes(int amountOfPoints)
 	GlobalEngineConfig::config = currConfig;
 	scenes.insert(std::make_pair("Cloth trampoline simulation", std::shared_ptr<Scene>(new Scene_Trampoline())));
 	configs.insert(std::make_pair("Cloth trampoline simulation", currConfig));
+
+	currConfig = EngineConfig::readConfig(scenesPath + "Scene_Friction/config.txt");
+	GlobalEngineConfig::config = currConfig;
+	scenes.insert(std::make_pair("Friction simulation", std::shared_ptr<Scene>(new Scene_Friction())));
+	configs.insert(std::make_pair("Friction simulation", currConfig));
 
 	for (const auto& it : scenes)
 	{
