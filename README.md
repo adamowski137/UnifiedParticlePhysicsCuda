@@ -70,21 +70,20 @@ case of an inequality - $C(x_{i_1}, ..., x_{i_{n_j}}) \leq 0$. Let's say
 we are given an equality constraint of cardinality n, restricting
 position change along the constraint gradient and scaling it by the
 inverse mass of the particle yields:
-$$\Delta \bold{x_i} = \lambda w_i \frac{\partial C}{\partial \bold{x_i}}$$
+$$\Delta {x_i} = \lambda w_i \frac{\partial C}{\partial {x_i}}$$
 with $\lambda$ as a displacement scaling factor:
-$$
-    \lambda = \frac{-C}{w_1|\frac{\partial C}{\partial \bold{x_1}}| + ... + w_n|\frac{\partial C}{\partial \bold{x_n}}|},$$
+$$\lambda = \frac{-C}{w_1|\frac{\partial C}{\partial {x_1}}| + ... + w_n|\frac{\partial C}{\partial {x_n}}|},$$
 where $C$ is a value of the constraint function, $w_1, ..., w_n$ are the
 inverse masses of particles affected by this constraint, and
-$\bold{x_1}, ..., \bold{x_n}$ are the positions of those particles. Keep
-in mind that the term $\frac{\partial C}{\partial \bold{x_i}}$ is a
+${x_1}, ..., {x_n}$ are the positions of those particles. Keep
+in mind that the term $\frac{\partial C}{\partial {x_i}}$ is a
 partial derivative of a vector function with respect to a vector, it
 yields a vector.
 
 Adding this displacement to each of the particle position results in C
 being satisfied in the next time step. It seems desirable, but it
 creates a visible \"jittering\" effect that is especially noticeable in
-colliding bodies. To address this issue, we multiply $\Delta \bold{x_i}$
+colliding bodies. To address this issue, we multiply $\Delta {x_i}$
 by a parameter $k \in [0 ... 1]$ to give a smoother correction effect.
 In case of inequalities we clamp the value such that $\lambda \neq 0$ if
 and only if the inequality is not satisfied. The types of constraints
@@ -92,8 +91,9 @@ used in our simulations are:
 
 1. Distance constraint - keeps two particles of indicies i and j at a
     certain distance $d$ from each other. The constraint function is as
-    follows: $$C(d, x_i, x_j) = d - dist(x_i, x_j)$$ where
-    $dist(x_i, x_j)$ is a distance between particle i and j.
+    follows:
+   $$C(d, x_i, x_j) = d - dist(x_i, x_j)$$
+   where $dist(x_i, x_j)$ is a distance between particle i and j.
 
 2. Surface constraint - keeps a particle at a certain distance $d$ from
     the surface S. The constraint function is as follows:
@@ -111,26 +111,25 @@ used in our simulations are:
     alongside distance or surface constraint to simulate friction. It
     takes the calculated change in position and projects it on a vector
     that's perpendicular to the normal vector of the collision creating
-    $\bold\Delta \bold x_{\perp}$. Then we can compute the output of the
+    ${\Delta x_{\perp}}$. Then we can compute the output of the
     force that will be generated thanks to friction using:
-    $$\bold\Delta x_i = \frac{w_i}{w_i + w_j} \begin{cases}
-                \bold\Delta \bold x_\perp  & \text{if } |\bold\Delta \bold x_\perp| < \mu_s d \\
-                \bold\Delta \bold x_\perp \cdot min(\frac{\mu_k d}{|\bold\Delta \bold x_{\perp}|}, 1) & \text{ otherwise}
-            \end{cases}$$
+    $$\Delta x_i = \frac{w_i}{w_i + w_j} \Delta x_\perp  \text{if } |{\Delta x_\perp}| < \mu_s d$$
+    $$\Delta x_i = \frac{w_i}{w_i + w_j} \Delta x_\perp \cdot min(\frac{\mu_k d}{|\Delta x_{\perp}|}, 1)  \text{otherwise }$$
     where $\mu_s$ and $\mu_k$ are respectively static and dynamic friction constants.
 
 4. Rigid body constraint - keeps the rigid body shape intact. External
     forces and other constraints might change our rigid body and
     transform it into a deformed shape. To counteract this changes we
     need to compute the deformed shape's covariance matrix:
-    $$\bold A = \sum\limits^{n}_i(\bold  x_{i}^* - \bold c) \cdot \bold r_{i}^T$$
-    where $\bold c$ is the center of mass in the current configuration
-    and $\bold r_i$ is the particle's offset from the center of mass in
+    $$A = \sum_{i=0}^n (x_{i}^* - {c}) \cdot {r_{i}^T}$$
+    where $c$ is the center of mass in the current configuration
+    and $r_i$ is the particle's offset from the center of mass in
     the starting configuration. The algorithm is described at
     [@polar-theory] and implemented at [@polar-implement]. Afterwords we
-    use polar decomposition: $$\bold A = \bold{QR}$$ and generate the
-    rotation matrix $\bold{Q}$. Finally we can compute the output using:
-    $$\bold \Delta \bold x_i = \alpha ((\bold{Qr_i} + \bold c) - \bold x^*_i)$$
+    use polar decomposition:
+    $$A = QR$$
+    and generate the rotation matrix ${Q}$. Finally we can compute the output using:
+    $$\Delta  x_i = \alpha (({Qr_i} +  c) -  x^*_i)$$
     where $\alpha$ is a scaling parameter. In our case values
     $\approx 0.7$ gave the best results.
 
@@ -138,38 +137,23 @@ used in our simulations are:
 
 Our physics engine is based on a constraint solver that as an input
 takes a set of constraints imposed on particles present in the scene:
-$$\begin{array}{c}
-         & C_i(x + \Delta x) = 0, i = 1,...,n   \\
-         & C_j(x + \Delta x) \geq 0, j = 1,...,n
-    \end{array}$$
+$$C_i(x + \Delta x) = 0, i = 1,...,n$$
+$$C_j(x + \Delta x) \geq 0, j = 1,...,n$$
 We can get a good approximation of the solution by
 linearizing C around x:
-$$
-C_i(x + \Delta x) \approx C_i(x) + \nabla C_i(x)\Delta x,
-$$
-from which [\[deltax\]](#deltax){reference-type="eqref" reference="deltax"} and
-[\[lambda\]](#lambda){reference-type="eqref" reference="lambda"} can be
-derived. We can also look at position based dynamics as a constraint
+$$C_i(x + \Delta x) \approx C_i(x) + \nabla C_i(x)\Delta x$$
+We can also look at position based dynamics as a constraint
 optimization problem:
-$$\begin{split}
-        & \text{minimize:}\hspace{15px}  \frac{1}{2} \bold{\Delta x^T M \Delta x} \\
-        & \text{subject to:}\hspace{15px} \bold{J \Delta x = b}
-    \end{split}
-$$
-where $\bold{J} = \nabla C(x)$ and
-$\bold{b} = [-C_1, ..., -C_n]^T$. It can be further transformed to
-$$\begin{split}
-        & \bold{M \Delta x = J^T \lambda} \\
-        & \bold{J \Delta x = b}.
-    \end{split}$$
-Equations [\[deltax\]](#deltax){reference-type="eqref"
-reference="deltax"} and [\[lambda\]](#lambda){reference-type="eqref"
-reference="lambda"} can be derived from these conditions (considering
-the equation for a single constraint) and eliminating $\bold{\Delta x}$
+$$\text{minimize:    }  \frac{1}{2} {\Delta x^T M \Delta x}$$ 
+$$\text{subject to:   } {J \Delta x = b}$$
+where ${J} = \nabla C(x)$ and
+${b} = [-C_1, ..., -C_n]^T$. It can be further transformed to
+$${M \Delta x = J^T \lambda}$$
+$${J \Delta x = b}$$
+Equations above can be derived from these conditions (considering
+the equation for a single constraint) and eliminating ${\Delta x}$
 yields:
-$$
-\left[\bold{JM^{-1}J^T}\right]\bold{\lambda = b}
-$$
+$$\left[{JM^{-1}J^T}\right]{\lambda = b}$$
 which is a system of linear equations - solving it gives a solution for a displacement of
 particles with respect to n constraints.
 
@@ -227,7 +211,7 @@ contact.
 
 ### Constraint solving
 
-Solving a constraint results in generating $\bold{\Delta x}$. However
+Solving a constraint results in generating ${\Delta x}$. However
 this change might cause a different constraint to be violated. Iterating
 multiple times over those constraints partially solves this problem. For
 maximum efficiency we want to solve the constraints in parallel (Jacobi
@@ -236,9 +220,7 @@ identical distance constraints placed on a particle the final position
 of the particle is going to fluctuate between
 ($x_{cor} - d, x_{cor} + d$), where $x_{cor}$ is the correct position.
 To address this we can apply under-relaxation:
-$$
-\bold{\Delta \tilde x} = \frac{\bold{\Delta x}}{n}
-$$
+$${\Delta \tilde x} = \frac{{\Delta x}}{n}$$
 where $n$ is the
 number of constraints that affect this particle. Another idea is to
 solve the constraints in groups and apply the position change after each
@@ -246,9 +228,7 @@ one. One more big issue that comes from using the Jacobi method is that
 speed of convergence is relatively small compared to other solving
 methods. One way to deal with it is to apply successive over-relaxation
 (SOR):
-$$
-\bold{\Delta \tilde x} = \frac{\bold{\omega \Delta x}}{n}
-$$
+$${\Delta \tilde x} = \frac{{\omega \Delta x}}{n}$$
 where $1 \leq \omega \leq 2$ is the relaxation parameter ($\omega = 1.5$
 in our case).
 
